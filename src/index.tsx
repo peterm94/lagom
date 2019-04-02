@@ -1,7 +1,7 @@
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import * as PIXI from 'pixi.js'
-import {Entity, TestSys, World, XX, YY} from './ECS'
+import {Entity, World} from './ECS'
 
 import wall from './resources/tilesetx3.png'
 
