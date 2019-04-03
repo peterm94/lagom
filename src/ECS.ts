@@ -1,6 +1,9 @@
 import * as PIXI from "pixi.js";
+const Keyboard = require('pixi.js-keyboard');
 
 export class World {
+
+    static instance: World;
 
     private readonly entities: Entity[] = [];
     private readonly systems: System[] = [];
@@ -11,6 +14,9 @@ export class World {
     readonly app: PIXI.Application;
 
     constructor(options: PIXI.ApplicationOptions, backgroundCol: number) {
+
+        World.instance = this;
+
         this.app = new PIXI.Application(options);
 
         // Set it up in the page
@@ -27,6 +33,11 @@ export class World {
 
     private gameLoop(delta: number) {
         if (!this.gameOver) {
+
+            // Update input events
+
+            Keyboard.update();
+
             this.update(delta);
         } else {
             this.app.stop();
@@ -54,7 +65,6 @@ export class World {
     }
 
     addEntity(entity: Entity) {
-        entity.world = this;
         this.entities.push(entity);
     }
 
@@ -99,7 +109,7 @@ export abstract class Component {
 }
 
 export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Component {
-    protected readonly pixiObj: T;
+    readonly pixiObj: T;
 
     protected constructor(pixiComp: T) {
         super();
@@ -107,13 +117,13 @@ export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Compon
     }
 
     onAdded() {
-        if (this.entity != null && this.entity.world != null)
-            this.entity.world.app.stage.addChild(this.pixiObj);
+        if (this.entity != null)
+            this.entity.container.addChild(this.pixiObj);
     }
 
     onRemoved() {
-        if (this.entity != null && this.entity.world != null)
-            this.entity.world.app.stage.removeChild(this.pixiObj);
+        if (this.entity != null)
+            this.entity.container.removeChild(this.pixiObj);
     }
 }
 
@@ -136,15 +146,31 @@ class ComponentHolder {
     }
 }
 
+export class Transform {
+    x: number = 0;
+    y: number = 0;
+
+    constructor(x: number, y: number) {
+        this.x = x;
+        this.y = y;
+    }
+}
+
 export class Entity {
 
-    world: World | null = null;
+    container: PIXI.Container;
+    readonly transform: Transform = new Transform(0, 0);
+
+    // TODO add this as a pixi object and make everything in it relative to it? as children?
 
     readonly name: string;
     private readonly components: ComponentHolder[] = [];
 
     constructor(name: string) {
         this.name = name;
+
+        this.container = new PIXI.Container();
+        World.instance.app.stage.addChild(this.container);
     }
 
     addComponent(component: Component): Entity {

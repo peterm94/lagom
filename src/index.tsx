@@ -1,10 +1,12 @@
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import * as PIXI from 'pixi.js'
-import {Entity, World} from './ECS'
+import {Component, Entity, System, World} from './ECS'
 import {Sprite, Text} from './Components'
-
 import wall from './resources/tilesetx3.png'
+
+// https://www.npmjs.com/package/pixi.js-keyboard
+const Keyboard = require('pixi.js-keyboard');
 
 let setup = () => {
 
@@ -32,6 +34,30 @@ loader.add(wall).load(() => {
     world.addEntity(player);
     player.addComponent(new Sprite(resources[wall].texture));
     player.addComponent(new Text(new PIXI.Text("HELLO HOW ARE YOU")));
+    player.addComponent(new PlayerControlled());
+    world.addSystem(new Mover());
     world.start();
 });
+
+class PlayerControlled extends Component {}
+
+
+class Mover extends System
+{
+    update(world: World, entity: Entity): void {
+        world.runOnEntities(() => {
+
+            if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
+                entity.container.x -= 4;
+            if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
+                entity.container.x += 4;
+
+            if (Keyboard.isKeyDown('ArrowUp', 'KeyW'))
+                entity.container.y -= 4;
+            if (Keyboard.isKeyDown('ArrowDown', 'KeyS'))
+                entity.container.y += 4;
+
+        }, entity, "PlayerControlled")
+    }
+}
 
