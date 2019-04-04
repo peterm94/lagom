@@ -1,5 +1,9 @@
 import * as PIXI from "pixi.js";
+import {Smoothie} from "./Smoothie";
+
 const Keyboard = require('pixi.js-keyboard');
+
+// const Mouse = require('pixi.js-mouse');
 
 export class World {
 
@@ -9,9 +13,12 @@ export class World {
     private readonly systems: System[] = [];
     private readonly worldSystems: WorldSystem[] = [];
 
+    // Set this to end the game
     gameOver: boolean = false;
 
     readonly app: PIXI.Application;
+    readonly smoothie: Smoothie;
+    readonly mainTicker: PIXI.ticker.Ticker;
 
     constructor(options: PIXI.ApplicationOptions, backgroundCol: number) {
 
@@ -19,24 +26,37 @@ export class World {
 
         this.app = new PIXI.Application(options);
 
+        this.smoothie = new Smoothie(this.app.renderer, this.app.stage, this.gameLoop.bind(this), true, 144, -1);
+
         // Set it up in the page
         this.app.renderer.backgroundColor = backgroundCol;
         document.body.appendChild(this.app.view);
+
+        this.mainTicker = this.app.ticker.add(delta => {
+            return this.gameLoop(delta);
+        });
+        this.mainTicker.stop();
+    }
+
+    private testUpdate() {
+        console.log("OOF")
     }
 
     // Start the loop
     start() {
-        this.app.ticker.add(delta => {
-            return this.gameLoop(delta);
-        })
+
+        // this.smoothie.start();
+        this.mainTicker.start();
     }
 
     private gameLoop(delta: number) {
+
+        // const delta = this.smoothie.dt;
+
         if (!this.gameOver) {
-
-            // Update input events
-
+            // Update input event listeners
             Keyboard.update();
+            // Mouse.update();
 
             this.update(delta);
         } else {
@@ -46,26 +66,29 @@ export class World {
 
     update(delta: number) {
         for (let system of this.worldSystems) {
-            system.update();
+            system.update(delta);
         }
 
         for (let system of this.systems) {
             for (let entity of this.entities) {
-                system.update(this, entity);
+                system.update(this, delta, entity);
             }
         }
     }
 
-    addSystem(system: System) {
+    addSystem(system: System): System {
         this.systems.push(system);
+        return system;
     }
 
-    addWorldSystem(system: WorldSystem) {
+    addWorldSystem(system: WorldSystem): WorldSystem {
         this.worldSystems.push(system);
+        return system;
     }
 
-    addEntity(entity: Entity) {
+    addEntity(entity: Entity): Entity {
         this.entities.push(entity);
+        return entity;
     }
 
     removeSystem(system: System) {
@@ -92,7 +115,6 @@ export class World {
     }
 }
 
-
 export abstract class Component {
 
     entity: Entity | null = null;
@@ -118,22 +140,22 @@ export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Compon
 
     onAdded() {
         if (this.entity != null)
-            this.entity.container.addChild(this.pixiObj);
+            this.entity.transform.addChild(this.pixiObj);
     }
 
     onRemoved() {
         if (this.entity != null)
-            this.entity.container.removeChild(this.pixiObj);
+            this.entity.transform.removeChild(this.pixiObj);
     }
 }
 
 export abstract class WorldSystem {
-    abstract update(): void;
+    abstract update(delta: number): void;
 }
 
 export abstract class System {
 
-    abstract update(world: World, entity: Entity): void;
+    abstract update(world: World, delta: number, entity: Entity): void;
 }
 
 class ComponentHolder {
@@ -146,20 +168,9 @@ class ComponentHolder {
     }
 }
 
-export class Transform {
-    x: number = 0;
-    y: number = 0;
-
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-    }
-}
-
 export class Entity {
 
-    container: PIXI.Container;
-    readonly transform: Transform = new Transform(0, 0);
+    transform: PIXI.Container;
 
     // TODO add this as a pixi object and make everything in it relative to it? as children?
 
@@ -169,8 +180,8 @@ export class Entity {
     constructor(name: string) {
         this.name = name;
 
-        this.container = new PIXI.Container();
-        World.instance.app.stage.addChild(this.container);
+        this.transform = new PIXI.Container();
+        World.instance.app.stage.addChild(this.transform);
     }
 
     addComponent(component: Component): Entity {

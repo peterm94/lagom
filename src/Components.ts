@@ -8,7 +8,7 @@ export class Sprite extends PIXIComponent<PIXI.Sprite> {
 }
 
 export class Text extends PIXIComponent<PIXI.Text> {
-    constructor(text: PIXI.Text) {
-        super(text);
+    constructor(text: string, options?: PIXI.TextStyleOptions) {
+        super(new PIXI.Text(text, options));
     }
 }

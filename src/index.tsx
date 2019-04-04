@@ -33,29 +33,48 @@ loader.add(wall).load(() => {
     let player = new Entity("player");
     world.addEntity(player);
     player.addComponent(new Sprite(resources[wall].texture));
-    player.addComponent(new Text(new PIXI.Text("HELLO HOW ARE YOU")));
+    player.addComponent(new Text("HELLO HOW ARE YOU"));
     player.addComponent(new PlayerControlled());
+
+    world.addEntity(new Entity("fpsCounter")).addComponent(new FpsTracker())
+        .addComponent(new Text(""));
+
     world.addSystem(new Mover());
+    world.addSystem(new FpsUpdater());
     world.start();
 });
 
-class PlayerControlled extends Component {}
+class FpsTracker extends Component {
+}
 
+class FpsUpdater extends System {
+    update(world: World, delta: number, entity: Entity): void {
 
-class Mover extends System
-{
-    update(world: World, entity: Entity): void {
+        world.runOnEntities((entity: Entity, _: FpsTracker, text: Text) => {
+            // text.pixiObj.text = world.app.ticker.FPS.toString();
+            text.pixiObj.text = delta.toString();
+        }, entity, "FpsTracker", "Text")
+    }
+}
+
+class PlayerControlled extends Component {
+}
+
+class Mover extends System {
+    update(world: World, delta: number, entity: Entity): void {
         world.runOnEntities(() => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
-                entity.container.x -= 4;
+                entity.transform.x -= 4 * delta;
             if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
-                entity.container.x += 4;
+                entity.transform.x += 4 * delta;
 
-            if (Keyboard.isKeyDown('ArrowUp', 'KeyW'))
-                entity.container.y -= 4;
-            if (Keyboard.isKeyDown('ArrowDown', 'KeyS'))
-                entity.container.y += 4;
+            if (Keyboard.isKeyDown('ArrowUp', 'KeyW')) {
+                entity.transform.y -= 4 * delta;
+            }
+            if (Keyboard.isKeyDown('ArrowDown', 'KeyS')) {
+                entity.transform.y += 4 * delta;
+            }
 
         }, entity, "PlayerControlled")
     }
