@@ -177,10 +177,12 @@ export class Entity {
     readonly name: string;
     private readonly components: ComponentHolder[] = [];
 
-    constructor(name: string) {
+    constructor(name: string, x: number = 0, y: number = 0) {
         this.name = name;
 
         this.transform = new PIXI.Container();
+        this.transform.x = x;
+        this.transform.y = y;
         World.instance.app.stage.addChild(this.transform);
     }
 

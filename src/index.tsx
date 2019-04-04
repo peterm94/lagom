@@ -4,6 +4,7 @@ import * as PIXI from 'pixi.js'
 import {Component, Entity, System, World} from './ECS'
 import {Sprite, Text} from './Components'
 import wall from './resources/tilesetx3.png'
+import {number} from "prop-types";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
 const Keyboard = require('pixi.js-keyboard');
@@ -14,10 +15,8 @@ let setup = () => {
 };
 
 
-let Application = PIXI.Application,
-    loader = PIXI.loader,
-    resources = PIXI.loader.resources,
-    Rectangle = PIXI.Rectangle;
+let loader = PIXI.loader,
+    resources = PIXI.loader.resources;
 
 
 // If you want your app to work offline and load faster, you can change
@@ -30,14 +29,14 @@ loader.add(wall).load(() => {
 
     let world = new World({width: 256, height: 256, resolution: 2}, 0x00F5F0);
 
-    let player = new Entity("player");
+    let player = new Entity("player", 0, 50);
     world.addEntity(player);
     player.addComponent(new Sprite(resources[wall].texture));
     player.addComponent(new Text("HELLO HOW ARE YOU"));
     player.addComponent(new PlayerControlled());
 
     world.addEntity(new Entity("fpsCounter")).addComponent(new FpsTracker())
-        .addComponent(new Text(""));
+        .addComponent(new Text("", {fontSize: 5}));
 
     world.addSystem(new Mover());
     world.addSystem(new FpsUpdater());
@@ -48,12 +47,33 @@ class FpsTracker extends Component {
 }
 
 class FpsUpdater extends System {
+
+    lastFpsAvg: number = 1;
+    lastDtAvg: number = 1;
+    samples: number = 100;
+
+    printFrame: number = 30;
+    frameCount: number = 0;
+
+    constructor() {
+        super();
+    }
+
     update(world: World, delta: number, entity: Entity): void {
 
-        world.runOnEntities((entity: Entity, _: FpsTracker, text: Text) => {
-            // text.pixiObj.text = world.app.ticker.FPS.toString();
-            text.pixiObj.text = delta.toString();
-        }, entity, "FpsTracker", "Text")
+        const fpsAvg = this.lastFpsAvg * (this.samples - 1) / this.samples + world.mainTicker.FPS / this.samples;
+        this.lastFpsAvg = fpsAvg;
+        const dtAvg = this.lastDtAvg * (this.samples - 1) / this.samples + world.mainTicker.deltaTime / this.samples;
+        this.lastDtAvg = dtAvg;
+
+        this.frameCount++;
+        if (this.frameCount % this.printFrame === 0) {
+            world.runOnEntities((entity: Entity, _: FpsTracker, text: Text) => {
+                // text.pixiObj.text = world.app.ticker.FPS.toString();
+                text.pixiObj.text = `speed: ${world.mainTicker.speed}\tFPS: ${fpsAvg.toFixed(2)}\tdt:${dtAvg.toFixed(2)}`
+;
+            }, entity, "FpsTracker", "Text")
+        }
     }
 }
 
