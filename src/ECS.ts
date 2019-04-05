@@ -85,7 +85,7 @@ export class World {
         let timeStart = Date.now();
 
         for (let system of this.worldSystems) {
-            system.update(delta);
+            system.update(this, delta, this.entities);
         }
 
         this.diag.worldSystemUpdateTime = Date.now() - timeStart;
@@ -178,6 +178,29 @@ export class World {
         }
         f(...ret);
     }
+
+    static runOnComponents(f: Function, entities: Entity[], ...types: string[]) {
+
+        const ret: Map<string, Component[]> = new Map();
+
+        for (let type of types) {
+            ret.set(type, []);
+        }
+
+        // This is slow and bad but we can cache it one day
+        for (let entity of entities) {
+            for (let type of types) {
+                const entryMap = ret.get(type);
+                if (entryMap === undefined) continue;
+
+                for (let comp of entity.getComponentsOfType(type)) {
+                    entryMap.push(comp);
+                }
+            }
+        }
+
+        f(...Array.from(ret.values()));
+    }
 }
 
 /**
@@ -238,9 +261,11 @@ export abstract class WorldSystem extends LifecycleObject {
 
     /**
      * Update will be called every game tick.
+     * @param world The world we are operating on
      * @param delta The elapsed time since the last update call.
+     * @param entities All entities in this world.
      */
-    abstract update(delta: number): void;
+    abstract update(world: World, delta: number, entities: Entity[]): void;
 }
 
 /**

@@ -42,6 +42,18 @@ export class Collision {
     }
 
     /**
+     * Distance squared between two sets of points.
+     * @param x1 Point 1 x.
+     * @param y1 Point 1 u.
+     * @param x2 Point 2 x.
+     * @param y2 Point 1 y.
+     * @returns The distance squared.
+     */
+    static distanceSquared(x1: number, y1: number, x2: number, y2: number): number {
+        return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+    }
+
+    /**
      * Check if a point is on a given line.
      * @param px Point x.
      * @param py Point y.
@@ -90,46 +102,14 @@ export class Collision {
     }
 
     /**
-     * Check for collisions between a line and a circle.
-     * @param x1 Line segment start x.
-     * @param y1 Line segment start y.
-     * @param x2 Line segment end x.
-     * @param y2 Line segment end y.
-     * @param circle The circle to check.
-     * @returns True if the line is inside or intersects with the circle.
-     */
-    static checkCollisionLineCircle(x1: number, y1: number, x2: number, y2: number, circle: CircleCollider): boolean {
-        // check if end points are in the circle, cheap
-        if (Collision.pointInCircle(x1, y1, circle) || Collision.pointInCircle(x2, y2, circle)) {
-            return true;
-        }
-
-        // More expensive now. Find the closest point on the line to the circle centre
-        const lineLength = Collision.pointDistance(x1, y1, x2, y2);
-        const circleAnchor = circle.pixiObj;
-        const dot = (((circleAnchor.x - x1) * (x2 - x1)) + ((circleAnchor.y - y1) * (y2 - y1))) / Math.pow(lineLength, 2);
-
-        const closestX = x1 + (dot * (x2 - x1));
-        const closestY = y1 + (dot * (y2 - y1));
-
-        // Check the point is actually on the line segment (the maths was done for an infinite length line)
-        if (!Collision.pointOnLine(closestX, closestY, x1, y1, x2, y2)) return false;
-
-        // Check if the point is in the circle radius
-        return Collision.pointInCircle(closestX, closestY, circle);
-    }
-
-    /**
      * Check for collisions between two circles.
      * @param c1 The first circle.
      * @param c2 The second circle.
      * @returns True if the circles collide.
      */
     static checkCollisionCircleCircle(c1: CircleCollider, c2: CircleCollider): boolean {
-        // Distance between the centre points
-        const dist = Collision.pointDistance(c1.pixiObj.x, c1.pixiObj.y, c2.pixiObj.x, c2.pixiObj.y);
-
-        return dist < c1.radius + c2.radius;
+        return Collision.distanceSquared(c1.pixiObj.x, c1.pixiObj.y,
+                                         c2.pixiObj.x, c2.pixiObj.y) < c1.radius * c2.radius;
     }
 
     /**
@@ -147,10 +127,11 @@ export class Collision {
         const axisAligned = true;
         if (axisAligned) {
             // Do AABB collision, simple
-            return anchor1.x < anchor2.x + box2.width
-                   && anchor1.x + box1.width > anchor2.x
-                   && anchor1.y < anchor2.y + box2.height
-                   && anchor1.y + box1.height > anchor2.y;
+            if (anchor1.y + box1.height <= anchor2.y) return false;
+            if (anchor2.y + box2.height <= anchor1.y) return false;
+            if (anchor1.x + box1.width <= anchor2.x) return false;
+            return anchor2.x + box2.width > anchor1.x;
+
         } else {
             // haven't done this yet
             return false;
@@ -159,23 +140,19 @@ export class Collision {
 
     /**
      * Check for collisions between a box and a circle.
+     * TODO this doesnt work with rotated boxes
      * @param box The box to check.
      * @param circle The circle to check.
      * @returns True if the box and circle intersect.
      */
     static checkCollisionBoxCircle(box: BoxCollider, circle: CircleCollider): boolean {
-        const boxAnchor = box.pixiObj;
-        const a = [boxAnchor.x, boxAnchor.y];
-        const b = [boxAnchor.x + box.width, boxAnchor.y];
-        const c = [boxAnchor.x + box.width, boxAnchor.y + box.height];
-        const d = [boxAnchor.x, boxAnchor.y + box.height];
 
-        // Check if the circle is in the box
-        return Collision.pointInRectangle(circle.pixiObj.x, circle.pixiObj.y, box)
-               // Check each box edge against the circle
-               || Collision.checkCollisionLineCircle(a[0], a[1], b[0], b[1], circle)
-               || Collision.checkCollisionLineCircle(b[0], b[1], c[0], c[1], circle)
-               || Collision.checkCollisionLineCircle(c[0], c[1], d[0], d[1], circle)
-               || Collision.checkCollisionLineCircle(d[0], d[1], a[0], a[1], circle)
+        // Find the closest point on the box edge to the circle and check the distance.
+        const boxAnchor = box.pixiObj;
+        const circleAnchor = circle.pixiObj;
+        return Collision.distanceSquared(circleAnchor.x, circleAnchor.y,
+                                         Math.max(boxAnchor.x, Math.min(circleAnchor.x, boxAnchor.x + box.width)),
+                                         Math.max(boxAnchor.y, Math.min(circleAnchor.y, boxAnchor.y + box.height)))
+               < circle.radius * circle.radius;
     }
 }

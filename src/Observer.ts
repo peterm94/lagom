@@ -1,6 +1,6 @@
 import {Util} from "./Util";
 
-export abstract class Observable<T> {
+export class Observable<T> {
     private readonly observers: Observer<T>[] = [];
 
     register(observer: Observer<T>) {

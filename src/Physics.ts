@@ -1,12 +1,17 @@
-import {Component, PIXIComponent, WorldSystem} from "./ECS";
+import {Component, Entity, PIXIComponent, World, WorldSystem} from "./ECS";
 import {Sprite} from "./Components";
 import Rectangle = PIXI.Rectangle;
+import {Observable} from "./Observer";
+import {Collision} from "./Collision";
 
 export class Rigidbody extends Component {
 
 }
 
 export abstract class Collider extends PIXIComponent<PIXI.Container> {
+
+    readonly collisionEvent: Observable<Collider> = new Observable();
+
     protected constructor() {
         super(new PIXI.Container());
     }
@@ -40,7 +45,29 @@ export class CircleCollider extends Collider {
     }
 }
 
-export class PhysicsSystem extends WorldSystem {
-    update(delta: number): void {
+export class CollisionSystem extends WorldSystem {
+    update(world: World, delta: number, entities: Entity[]): void {
+
+        World.runOnComponents((colliders: Collider[]) => {
+            for (let i = 0; i < colliders.length; i++) {
+                for (let j = i + 1; j < colliders.length; j++) {
+                    const c1 = colliders[i];
+                    const c2 = colliders[j];
+
+                    // Trigger the collision event, passing through 'other'.
+                    if (Collision.checkCollision(c1, c2)) {
+                        c1.collisionEvent.trigger(c2);
+                        c2.collisionEvent.trigger(c1);
+                    }
+                }
+            }
+        }, entities, "Collider");
     }
+
+}
+
+export class PhysicsSystem extends WorldSystem {
+    update(world: World, delta: number, entities: Entity[]): void {
+    }
+
 }
