@@ -1,5 +1,5 @@
 import {Component, Entity, System, World} from "./ECS";
-import {Text} from "./Components";
+import {TextDisp} from "./Components";
 
 /**
  * Entity that adds FPS information to the canvas.
@@ -10,7 +10,7 @@ export class Diagnostics extends Entity {
         super.onAdded();
 
         this.addComponent(new FpsTracker());
-        this.addComponent(new Text("", {fontSize: 5}));
+        this.addComponent(new TextDisp("", {fontSize: 5}));
         World.instance.addSystem(new FpsUpdater());
     }
 
@@ -44,11 +44,13 @@ class FpsUpdater extends System {
 
         this.frameCount++;
         if (this.frameCount % this.printFrame === 0) {
-            World.runOnEntity((_: FpsTracker, text: Text) => {
+            World.runOnEntity((_: FpsTracker, text: TextDisp) => {
                 // text.pixiObj.text = world.app.ticker.FPS.toString();
                 text.pixiObj.text = `FPS: ${fpsAvg.toFixed(2)}\tdt:${dtAvg.toFixed(2)}\tscale: ${world.mainTicker.speed}`;
-                // text.pixiObj.text += `\ninputTime: ${world.diag.inputUpdateTime.toFixed(2)}\tsysUpdateTime: ${world.diag.systemUpdateTime.toFixed(2)}\tworldSysUpdateTime: ${world.diag.worldSystemUpdateTime.toFixed(2)}`
-            }, entity, "FpsTracker", "Text")
+                // text.pixiObj.text += `\ninputTime: ${world.diag.inputUpdateTime.toFixed(2)}\tsysUpdateTime:
+                // ${world.diag.systemUpdateTime.toFixed(2)}\tworldSysUpdateTime:
+                // ${world.diag.worldSystemUpdateTime.toFixed(2)}`
+            }, entity, FpsTracker, TextDisp as any)
         }
     }
 }

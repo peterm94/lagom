@@ -2,7 +2,7 @@ import './index.css';
 import * as serviceWorker from './serviceWorker';
 import * as PIXI from 'pixi.js'
 import {Component, Entity, System, World} from './ECS'
-import {Sprite, Text} from './Components'
+import {Sprite, TextDisp} from './Components'
 import wall from './resources/tilesetx3.png'
 import {Diagnostics} from "./Debug";
 
@@ -14,7 +14,7 @@ let setup = () => {
     let spr = new Sprite(resources[wall].texture);
 };
 
-let loader = PIXI.loader,
+let loader    = PIXI.loader,
     resources = PIXI.loader.resources;
 
 // If you want your app to work offline and load faster, you can change
@@ -30,7 +30,7 @@ loader.add(wall).load(() => {
     let player = new Entity("player", 0, 50);
     world.addEntity(player);
     player.addComponent(new Sprite(resources[wall].texture));
-    player.addComponent(new Text("HELLO HOW ARE YOU"));
+    player.addComponent(new TextDisp("HELLO HOW ARE YOU"));
     player.addComponent(new PlayerControlled());
 
     world.addEntity(new Diagnostics());
@@ -38,7 +38,6 @@ loader.add(wall).load(() => {
     world.addSystem(new Mover());
     world.start();
 });
-
 
 
 class PlayerControlled extends Component {
@@ -61,7 +60,7 @@ class Mover extends System {
                 entity.transform.y += 4 * delta;
             }
 
-        }, entity, "PlayerControlled")
+        }, entity, PlayerControlled)
     }
 }
 

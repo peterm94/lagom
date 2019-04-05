@@ -1,6 +1,5 @@
 import {Component, Entity, PIXIComponent, World, WorldSystem} from "./ECS";
 import {Sprite} from "./Components";
-import Rectangle = PIXI.Rectangle;
 import {Observable} from "./Observer";
 import {Collision} from "./Collision";
 
@@ -61,7 +60,7 @@ export class CollisionSystem extends WorldSystem {
                     }
                 }
             }
-        }, entities, "Collider");
+        }, entities, Collider as any);
     }
 
 }

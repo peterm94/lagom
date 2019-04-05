@@ -3,7 +3,8 @@ import {Smoothie} from "./Smoothie";
 import {Util} from "./Util";
 
 const Keyboard = require('pixi.js-keyboard');
-const Mouse = require('pixi.js-mouse');
+
+// const Mouse = require('pixi.js-mouse');
 
 class Diag {
     inputUpdateTime: number = 0;
@@ -72,7 +73,7 @@ export class World {
             // Update input event listeners
             const timeStart = Date.now();
             Keyboard.update();
-            Mouse.update();
+            // Mouse.update();
             this.diag.inputUpdateTime = Date.now() - timeStart;
 
             this.update(delta);
@@ -168,8 +169,8 @@ export class World {
      * @param entity The entity to run on.
      * @param types A list of type names to populate the provided function with.
      */
-    static runOnEntity(f: Function, entity: Entity, ...types: string[]) {
-        const ret: Component[] = [];
+    static runOnEntity<T extends Component>(f: Function, entity: Entity, ...types: { new(): T }[]) {
+        const ret: T[] = [];
         for (let type of types) {
             const comp = entity.getComponent(type);
             if (comp == null) return;
@@ -179,9 +180,9 @@ export class World {
         f(...ret);
     }
 
-    static runOnComponents(f: Function, entities: Entity[], ...types: string[]) {
+    static runOnComponents<T extends Component>(f: Function, entities: Entity[], ...types: { new(): T }[]) {
 
-        const ret: Map<string, Component[]> = new Map();
+        const ret: Map<{ new(): T }, Component[]> = new Map();
 
         for (let type of types) {
             ret.set(type, []);
@@ -284,21 +285,6 @@ export abstract class System extends LifecycleObject {
 }
 
 /**
- * Custom pair class for components stored with their ID.
- *
- * TODO we probably don't need this any more, can get ID from component.id()
- */
-class ComponentHolder {
-    readonly id: string;
-    readonly comp: Component;
-
-    constructor(id: string, comp: Component) {
-        this.id = id;
-        this.comp = comp;
-    }
-}
-
-/**
  * Entity base class. Raw entities can be used or subclasses can be defined similarly to prefabs.
  */
 export class Entity extends LifecycleObject {
@@ -306,7 +292,7 @@ export class Entity extends LifecycleObject {
     transform: PIXI.Container;
 
     readonly name: string;
-    private readonly components: ComponentHolder[] = [];
+    private readonly components: Component[] = [];
 
     /**
      * Create a new entity. It must be added to a World to actually do anything.
@@ -331,7 +317,7 @@ export class Entity extends LifecycleObject {
      */
     addComponent(component: Component): Entity {
         component.entity = this;
-        this.components.push(new ComponentHolder(component.id(), component));
+        this.components.push(component);
         component.onAdded();
         return this;
     }
@@ -341,9 +327,8 @@ export class Entity extends LifecycleObject {
      * @param type The type of component to search for.
      * @returns An array of all matching components.
      */
-    getComponentsOfType<T extends Component>(type: string): T[] {
-        const matches = this.components.filter(value => value.id == type);
-        return matches.map(value => value.comp) as T[];
+    getComponentsOfType<T extends Component>(type: { new(): T }): T[] {
+        return this.components.filter(value => value instanceof type) as T[];
     }
 
     /**
@@ -351,9 +336,9 @@ export class Entity extends LifecycleObject {
      * @param type the type of component to search for.
      * @returns The component if found, otherwise null.
      */
-    getComponent<T extends Component>(type: string): T | null {
-        const found = this.components.find(value => value.id == type);
-        return found != undefined ? found.comp as T : null;
+    getComponent<T extends Component>(type: { new(): T }): T | null {
+        const found = this.components.find(value => value instanceof type);
+        return found != undefined ? found as T : null;
     }
 
     /**
@@ -362,6 +347,6 @@ export class Entity extends LifecycleObject {
      */
     removeComponent(component: Component) {
         component.onRemoved();
-        Util.remove(this.components, this.components.find(value => value.comp === component));
+        Util.remove(this.components, component);
     }
 }
