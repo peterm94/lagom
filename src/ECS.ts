@@ -169,9 +169,13 @@ export class World {
      * @param entity The entity to run on.
      * @param types A list of type names to populate the provided function with.
      */
-    static runOnEntity<T extends Component>(f: Function, entity: Entity, ...types: { new(): T }[]) {
+    static runOnEntity<T extends Component>(f: Function, entity: Entity, ...types: any[]) {
+
+        // It's dumb, I can't constrain `types` because of the way imports work, but this works as desired.
+        const inTypes: { new(): T }[] = types;
+
         const ret: T[] = [];
-        for (let type of types) {
+        for (let type of inTypes) {
             const comp = entity.getComponent(type);
             if (comp == null) return;
 
@@ -180,17 +184,19 @@ export class World {
         f(...ret);
     }
 
-    static runOnComponents<T extends Component>(f: Function, entities: Entity[], ...types: { new(): T }[]) {
+    static runOnComponents<T extends Component>(f: Function, entities: Entity[], ...types: any[]) {
+
+        const inTypes: { new(): T }[] = types;
 
         const ret: Map<{ new(): T }, Component[]> = new Map();
 
-        for (let type of types) {
+        for (let type of inTypes) {
             ret.set(type, []);
         }
 
         // This is slow and bad but we can cache it one day
         for (let entity of entities) {
-            for (let type of types) {
+            for (let type of inTypes) {
                 const entryMap = ret.get(type);
                 if (entryMap === undefined) continue;
 

@@ -50,7 +50,7 @@ class FpsUpdater extends System {
                 // text.pixiObj.text += `\ninputTime: ${world.diag.inputUpdateTime.toFixed(2)}\tsysUpdateTime:
                 // ${world.diag.systemUpdateTime.toFixed(2)}\tworldSysUpdateTime:
                 // ${world.diag.worldSystemUpdateTime.toFixed(2)}`
-            }, entity, FpsTracker, TextDisp as any)
+            }, entity, FpsTracker, TextDisp)
         }
     }
 }
