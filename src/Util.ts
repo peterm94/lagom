@@ -1,3 +1,5 @@
+import {Entity} from "./ECS";
+
 export class Util {
     /**
      * Convenience list removal function.
@@ -10,6 +12,14 @@ export class Util {
         if (idx > -1) {
             list.splice(idx, 1);
         }
+    }
+
+    static move(e: Entity, dist: number) {
+        const mx = MathUtil.lengthDirX(dist, e.transform.rotation);
+        const my = MathUtil.lengthDirY(dist, e.transform.rotation);
+
+        e.transform.x += mx;
+        e.transform.y += my;
     }
 }
 
@@ -28,20 +38,20 @@ export class MathUtil {
     /**
      * Get the x component of a vector determined by the given length and direction.
      * @param length Vector length.
-     * @param dir Vector direction in degrees.
+     * @param dir Vector direction in radians.
      * @returns The x component of the vector.
      */
     static lengthDirX(length: number, dir: number): number {
-        return length * Math.cos(this.degToRad(dir));
+        return length * Math.cos(dir);
     }
 
     /**
      * Get the y component of a vector determined by the given length and direction.
      * @param length Vector length.
-     * @param dir Vector direction in degrees.
+     * @param dir Vector direction in radians.
      * @returns The y component of the vector.
      */
     static lengthDirY(length: number, dir: number): number {
-        return length * Math.sin(this.degToRad(dir));
+        return length * Math.sin(dir);
     }
 }

@@ -1,7 +1,10 @@
 import * as PIXI from "pixi.js";
 import {Smoothie} from "./Smoothie";
 import {Util} from "./Util";
+import {Observable} from "./Observer";
 
+// https://www.npmjs.com/package/pixi.js-keyboard
+// keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
 const Keyboard = require('pixi.js-keyboard');
 
 // const Mouse = require('pixi.js-mouse');
@@ -70,13 +73,15 @@ export class World {
         // const delta = this.smoothie.dt;
 
         if (!this.gameOver) {
-            // Update input event listeners
+
             const timeStart = Date.now();
-            Keyboard.update();
             // Mouse.update();
             this.diag.inputUpdateTime = Date.now() - timeStart;
 
             this.update(delta);
+
+            Keyboard.update();
+
         } else {
             this.app.stop();
         }
@@ -105,7 +110,7 @@ export class World {
      * @param system The system to add
      * @returns The added system.
      */
-    addSystem(system: System): System {
+    addSystem<T extends System>(system: T): T {
         this.systems.push(system);
         system.onAdded();
         return system;
@@ -116,7 +121,7 @@ export class World {
      * @param system The system to add.
      * @returns The added system.
      */
-    addWorldSystem(system: WorldSystem): WorldSystem {
+    addWorldSystem<T extends WorldSystem>(system: T): T {
         this.worldSystems.push(system);
         system.onAdded();
         return system;
@@ -127,7 +132,7 @@ export class World {
      * @param entity The entity to add.
      * @returns The added entity.
      */
-    addEntity(entity: Entity): Entity {
+    addEntity<T extends Entity>(entity: T): T {
         this.entities.push(entity);
         entity.onAdded();
         return entity;
@@ -169,14 +174,14 @@ export class World {
      * @param entity The entity to run on.
      * @param types A list of type names to populate the provided function with.
      */
-    static runOnEntity<T extends Component>(f: Function, entity: Entity, ...types: any[]) {
+    static runOnEntity<T extends Component>(f: Function, entity: Entity, ...types: { new(): T }[] | any[]) {
 
         // It's dumb, I can't constrain `types` because of the way imports work, but this works as desired.
         const inTypes: { new(): T }[] = types;
 
         const ret: T[] = [];
         for (let type of inTypes) {
-            const comp = entity.getComponent(type);
+            const comp = entity.getComponent<T>(type);
             if (comp == null) return;
 
             ret.push(comp);
@@ -184,7 +189,7 @@ export class World {
         f(...ret);
     }
 
-    static runOnComponents<T extends Component>(f: Function, entities: Entity[], ...types: any[]) {
+    static runOnComponents<T extends Component>(f: Function, entities: Entity[], ...types: { new(): T }[] | any[]) {
 
         const inTypes: { new(): T }[] = types;
 
@@ -200,7 +205,7 @@ export class World {
                 const entryMap = ret.get(type);
                 if (entryMap === undefined) continue;
 
-                for (let comp of entity.getComponentsOfType(type)) {
+                for (let comp of entity.getComponentsOfType<T>(type)) {
                     entryMap.push(comp);
                 }
             }
@@ -295,6 +300,9 @@ export abstract class System extends LifecycleObject {
  */
 export class Entity extends LifecycleObject {
 
+    componentAdd: Observable<Component> = new Observable();
+    componentRemove: Observable<Component> = new Observable();
+
     transform: PIXI.Container;
 
     readonly name: string;
@@ -319,13 +327,14 @@ export class Entity extends LifecycleObject {
     /**
      * Add a new component to the entity.
      * @param component The component to add.
-     * @returns The entity.
+     * @returns The added component.
      */
-    addComponent(component: Component): Entity {
+    addComponent<T extends Component>(component: T): T {
         component.entity = this;
         this.components.push(component);
         component.onAdded();
-        return this;
+        this.componentAdd.trigger(component);
+        return component;
     }
 
     /**
@@ -333,7 +342,7 @@ export class Entity extends LifecycleObject {
      * @param type The type of component to search for.
      * @returns An array of all matching components.
      */
-    getComponentsOfType<T extends Component>(type: { new(): T }): T[] {
+    getComponentsOfType<T extends Component>(type: any | { new(): T }): T[] {
         return this.components.filter(value => value instanceof type) as T[];
     }
 
@@ -342,7 +351,7 @@ export class Entity extends LifecycleObject {
      * @param type the type of component to search for.
      * @returns The component if found, otherwise null.
      */
-    getComponent<T extends Component>(type: { new(): T }): T | null {
+    getComponent<T extends Component>(type: any | { new(): T }): T | null {
         const found = this.components.find(value => value instanceof type);
         return found != undefined ? found as T : null;
     }
@@ -353,6 +362,7 @@ export class Entity extends LifecycleObject {
      */
     removeComponent(component: Component) {
         component.onRemoved();
+        this.componentRemove.trigger(component);
         Util.remove(this.components, component);
     }
 }

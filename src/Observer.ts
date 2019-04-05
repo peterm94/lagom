@@ -12,10 +12,8 @@ export class Observable<T> {
     }
 
     trigger(data: T) {
-        this.observers.forEach(value => value.notify(this, data));
+        this.observers.forEach(value => value(data));
     }
 }
 
-export interface Observer<T> {
-    notify(observable: Observable<T>, data: T): void;
-}
+export type Observer<T> = (data: T) => void;
