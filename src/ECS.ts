@@ -41,7 +41,8 @@ export class World {
 
         this.app = new PIXI.Application(options);
 
-        this.smoothie = new Smoothie(this.app.renderer, this.app.stage, this.gameLoop.bind(this), true, 144, -1);
+        this.smoothie = new Smoothie(this.app.renderer, this.app.stage,
+                                     this.gameLoop.bind(this), true, 144, -1);
 
         // Set it up in the page
         this.app.renderer.backgroundColor = backgroundCol;
@@ -200,7 +201,6 @@ export abstract class LifecycleObject {
  * Component base class.
  */
 export abstract class Component extends LifecycleObject {
-
     entity: Entity | null = null;
 
     id() {
