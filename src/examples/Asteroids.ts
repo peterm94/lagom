@@ -69,8 +69,8 @@ class Bullet extends Entity {
 class WrapSprite extends Sprite {
 
     private static count = 0;
-    xId: string = (++WrapSprite.count).toString();
-    yId: string = (++WrapSprite.count).toString();
+    xId: string = `__wrapSprite${++WrapSprite.count}`;
+    yId: string = `__wrapSprite${++WrapSprite.count}`;
 
     onAdded(): void {
         super.onAdded();
@@ -79,12 +79,12 @@ class WrapSprite extends Sprite {
             // Add 2 new sprites that shadow the real one
             const xChild = new PIXI.Sprite(this.pixiObj.texture);
             xChild.name = this.xId;
-            xChild.anchor.x = 0.5;
-            xChild.anchor.y = 0.5;
+            xChild.anchor.x = this.pixiObj.anchor.x;
+            xChild.anchor.y = this.pixiObj.anchor.y;
             const yChild = new PIXI.Sprite(this.pixiObj.texture);
             yChild.name = this.yId;
-            yChild.anchor.x = 0.5;
-            yChild.anchor.y = 0.5;
+            yChild.anchor.x = this.pixiObj.anchor.x;
+            yChild.anchor.y = this.pixiObj.anchor.y;
             World.instance.app.stage.addChild(xChild, yChild);
         }
     }
