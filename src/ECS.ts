@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js";
 import {Smoothie} from "./Smoothie";
+import {Util} from "./Util";
 
 const Keyboard = require('pixi.js-keyboard');
 const Mouse = require('pixi.js-mouse');
@@ -69,7 +70,7 @@ export class World {
 
         if (!this.gameOver) {
             // Update input event listeners
-            let timeStart = Date.now();
+            const timeStart = Date.now();
             Keyboard.update();
             Mouse.update();
             this.diag.inputUpdateTime = Date.now() - timeStart;
@@ -137,7 +138,7 @@ export class World {
      */
     removeSystem(system: System) {
         system.onRemoved();
-        remove(this.systems, system);
+        Util.remove(this.systems, system);
     }
 
     /**
@@ -146,7 +147,7 @@ export class World {
      */
     removeWorldSystem(system: WorldSystem) {
         system.onRemoved();
-        remove(this.worldSystems, system);
+        Util.remove(this.worldSystems, system);
     }
 
     /**
@@ -155,7 +156,7 @@ export class World {
      */
     removeEntity(entity: Entity) {
         entity.onRemoved();
-        remove(this.entities, entity);
+        Util.remove(this.entities, entity);
     }
 
     /**
@@ -168,9 +169,9 @@ export class World {
      * @param types A list of type names to populate the provided function with.
      */
     static runOnEntity(f: Function, entity: Entity, ...types: string[]) {
-        let ret: Component[] = [];
+        const ret: Component[] = [];
         for (let type of types) {
-            let comp = entity.getComponent(type);
+            const comp = entity.getComponent(type);
             if (comp == null) return;
 
             ret.push(comp);
@@ -316,7 +317,7 @@ export class Entity extends LifecycleObject {
      * @returns An array of all matching components.
      */
     getComponentsOfType<T extends Component>(type: string): T[] {
-        let matches = this.components.filter(value => value.id == type);
+        const matches = this.components.filter(value => value.id == type);
         return matches.map(value => value.comp) as T[];
     }
 
@@ -326,7 +327,7 @@ export class Entity extends LifecycleObject {
      * @returns The component if found, otherwise null.
      */
     getComponent<T extends Component>(type: string): T | null {
-        let found = this.components.find(value => value.id == type);
+        const found = this.components.find(value => value.id == type);
         return found != undefined ? found.comp as T : null;
     }
 
@@ -336,19 +337,6 @@ export class Entity extends LifecycleObject {
      */
     removeComponent(component: Component) {
         component.onRemoved();
-        remove(this.components, this.components.find(value => value.comp === component));
-    }
-}
-
-/**
- * Convenience list removal function.
- * @param list The list to remove an element from.
- * @param element The element to remove.
- */
-function remove<T>(list: T[], element: T) {
-    let idx = list.indexOf(element);
-
-    if (idx > -1) {
-        list.splice(idx, 1);
+        Util.remove(this.components, this.components.find(value => value.comp === component));
     }
 }
