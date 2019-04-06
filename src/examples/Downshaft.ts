@@ -3,8 +3,8 @@ import spr_guy from './resources/guy.png';
 import {Component, Entity, System, World} from "../ECS";
 import {Diagnostics} from "../Debug";
 import {Sprite} from "../Components";
-import {BodyType, PhysicsSystem, Rigidbody, Vector} from "../Physics";
-import {BoxCollider, CollisionMatrix, CollisionSystem} from "../Collision";
+import {MatterEngine, MCollider} from "../MatterPhysics";
+import * as Matter from "matter-js";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -33,13 +33,8 @@ export class Downshaft {
                 world.addEntity(new Block(i * 32, 200));
             }
 
-            const collisionMatrix = new CollisionMatrix();
-            collisionMatrix.addCollision(Layers.Solid, Layers.Player);
-
             world.addSystem(new PlayerMover());
-            world.addWorldSystem(new PhysicsSystem());
-
-            // world.addWorldSystem(new CollisionSystem(collisionMatrix));
+            world.addSystem(new MatterEngine());
 
             world.start();
         })
@@ -52,22 +47,25 @@ class PlayerControlled extends Component {
 
 class PlayerMover extends System {
 
-    private readonly moveForce = 40;
-    private readonly jumpForce = -1000;
+    private readonly moveForce = 3;
+    private readonly jumpForce = -0.5;
 
     update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((rigidBody: Rigidbody, _: PlayerControlled) => {
+        World.runOnEntity((collider: MCollider) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
-                rigidBody.addForce(new Vector(-this.moveForce, 0));
+                Matter.Body.translate(collider.body, {x: -this.moveForce, y: 0});
             }
             if (Keyboard.isKeyDown('ArrowRight', 'KeyD')) {
-                rigidBody.addForce(new Vector(this.moveForce, 0));
+                Matter.Body.translate(collider.body, {x: this.moveForce, y: 0});
             }
             if (Keyboard.isKeyPressed('Space')) {
-                rigidBody.addForce(new Vector(0, this.jumpForce));
+                Matter.Body.applyForce(collider.body, {
+                    x: collider.body.position.x,
+                    y: collider.body.position.y
+                }, {x: 0, y: this.jumpForce});
             }
-        }, entity, Rigidbody, PlayerControlled)
+        }, entity, MCollider, PlayerControlled)
     }
 }
 
@@ -81,9 +79,9 @@ class Player extends Entity {
         super.onAdded();
 
         const sprite = this.addComponent(new Sprite(loader.resources[spr_guy].texture));
-        this.addComponent(BoxCollider.fromSprite(sprite, 0, 0, false));
-        this.addComponent(new Rigidbody(BodyType.Dynamic));
         this.addComponent(new PlayerControlled());
+        this.addComponent(new MCollider(Matter.Bodies.rectangle(0, 0, sprite.pixiObj.width,
+                                                                sprite.pixiObj.height)))
     }
 }
 
@@ -97,7 +95,7 @@ class Block extends Entity {
         super.onAdded();
 
         const sprite = this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new Rigidbody(BodyType.Static));
-        this.addComponent(BoxCollider.fromSprite(sprite, 0, 0, false));
+        this.addComponent(new MCollider(Matter.Bodies.rectangle(0, 0, sprite.pixiObj.width,
+                                                                sprite.pixiObj.height, {isStatic: true})));
     }
 }

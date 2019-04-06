@@ -8,5 +8,5 @@ import {Downshaft} from "./examples/Downshaft";
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
 
-new Asteroids();
-// new Downshaft();
+// new Asteroids();
+new Downshaft();

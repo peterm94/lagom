@@ -1,4 +1,5 @@
 import * as PIXI from "pixi.js";
+import * as Matter from "matter-js";
 import {Smoothie} from "./Smoothie";
 import {Log, Util} from "./Util";
 
@@ -39,6 +40,7 @@ export class World {
 
     readonly app: PIXI.Application;
     readonly smoothie: Smoothie;
+    readonly matterEngine: Matter.Engine;
     readonly mainTicker: PIXI.ticker.Ticker;
 
     readonly diag: Diag = new Diag();
@@ -56,6 +58,8 @@ export class World {
 
         this.smoothie = new Smoothie(this.app.renderer, this.app.stage,
                                      this.gameLoop.bind(this), true, 144, -1);
+        this.matterEngine = Matter.Engine.create();
+        this.matterEngine.world.gravity.y = 100;
 
         // Set it up in the page
         this.app.renderer.backgroundColor = backgroundCol;
@@ -166,6 +170,9 @@ export class World {
             const timeStart = Date.now();
             // Mouse.update();
             this.diag.inputUpdateTime = Date.now() - timeStart;
+
+            // TODO check the delta here...
+            Matter.Engine.update(this.matterEngine, delta);
 
             this.update(delta);
 
