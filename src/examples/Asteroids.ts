@@ -28,7 +28,7 @@ export class Asteroids {
 
             for (let i = 0; i < 10; i++) {
                 world.addEntity(new Asteroid(Math.random() * world.app.screen.width,
-                                             Math.random() * world.app.screen.height))
+                                             Math.random() * world.app.screen.height, 3))
             }
 
             world.addEntity(new Diagnostics());
@@ -36,6 +36,7 @@ export class Asteroids {
             world.addSystem(new ConstantMover());
             world.addSystem(new ScreenWrapper());
             world.addSystem(new SpriteWrapper());
+            world.addSystem(new AsteroidSplitter());
 
             const collisions = new CollisionMatrix();
             collisions.addCollision(Layers.Bullet, Layers.Asteroid);
@@ -72,19 +73,35 @@ enum Layers {
 }
 
 class Asteroid extends Entity {
+    readonly size: number;
 
-    constructor(x: number, y: number) {
-        super("asteroid_big", x, y);
+    constructor(x: number, y: number, size: number) {
+        super(`asteroid_${size}`, x, y);
         this.transform.rotation = Math.random() * 2 * Math.PI;
         this.layer = Layers.Asteroid;
+        this.size = size;
     }
 
     onAdded() {
         super.onAdded();
-        this.addComponent(new WrapSprite(loader.resources[spr_asteroid].texture)).pixiObj.anchor.set(0.5, 0.5);
+
+        switch (this.size) {
+            case 3:
+                this.addComponent(new WrapSprite(loader.resources[spr_asteroid].texture)).pixiObj.anchor.set(0.5, 0.5);
+                this.addComponent(new CircleCollider(32));
+                break;
+            case 2:
+                this.addComponent(new WrapSprite(loader.resources[spr_asteroid2].texture)).pixiObj.anchor.set(0.5, 0.5);
+                this.addComponent(new CircleCollider(16));
+                break;
+            default:
+                this.addComponent(new WrapSprite(loader.resources[spr_asteroid3].texture)).pixiObj.anchor.set(0.5, 0.5);
+                this.addComponent(new CircleCollider(8));
+                break;
+        }
+
         this.addComponent(new ConstantMotion(Math.random() * 0.4 + 0.1));
         this.addComponent(new ScreenWrap());
-        this.addComponent(new CircleCollider(32));
     }
 }
 
@@ -103,10 +120,11 @@ class Bullet extends Entity {
     }
 
     private static onHit(caller: Collider, other: Collider) {
-        Log.trace("COLLISION", caller, other);
         if (other.entity instanceof Asteroid) {
             // @ts-ignore
             caller.entity.destroy();
+            // @ts-ignore
+            other.entity.addComponent(new Split());
         }
     }
 }
@@ -145,7 +163,26 @@ class WrapSprite extends Sprite {
     }
 }
 
+class Split extends Component {
+}
+
 class ScreenWrap extends Component {
+}
+
+class AsteroidSplitter extends System {
+    update(world: World, delta: number, entity: Entity): void {
+        World.runOnEntity((_: Split) => {
+
+            const currSize = (<Asteroid>entity).size;
+
+            if (currSize > 1) {
+                world.addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
+                world.addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
+            }
+            entity.destroy();
+        }, entity, Split);
+    }
+
 }
 
 class ScreenWrapper extends System {
