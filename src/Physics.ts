@@ -9,7 +9,7 @@ export class Rigidbody extends Component {
 
 export abstract class Collider extends PIXIComponent<PIXI.Container> {
 
-    readonly collisionEvent: Observable<Collider> = new Observable();
+    readonly collisionEvent: Observable<Collider, Collider> = new Observable();
 
     protected constructor() {
         super(new PIXI.Container());
@@ -55,14 +55,13 @@ export class CollisionSystem extends WorldSystem {
 
                     // Trigger the collision event, passing through 'other'.
                     if (Collision.checkCollision(c1, c2)) {
-                        c1.collisionEvent.trigger(c2);
-                        c2.collisionEvent.trigger(c1);
+                        c1.collisionEvent.trigger(c1, c2);
+                        c2.collisionEvent.trigger(c2, c1);
                     }
                 }
             }
-        }, entities, Collider as any);
+        }, entities, Collider);
     }
-
 }
 
 export class PhysicsSystem extends WorldSystem {

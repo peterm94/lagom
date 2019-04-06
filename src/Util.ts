@@ -55,3 +55,41 @@ export class MathUtil {
         return length * Math.sin(dir);
     }
 }
+
+enum LogLevel {
+    NONE,
+    ERROR,
+    WARN,
+    INFO,
+    DEBUG,
+    ALL
+}
+
+export class Log {
+    static logLevel: LogLevel = LogLevel.DEBUG;
+
+    static error(...x: any[]) {
+        if (this.logLevel >= LogLevel.ERROR)
+            console.log("%cERROR", 'color: red', ...x);
+    }
+
+    static warn(...x: any[]) {
+        if (this.logLevel >= LogLevel.WARN)
+            console.log("%cWARN ", 'color: orange', ...x);
+    }
+
+    static info(...x: any[]) {
+        if (this.logLevel >= LogLevel.INFO)
+            console.log("%cINFO ", 'color: blue', ...x);
+    }
+
+    static debug(...x: any[]) {
+        if (this.logLevel >= LogLevel.DEBUG)
+            console.log("%cDEBUG", 'color: #6797c2', ...x);
+    }
+
+    static trace(...x: any[]) {
+        if (this.logLevel >= LogLevel.ALL)
+            console.log("%cTRACE", 'color: #65c4ff', ...x);
+    }
+}

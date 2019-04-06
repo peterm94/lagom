@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 import {Smoothie} from "./Smoothie";
-import {Util} from "./Util";
+import {Log, Util} from "./Util";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
 // keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
@@ -21,13 +21,15 @@ export class World {
 
     static instance: World;
 
-    private entitiesInit: Entity[] = [];
-    private entitiesDestroy: Entity[] = [];
-    private systemsInit: System[] = [];
-    private systemsDestroy: System[] = [];
-    private worldSystemsInit: WorldSystem[] = [];
-    private worldSystemsDestroy: WorldSystem[] = [];
+    private entitiesInit: Set<Entity> = new Set();
+    private entitiesDestroy: Set<Entity> = new Set();
+    private systemsInit: Set<System> = new Set();
+    private systemsDestroy: Set<System> = new Set();
+    private worldSystemsInit: Set<WorldSystem> = new Set();
+    private worldSystemsDestroy: Set<WorldSystem> = new Set();
 
+    // TODO can these be sets? need unique, but update order needs to be defined :/ i need a comparator for each
+    // type that can define it's order.
     private readonly entities: Entity[] = [];
     private readonly systems: System[] = [];
     private readonly worldSystems: WorldSystem[] = [];
@@ -75,73 +77,91 @@ export class World {
     }
 
     private addPending() {
-        // TODO I had to copy in my C++ impl because it was multithreaded, maybe not here?
-        for (let entity of this.entitiesInit) {
-            this.entities.push(entity);
-        }
+        // Copy the lists so any new things additions/removals triggered get in for the next frame.
+        const entitiesInit = new Set(this.entitiesInit);
+        const systemsInit = new Set(this.systemsInit);
+        const worldSystemsInit = new Set(this.worldSystemsInit);
 
-        for (let system of this.systemsInit) {
-            this.systems.push(system);
-        }
+        this.entitiesInit.clear();
+        this.systemsInit.clear();
+        this.worldSystemsInit.clear();
 
-        for (let system of this.worldSystemsInit) {
-            this.worldSystems.push(system);
-        }
+        // Add them in
+        entitiesInit.forEach((val) => {
+            this.entities.push(val);
+        });
 
-        for (let entity of this.entitiesInit) {
-            entity.onAdded();
-        }
+        systemsInit.forEach((val) => {
+            this.systems.push(val);
+        });
 
-        for (let system of this.systemsInit) {
-            system.onAdded();
-        }
+        worldSystemsInit.forEach((val) => {
+            this.worldSystems.push(val);
+        });
 
-        for (let system of this.worldSystemsInit) {
-            system.onAdded();
-        }
+        // Trigger the onAdded() function
+        entitiesInit.forEach((val) => {
+            val.onAdded();
+        });
 
-        this.entitiesInit = [];
-        this.systemsInit = [];
-        this.worldSystemsInit = [];
+        systemsInit.forEach((val) => {
+            val.onAdded();
+        });
+
+        worldSystemsInit.forEach((val) => {
+            val.onAdded();
+        });
     }
 
     private removePending() {
-        for (let entity of this.entitiesDestroy) {
-            entity.onRemoved();
-        }
 
-        for (let system of this.systemsDestroy) {
-            system.onRemoved();
-        }
+        // Copy the lists so any new things additions/removals triggered get in for the next frame.
+        const entitiesDestroy = new Set(this.entitiesDestroy);
+        const systemsDestroy = new Set(this.systemsDestroy);
+        const worldSystemsDestroy = new Set(this.worldSystemsDestroy);
 
-        for (let system of this.worldSystemsDestroy) {
-            system.onRemoved();
-        }
+        this.entitiesDestroy.clear();
+        this.systemsDestroy.clear();
+        this.worldSystemsDestroy.clear();
 
-        for (let entity of this.entitiesDestroy) {
-            Util.remove(this.entities, entity);
-        }
 
-        for (let system of this.systemsDestroy) {
-            Util.remove(this.systems, system);
-        }
+        // Trigger the onRemoved() function
+        entitiesDestroy.forEach((val) => {
+            Log.trace("Removing entity:", val);
+            val.onRemoved();
+        });
 
-        for (let system of this.worldSystemsDestroy) {
-            Util.remove(this.worldSystems, system);
-        }
+        systemsDestroy.forEach((val) => {
+            val.onRemoved();
+        });
 
-        this.entitiesDestroy = [];
-        this.systemsDestroy = [];
-        this.worldSystemsDestroy = [];
+        worldSystemsDestroy.forEach((val) => {
+            val.onRemoved();
+        });
+
+
+        // Actually remove them
+        entitiesDestroy.forEach((val) => {
+            Util.remove(this.entities, val);
+        });
+
+        systemsDestroy.forEach((val) => {
+            Util.remove(this.systems, val);
+        });
+
+        worldSystemsDestroy.forEach((val) => {
+            Util.remove(this.worldSystems, val);
+        });
     }
 
     private gameLoop(delta: number) {
 
         // const delta = this.smoothie.dt;
-        this.addPending();
-        this.removePending();
 
         if (!this.gameOver) {
+
+            this.addPending();
+            this.removePending();
 
             const timeStart = Date.now();
             // Mouse.update();
@@ -187,7 +207,7 @@ export class World {
      * @returns The added system.
      */
     addSystem<T extends System>(system: T): T {
-        this.systemsInit.push(system);
+        this.systemsInit.add(system);
         return system;
     }
 
@@ -197,7 +217,7 @@ export class World {
      * @returns The added system.
      */
     addWorldSystem<T extends WorldSystem>(system: T): T {
-        this.worldSystemsInit.push(system);
+        this.worldSystemsInit.add(system);
         return system;
     }
 
@@ -207,7 +227,7 @@ export class World {
      * @returns The added entity.
      */
     addEntity<T extends Entity>(entity: T): T {
-        this.entitiesInit.push(entity);
+        this.entitiesInit.add(entity);
         return entity;
     }
 
@@ -216,7 +236,7 @@ export class World {
      * @param system The system to remove.
      */
     removeSystem(system: System) {
-        this.systemsDestroy.push(system);
+        this.systemsDestroy.add(system);
     }
 
     /**
@@ -224,7 +244,7 @@ export class World {
      * @param system The system to remove.
      */
     removeWorldSystem(system: WorldSystem) {
-        this.worldSystemsDestroy.push(system);
+        this.worldSystemsDestroy.add(system);
     }
 
     /**
@@ -232,7 +252,8 @@ export class World {
      * @param entity The entity to remove.
      */
     removeEntity(entity: Entity) {
-        this.entitiesDestroy.push(entity);
+        Log.trace("Entity removal scheduled for:", entity);
+        this.entitiesDestroy.add(entity);
     }
 
     /**
@@ -332,11 +353,13 @@ export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Compon
     }
 
     onAdded() {
+        super.onAdded();
         if (this.entity != null)
             this.entity.transform.addChild(this.pixiObj);
     }
 
     onRemoved() {
+        super.onRemoved();
         if (this.entity != null)
             this.entity.transform.removeChild(this.pixiObj);
     }
@@ -376,30 +399,44 @@ export abstract class System extends LifecycleObject {
  */
 export class Entity extends LifecycleObject {
 
-    private componentsInit: Component[] = [];
-    private componentsDestroy: Component[] = [];
+    private componentsInit: Set<Component> = new Set();
+    private componentsDestroy: Set<Component> = new Set();
 
     transform: PIXI.Container;
 
     readonly name: string;
     private readonly components: Component[] = [];
 
-    internalUpdate() {
-        for (let component of this.componentsInit) {
-            this.components.push(component);
-        }
-        for (let component of this.componentsInit) {
-            component.onAdded();
-        }
-        this.componentsInit = [];
+    addPending() {
 
-        for (let component of this.componentsDestroy) {
-            component.onRemoved();
-        }
-        for (let component of this.componentsDestroy) {
-            Util.remove(this.components, component);
-        }
-        this.componentsDestroy = [];
+        const componentsInit = new Set(this.componentsInit);
+        this.componentsInit.clear();
+
+        componentsInit.forEach((val) => {
+            this.components.push(val);
+        });
+
+        componentsInit.forEach((val) => {
+            val.onAdded();
+        });
+    }
+
+    removePending() {
+        const componentsDestroy = new Set(this.componentsDestroy);
+        this.componentsDestroy.clear();
+
+        componentsDestroy.forEach((val) => {
+            val.onRemoved();
+        });
+
+        componentsDestroy.forEach((val) => {
+            Util.remove(this.components, val);
+        });
+    }
+
+    internalUpdate() {
+        this.addPending();
+        this.removePending();
     }
 
     /**
@@ -424,7 +461,7 @@ export class Entity extends LifecycleObject {
      * @returns The added component.
      */
     addComponent<T extends Component>(component: T): T {
-        this.componentsInit.push(component);
+        this.componentsInit.add(component);
         component.entity = this;
         return component;
     }
@@ -453,6 +490,23 @@ export class Entity extends LifecycleObject {
      * @param component The component to remove.
      */
     removeComponent(component: Component) {
-        this.componentsDestroy.push(component);
+        Log.trace("Component removal scheduled for:", component);
+        this.componentsDestroy.add(component);
+    }
+
+    onAdded() {
+        super.onAdded();
+        this.addPending();
+    }
+
+    onRemoved() {
+        super.onRemoved();
+        this.removePending();
+    }
+
+    destroy() {
+        Log.trace("Entity destroy() called for:", this);
+        this.components.forEach((val) => this.removeComponent(val));
+        World.instance.removeEntity(this);
     }
 }

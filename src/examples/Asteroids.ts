@@ -4,7 +4,8 @@ import {Diagnostics} from "../Debug";
 import spr_asteroid from './resources/asteroid.png'
 import spr_ship from './resources/ship.png'
 import spr_bullet from './resources/bullet.png'
-import {MathUtil, Util} from "../Util";
+import {Log, MathUtil, Util} from "../Util";
+import {CircleCollider, Collider, CollisionSystem} from "../Physics";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -17,10 +18,7 @@ export class Asteroids {
 
             let world = new World({width: 256, height: 256, resolution: 2}, 0x200140);
 
-            let player = world.addEntity(new Entity("player", 0, 50));
-            player.addComponent(new WrapSprite(loader.resources[spr_ship].texture)).pixiObj.anchor.set(0.5, 0.5);
-            player.addComponent(new PlayerControlled());
-            player.addComponent(new ScreenWrap());
+            world.addEntity(new Ship(world.app.screen.width / 2, world.app.screen.height / 2));
 
             for (let i = 0; i < 10; i++) {
                 world.addEntity(new Asteroid(Math.random() * world.app.screen.width,
@@ -28,13 +26,29 @@ export class Asteroids {
             }
 
             world.addEntity(new Diagnostics());
-
             world.addSystem(new ShipMover());
             world.addSystem(new ConstantMover());
-            world.addSystem(new SpriteWrapper());
             world.addSystem(new ScreenWrapper());
+            world.addSystem(new SpriteWrapper());
+
+            world.addWorldSystem(new CollisionSystem());
+
             world.start();
         });
+    }
+}
+
+class Ship extends Entity {
+
+    constructor(x: number, y: number) {
+        super("ship", x, y);
+    }
+
+    onAdded() {
+        super.onAdded();
+        this.addComponent(new WrapSprite(loader.resources[spr_ship].texture)).pixiObj.anchor.set(0.5, 0.5);
+        this.addComponent(new PlayerControlled());
+        this.addComponent(new ScreenWrap());
     }
 }
 
@@ -48,8 +62,9 @@ class Asteroid extends Entity {
     onAdded() {
         super.onAdded();
         this.addComponent(new WrapSprite(loader.resources[spr_asteroid].texture)).pixiObj.anchor.set(0.5, 0.5);
-        this.addComponent(new ConstantMotion(Math.random() * 0.5));
+        this.addComponent(new ConstantMotion(Math.random() * 0.4 + 0.1));
         this.addComponent(new ScreenWrap());
+        this.addComponent(new CircleCollider(32));
     }
 }
 
@@ -63,6 +78,14 @@ class Bullet extends Entity {
         super.onAdded();
         this.addComponent(new Sprite(loader.resources[spr_bullet].texture)).pixiObj.anchor.set(0.5, 0.5);
         this.addComponent(new ConstantMotion(5));
+        this.addComponent(new CircleCollider(2)).collisionEvent.register(this.onHit);
+    }
+
+    private onHit(caller: Collider, other: Collider) {
+        if (other.entity instanceof Asteroid) {
+            // @ts-ignore
+            caller.entity.destroy();
+        }
     }
 }
 
@@ -71,21 +94,31 @@ class WrapSprite extends Sprite {
     private static count = 0;
     xId: string = `__wrapSprite${++WrapSprite.count}`;
     yId: string = `__wrapSprite${++WrapSprite.count}`;
+    xChild: PIXI.Sprite | null = null;
+    yChild: PIXI.Sprite | null = null;
 
     onAdded(): void {
         super.onAdded();
 
         if (this.entity != null) {
             // Add 2 new sprites that shadow the real one
-            const xChild = new PIXI.Sprite(this.pixiObj.texture);
-            xChild.name = this.xId;
-            xChild.anchor.x = this.pixiObj.anchor.x;
-            xChild.anchor.y = this.pixiObj.anchor.y;
-            const yChild = new PIXI.Sprite(this.pixiObj.texture);
-            yChild.name = this.yId;
-            yChild.anchor.x = this.pixiObj.anchor.x;
-            yChild.anchor.y = this.pixiObj.anchor.y;
-            World.instance.app.stage.addChild(xChild, yChild);
+            this.xChild = new PIXI.Sprite(this.pixiObj.texture);
+            this.xChild.name = this.xId;
+            this.xChild.anchor.x = this.pixiObj.anchor.x;
+            this.xChild.anchor.y = this.pixiObj.anchor.y;
+            this.yChild = new PIXI.Sprite(this.pixiObj.texture);
+            this.yChild.name = this.yId;
+            this.yChild.anchor.x = this.pixiObj.anchor.x;
+            this.yChild.anchor.y = this.pixiObj.anchor.y;
+            World.instance.app.stage.addChild(this.xChild, this.yChild);
+        }
+    }
+
+    onRemoved(): void {
+        super.onRemoved();
+        if (this.xChild != null && this.yChild != null) {
+            World.instance.app.stage.removeChild(this.xChild);
+            World.instance.app.stage.removeChild(this.yChild);
         }
     }
 }
@@ -130,39 +163,6 @@ class SpriteWrapper extends System {
         }, entity, WrapSprite);
     }
 }
-
-// class ScreenWrap extends Component {
-//
-//     onAdded() {
-//         super.onAdded();
-//         if (this.entity != null) {
-//             this.entity.componentAdd.register(this.sprAdded);
-//
-//             // Get any sprite that already exist
-//             for (let spr of this.entity.getComponentsOfType(Sprite)) {
-//                 this.sprAdded(spr);
-//             }
-//         }
-//
-//     }
-//
-//
-//     onRemoved() {
-//         super.onRemoved();
-//         if (this.entity != null)
-//             this.entity.componentAdd.deregister(this.sprAdded);
-//     }
-//
-//     private sprAdded(data: Component) {
-//         // This gets all components, check for Sprite specifically
-//         if (data instanceof Sprite) {
-//             // Create a 'shadow' sprite
-//             const spr = new PIXI.Sprite(data.pixiObj.texture);
-//             spr.anchor.x = data.pixiObj.anchor.x;
-//             spr.anchor.y = data.pixiObj.anchor.y;
-//         }
-//     }
-// }
 
 class ConstantMotion extends Component {
     speed: number;

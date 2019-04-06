@@ -108,8 +108,13 @@ export class Collision {
      * @returns True if the circles collide.
      */
     static checkCollisionCircleCircle(c1: CircleCollider, c2: CircleCollider): boolean {
-        return Collision.distanceSquared(c1.pixiObj.x, c1.pixiObj.y,
-                                         c2.pixiObj.x, c2.pixiObj.y) < c1.radius * c2.radius;
+        // TODO check how offsets work.. i think global handles it but make sure
+        let p1 = c1.pixiObj.getGlobalPosition(undefined, true);
+        let p2 = c2.pixiObj.getGlobalPosition(undefined, true);
+
+        const dst = Collision.distanceSquared(p1.x, p1.y, p2.x, p2.y);
+        const rad = Math.pow(c1.radius + c2.radius, 2);
+        return dst <= rad;
     }
 
     /**

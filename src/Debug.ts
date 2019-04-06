@@ -1,5 +1,7 @@
-import {Component, Entity, System, World} from "./ECS";
+import {Component, Entity, System, World, WorldSystem} from "./ECS";
 import {TextDisp} from "./Components";
+
+const Keyboard = require('pixi.js-keyboard');
 
 /**
  * Entity that adds FPS information to the canvas.
@@ -10,12 +12,21 @@ export class Diagnostics extends Entity {
         super.onAdded();
 
         this.addComponent(new FpsTracker());
-        this.addComponent(new TextDisp("", {fontSize: 5}));
+        this.addComponent(new TextDisp("", {fontSize: 5, fill: "white"}));
         World.instance.addSystem(new FpsUpdater());
+        World.instance.addWorldSystem(new DebugKeys());
     }
 
     constructor() {
         super("diagnostics");
+    }
+}
+
+class DebugKeys extends WorldSystem {
+    update(world: World, delta: number, entities: Entity[]): void {
+        if (Keyboard.isKeyPressed('KeyT')) {
+            console.log(entities.map((e) => e.name));
+        }
     }
 }
 
