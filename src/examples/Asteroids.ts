@@ -7,7 +7,8 @@ import spr_asteroid3 from './resources/asteroid3.png'
 import spr_ship from './resources/ship.png'
 import spr_bullet from './resources/bullet.png'
 import {Log, MathUtil, Util} from "../Util";
-import {CircleCollider, Collider, CollisionMatrix, CollisionSystem} from "../Physics";
+import {CircleCollider, Collider, CollisionMatrix, CollisionSystem} from "../Collision";
+import {BodyType, PhysicsSystem, Rigidbody, Vector} from "../Physics";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -31,13 +32,14 @@ export class Asteroids {
                                              Math.random() * world.app.screen.height, 3))
             }
 
-            world.addEntity(new Diagnostics());
+            world.addEntity(new Diagnostics("white"));
             world.addSystem(new ShipMover());
             world.addSystem(new ConstantMover());
             world.addSystem(new ScreenWrapper());
             world.addSystem(new SpriteWrapper());
             world.addSystem(new AsteroidSplitter());
             world.addSystem(new DestroyOffScreen());
+            world.addSystem(new PhysicsSystem(Vector.zero()));
 
             const collisions = new CollisionMatrix();
             collisions.addCollision(Layers.Bullet, Layers.Asteroid);
@@ -63,6 +65,11 @@ class Ship extends Entity {
         this.addComponent(new WrapSprite(loader.resources[spr_ship].texture)).pixiObj.anchor.set(0.5, 0.5);
         this.addComponent(new PlayerControlled());
         this.addComponent(new ScreenWrap());
+        const body = this.addComponent(new Rigidbody(BodyType.Dynamic));
+
+        // We are in space, but still want to slow a little
+        body.xDrag = 0.010;
+        body.yDrag = 0.010;
     }
 }
 
@@ -271,7 +278,7 @@ class ShipMover extends System {
     private readonly rotSpeed = MathUtil.degToRad(4);
 
     update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity(() => {
+        World.runOnEntity((body: Rigidbody) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
                 entity.transform.rotation -= this.rotSpeed * delta;
@@ -280,12 +287,13 @@ class ShipMover extends System {
                 entity.transform.rotation += this.rotSpeed * delta;
             }
             if (Keyboard.isKeyDown('ArrowUp', 'KeyW')) {
-                Util.move(entity, this.accSpeed * delta);
+                // Util.move(entity, this.accSpeed * delta);
+                body.addForceLocal(new Vector(7, 0));
             }
 
             if (Keyboard.isKeyPressed('Space')) {
                 world.addEntity(new Bullet(entity.transform.x, entity.transform.y, entity.transform.rotation))
             }
-        }, entity, PlayerControlled)
+        }, entity, Rigidbody, PlayerControlled)
     }
 }

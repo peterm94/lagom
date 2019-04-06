@@ -7,18 +7,20 @@ const Keyboard = require('pixi.js-keyboard');
  * Entity that adds FPS information to the canvas.
  */
 export class Diagnostics extends Entity {
+    private readonly textCol: string;
 
     onAdded() {
         super.onAdded();
 
         this.addComponent(new FpsTracker());
-        this.addComponent(new TextDisp("", {fontSize: 5, fill: "white"}));
+        this.addComponent(new TextDisp("", {fontSize: 5, fill: this.textCol}));
         World.instance.addSystem(new FpsUpdater());
         World.instance.addWorldSystem(new DebugKeys());
     }
 
-    constructor() {
+    constructor(textCol: string) {
         super("diagnostics");
+        this.textCol = textCol;
     }
 }
 
