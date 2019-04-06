@@ -4,11 +4,18 @@ import {Component, Entity, System, World} from "../ECS";
 import {Diagnostics} from "../Debug";
 import {Sprite} from "../Components";
 import {BodyType, PhysicsSystem, Rigidbody, Vector} from "../Physics";
-import {BoxCollider} from "../Collision";
+import {BoxCollider, CollisionMatrix, CollisionSystem} from "../Collision";
 
 const Keyboard = require('pixi.js-keyboard');
 
 const loader = PIXI.loader;
+
+
+enum Layers {
+    Default,
+    Solid,
+    Player
+}
 
 
 export class Downshaft {
@@ -26,8 +33,13 @@ export class Downshaft {
                 world.addEntity(new Block(i * 32, 200));
             }
 
+            const collisionMatrix = new CollisionMatrix();
+            collisionMatrix.addCollision(Layers.Solid, Layers.Player);
+
             world.addSystem(new PhysicsSystem());
             world.addSystem(new PlayerMover());
+
+            world.addWorldSystem(new CollisionSystem(collisionMatrix));
 
             world.start();
         })

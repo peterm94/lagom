@@ -85,7 +85,8 @@ export class Collision {
      * @returns True if the point is in the circle.
      */
     static pointInCircle(x: number, y: number, circle: CircleCollider): boolean {
-        return Collision.pointDistance(x, y, circle.pixiObj.x, circle.pixiObj.y) < circle.radius;
+        const cp = circle.pixiObj.getGlobalPosition(undefined, true);
+        return Collision.pointDistance(x, y, cp.x, cp.y) < circle.radius;
     }
 
     /**
@@ -97,7 +98,7 @@ export class Collision {
      */
     static pointInRectangle(x: number, y: number, rect: BoxCollider): boolean {
         // TODO check rotation cases
-        const anchor = rect.pixiObj;
+        const anchor = rect.pixiObj.getGlobalPosition(undefined, true);
 
         return x > anchor.x && x < anchor.x + rect.width &&
                y > anchor.y && y < anchor.y + rect.height;
@@ -127,8 +128,9 @@ export class Collision {
      */
     static checkCollisionBoxBox(box1: BoxCollider, box2: BoxCollider): boolean {
 
-        const anchor1 = box1.pixiObj;
-        const anchor2 = box2.pixiObj;
+        const anchor1 = box1.pixiObj.getGlobalPosition(undefined, true);
+        const anchor2 = box2.pixiObj.getGlobalPosition(undefined, true);
+        ;
 
         // TODO this only works for axis aligned
         const axisAligned = true;
@@ -155,8 +157,10 @@ export class Collision {
     static checkCollisionBoxCircle(box: BoxCollider, circle: CircleCollider): boolean {
 
         // Find the closest point on the box edge to the circle and check the distance.
-        const boxAnchor = box.pixiObj;
-        const circleAnchor = circle.pixiObj;
+        const boxAnchor = box.pixiObj.getGlobalPosition(undefined, true);
+        ;
+        const circleAnchor = circle.pixiObj.getGlobalPosition(undefined, true);
+        ;
         return Collision.distanceSquared(circleAnchor.x, circleAnchor.y,
                                          Math.max(boxAnchor.x, Math.min(circleAnchor.x, boxAnchor.x + box.width)),
                                          Math.max(boxAnchor.y, Math.min(circleAnchor.y, boxAnchor.y + box.height)))

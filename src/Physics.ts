@@ -1,8 +1,8 @@
-import {Component, Entity, System, World} from "./ECS";
+import {Component, Entity, System, World, WorldSystem} from "./ECS";
+import {Collider} from "./Collision";
 
 export enum BodyType {
     Dynamic,
-    Kinematic,
     Static
 }
 
@@ -141,6 +141,12 @@ export class PhysicsSystem extends System {
     }
 
     update(world: World, delta: number, entity: Entity): void {
+
+        /* We need to do 3 things here.
+         - Calculate new positions
+         - Check for collisions
+         - Resolve collisions, bumping things if necessary
+         */
         World.runOnEntity((body: Rigidbody) => {
 
             // Add gravity force if the object is dynamic
