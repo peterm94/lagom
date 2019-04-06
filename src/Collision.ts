@@ -171,9 +171,11 @@ export class Collision {
 export abstract class Collider extends PIXIComponent<PIXI.Container> {
 
     readonly collisionEvent: Observable<Collider, Collider> = new Observable();
+    isTrigger: boolean;
 
-    protected constructor() {
+    protected constructor(trigger: boolean = true) {
         super(new PIXI.Container());
+        this.isTrigger = trigger;
     }
 }
 
@@ -181,8 +183,8 @@ export class BoxCollider extends Collider {
     width: number;
     height: number;
 
-    constructor(width: number, height: number, xoff: number = 0, yoff: number = 0) {
-        super();
+    constructor(width: number, height: number, xoff: number = 0, yoff: number = 0, isTrigger: boolean = true) {
+        super(isTrigger);
         this.width = width;
         this.height = height;
 
@@ -190,16 +192,16 @@ export class BoxCollider extends Collider {
         this.pixiObj.y += yoff;
     }
 
-    static fromSprite(sprite: Sprite, xoff: number = 0, yoff: number = 0): BoxCollider {
-        return new BoxCollider(sprite.pixiObj.width, sprite.pixiObj.height, xoff, yoff);
+    static fromSprite(sprite: Sprite, xoff: number = 0, yoff: number = 0, isTrigger: boolean = true): BoxCollider {
+        return new BoxCollider(sprite.pixiObj.width, sprite.pixiObj.height, xoff, yoff, isTrigger);
     }
 }
 
 export class CircleCollider extends Collider {
     radius: number;
 
-    constructor(radius: number) {
-        super();
+    constructor(radius: number, isTrigger: boolean = true) {
+        super(isTrigger);
         this.radius = radius;
     }
 }

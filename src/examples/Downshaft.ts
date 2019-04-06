@@ -36,10 +36,10 @@ export class Downshaft {
             const collisionMatrix = new CollisionMatrix();
             collisionMatrix.addCollision(Layers.Solid, Layers.Player);
 
-            world.addSystem(new PhysicsSystem());
             world.addSystem(new PlayerMover());
+            world.addWorldSystem(new PhysicsSystem());
 
-            world.addWorldSystem(new CollisionSystem(collisionMatrix));
+            // world.addWorldSystem(new CollisionSystem(collisionMatrix));
 
             world.start();
         })
@@ -81,7 +81,7 @@ class Player extends Entity {
         super.onAdded();
 
         const sprite = this.addComponent(new Sprite(loader.resources[spr_guy].texture));
-        this.addComponent(BoxCollider.fromSprite(sprite));
+        this.addComponent(BoxCollider.fromSprite(sprite, 0, 0, false));
         this.addComponent(new Rigidbody(BodyType.Dynamic));
         this.addComponent(new PlayerControlled());
     }
@@ -96,7 +96,8 @@ class Block extends Entity {
     onAdded(): void {
         super.onAdded();
 
-        this.addComponent(new Sprite(loader.resources[spr_block].texture));
+        const sprite = this.addComponent(new Sprite(loader.resources[spr_block].texture));
         this.addComponent(new Rigidbody(BodyType.Static));
+        this.addComponent(BoxCollider.fromSprite(sprite, 0, 0, false));
     }
 }

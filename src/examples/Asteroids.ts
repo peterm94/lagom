@@ -39,7 +39,7 @@ export class Asteroids {
             world.addSystem(new SpriteWrapper());
             world.addSystem(new AsteroidSplitter());
             world.addSystem(new DestroyOffScreen());
-            world.addSystem(new PhysicsSystem(Vector.zero()));
+            world.addWorldSystem(new PhysicsSystem(Vector.zero()));
 
             const collisions = new CollisionMatrix();
             collisions.addCollision(Layers.Bullet, Layers.Asteroid);
