@@ -37,6 +37,7 @@ export class Asteroids {
             world.addSystem(new ScreenWrapper());
             world.addSystem(new SpriteWrapper());
             world.addSystem(new AsteroidSplitter());
+            world.addSystem(new DestroyOffScreen());
 
             const collisions = new CollisionMatrix();
             collisions.addCollision(Layers.Bullet, Layers.Asteroid);
@@ -117,6 +118,7 @@ class Bullet extends Entity {
         this.addComponent(new Sprite(loader.resources[spr_bullet].texture)).pixiObj.anchor.set(0.5, 0.5);
         this.addComponent(new ConstantMotion(5));
         this.addComponent(new CircleCollider(2)).collisionEvent.register(Bullet.onHit);
+        this.addComponent(new ScreenContained());
     }
 
     private static onHit(caller: Collider, other: Collider) {
@@ -167,6 +169,26 @@ class Split extends Component {
 }
 
 class ScreenWrap extends Component {
+}
+
+class ScreenContained extends Component {
+}
+
+class DestroyOffScreen extends System {
+
+    private readonly tolerance: number = 50;
+
+    update(world: World, delta: number, entity: Entity): void {
+        World.runOnEntity((_: ScreenContained) => {
+            const pos = entity.transform.getGlobalPosition();
+            if (pos.x < -this.tolerance
+                || pos.y < -this.tolerance
+                || pos.x > world.app.screen.width + this.tolerance
+                || pos.y > world.app.screen.height + this.tolerance) {
+                entity.destroy();
+            }
+        }, entity, ScreenContained);
+    }
 }
 
 class AsteroidSplitter extends System {

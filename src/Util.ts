@@ -66,7 +66,7 @@ enum LogLevel {
 }
 
 export class Log {
-    static logLevel: LogLevel = LogLevel.ALL;
+    static logLevel: LogLevel = LogLevel.DEBUG;
 
     static error(...x: any[]) {
         if (this.logLevel >= LogLevel.ERROR)
