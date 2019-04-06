@@ -403,6 +403,7 @@ export class Entity extends LifecycleObject {
     private componentsDestroy: Set<Component> = new Set();
 
     transform: PIXI.Container;
+    layer: number = 0;
 
     readonly name: string;
     private readonly components: Component[] = [];

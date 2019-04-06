@@ -2,10 +2,12 @@ import {Component, Entity, System, World} from "../ECS";
 import {Sprite} from "../Components";
 import {Diagnostics} from "../Debug";
 import spr_asteroid from './resources/asteroid.png'
+import spr_asteroid2 from './resources/asteroid2.png'
+import spr_asteroid3 from './resources/asteroid3.png'
 import spr_ship from './resources/ship.png'
 import spr_bullet from './resources/bullet.png'
 import {Log, MathUtil, Util} from "../Util";
-import {CircleCollider, Collider, CollisionSystem} from "../Physics";
+import {CircleCollider, Collider, CollisionMatrix, CollisionSystem} from "../Physics";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -14,7 +16,11 @@ const loader = PIXI.loader;
 export class Asteroids {
     constructor() {
 
-        loader.add([spr_asteroid, spr_ship, spr_bullet]).load(() => {
+        loader.add([spr_asteroid,
+                    spr_asteroid2,
+                    spr_asteroid3,
+                    spr_ship,
+                    spr_bullet]).load(() => {
 
             let world = new World({width: 256, height: 256, resolution: 2}, 0x200140);
 
@@ -31,7 +37,12 @@ export class Asteroids {
             world.addSystem(new ScreenWrapper());
             world.addSystem(new SpriteWrapper());
 
-            world.addWorldSystem(new CollisionSystem());
+            const collisions = new CollisionMatrix();
+            collisions.addCollision(Layers.Bullet, Layers.Asteroid);
+
+            Log.debug(collisions);
+
+            world.addWorldSystem(new CollisionSystem(collisions));
 
             world.start();
         });
@@ -42,6 +53,7 @@ class Ship extends Entity {
 
     constructor(x: number, y: number) {
         super("ship", x, y);
+        this.layer = Layers.Ship;
     }
 
     onAdded() {
@@ -52,11 +64,19 @@ class Ship extends Entity {
     }
 }
 
+enum Layers {
+    Default,
+    Bullet,
+    Ship,
+    Asteroid
+}
+
 class Asteroid extends Entity {
 
     constructor(x: number, y: number) {
         super("asteroid_big", x, y);
         this.transform.rotation = Math.random() * 2 * Math.PI;
+        this.layer = Layers.Asteroid;
     }
 
     onAdded() {
@@ -72,16 +92,18 @@ class Bullet extends Entity {
     constructor(x: number, y: number, dir: number) {
         super("bullet", x, y);
         this.transform.rotation = dir;
+        this.layer = Layers.Bullet;
     }
 
     onAdded() {
         super.onAdded();
         this.addComponent(new Sprite(loader.resources[spr_bullet].texture)).pixiObj.anchor.set(0.5, 0.5);
         this.addComponent(new ConstantMotion(5));
-        this.addComponent(new CircleCollider(2)).collisionEvent.register(this.onHit);
+        this.addComponent(new CircleCollider(2)).collisionEvent.register(Bullet.onHit);
     }
 
-    private onHit(caller: Collider, other: Collider) {
+    private static onHit(caller: Collider, other: Collider) {
+        Log.trace("COLLISION", caller, other);
         if (other.entity instanceof Asteroid) {
             // @ts-ignore
             caller.entity.destroy();
