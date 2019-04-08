@@ -5,6 +5,7 @@ import {Diagnostics} from "../Debug";
 import {Sprite} from "../Components";
 import {MatterEngine, MCollider} from "../MatterPhysics";
 import * as Matter from "matter-js";
+import {Vector} from "matter-js";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -23,7 +24,7 @@ export class Downshaft {
 
         loader.add([spr_block, spr_guy]).load(() => {
 
-            let world = new World({width: 256, height: 256, resolution: 2}, 0xA1B1A1);
+            let world = new World({width: 512, height: 512, resolution: 1}, 0xA1B1A1);
 
             world.addEntity(new Diagnostics("white"));
 
@@ -34,7 +35,7 @@ export class Downshaft {
             }
 
             world.addSystem(new PlayerMover());
-            world.addSystem(new MatterEngine());
+            world.addWorldSystem(new MatterEngine(Vector.create(0, 1)));
 
             world.start();
         })
@@ -48,16 +49,18 @@ class PlayerControlled extends Component {
 class PlayerMover extends System {
 
     private readonly moveForce = 3;
-    private readonly jumpForce = -0.5;
+    private readonly jumpForce = -0.01;
 
     update(world: World, delta: number, entity: Entity): void {
         World.runOnEntity((collider: MCollider) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
-                Matter.Body.translate(collider.body, {x: -this.moveForce, y: 0});
+                // Matter.Body.translate(collider.body, {x: -this.moveForce, y: 0});
+                Matter.Body.rotate(collider.body, -0.1);
             }
             if (Keyboard.isKeyDown('ArrowRight', 'KeyD')) {
-                Matter.Body.translate(collider.body, {x: this.moveForce, y: 0});
+                // Matter.Body.translate(collider.body, {x: this.moveForce, y: 0});
+                Matter.Body.rotate(collider.body, 0.1);
             }
             if (Keyboard.isKeyPressed('Space')) {
                 Matter.Body.applyForce(collider.body, {

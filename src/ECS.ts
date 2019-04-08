@@ -40,7 +40,6 @@ export class World {
 
     readonly app: PIXI.Application;
     readonly smoothie: Smoothie;
-    readonly matterEngine: Matter.Engine;
     readonly mainTicker: PIXI.ticker.Ticker;
 
     readonly diag: Diag = new Diag();
@@ -58,8 +57,6 @@ export class World {
 
         this.smoothie = new Smoothie(this.app.renderer, this.app.stage,
                                      this.gameLoop.bind(this), true, 144, -1);
-        this.matterEngine = Matter.Engine.create();
-        this.matterEngine.world.gravity.y = 100;
 
         // Set it up in the page
         this.app.renderer.backgroundColor = backgroundCol;
@@ -90,6 +87,10 @@ export class World {
         this.systemsInit.clear();
         this.worldSystemsInit.clear();
 
+        worldSystemsInit.forEach((val) => {
+            this.worldSystems.push(val);
+        });
+
         // Add them in
         entitiesInit.forEach((val) => {
             this.entities.push(val);
@@ -100,7 +101,7 @@ export class World {
         });
 
         worldSystemsInit.forEach((val) => {
-            this.worldSystems.push(val);
+            val.onAdded();
         });
 
         // Trigger the onAdded() function
@@ -112,9 +113,7 @@ export class World {
             val.onAdded();
         });
 
-        worldSystemsInit.forEach((val) => {
-            val.onAdded();
-        });
+
     }
 
     private removePending() {
@@ -160,8 +159,6 @@ export class World {
 
     private gameLoop(delta: number) {
 
-        // const delta = this.smoothie.dt;
-
         if (!this.gameOver) {
 
             this.addPending();
@@ -170,9 +167,6 @@ export class World {
             const timeStart = Date.now();
             // Mouse.update();
             this.diag.inputUpdateTime = Date.now() - timeStart;
-
-            // TODO check the delta here...
-            Matter.Engine.update(this.matterEngine, delta);
 
             this.update(delta);
 
@@ -184,20 +178,16 @@ export class World {
     }
 
     private update(delta: number) {
-        let timeStart = Date.now();
-
-        // Update entities
-        for (let entity of this.entities) {
-            entity.internalUpdate();
-        }
 
         // Update world systems
         for (let system of this.worldSystems) {
             system.update(this, delta, this.entities);
         }
 
-        this.diag.worldSystemUpdateTime = Date.now() - timeStart;
-        timeStart = Date.now();
+        // Update entities
+        for (let entity of this.entities) {
+            entity.internalUpdate();
+        }
 
         // Update normal systems
         for (let system of this.systems) {
@@ -205,7 +195,6 @@ export class World {
                 system.update(this, delta, entity);
             }
         }
-        this.diag.systemUpdateTime = Date.now() - timeStart;
     }
 
     /**
@@ -262,6 +251,22 @@ export class World {
         Log.trace("Entity removal scheduled for:", entity);
         this.entitiesDestroy.add(entity);
     }
+
+    getSystem<T extends System>(type: any | { new(): T }): T | null {
+        const found = this.systems.find(value => value instanceof type);
+        return found != undefined ? found as T : null;
+    }
+
+    getWorldSystem<T extends WorldSystem>(type: any | { new(): T }): T | null {
+        const found = this.worldSystems.find(value => value instanceof type);
+        return found != undefined ? found as T : null;
+    }
+
+    getEntityWithName<T extends Entity>(name: string): T | null {
+        const found = this.entities.find(value => value.name === name);
+        return found != undefined ? found as T : null;
+    }
+
 
     /**
      * Utility function to run on all entities that match the specified type string. This will not run if all types are

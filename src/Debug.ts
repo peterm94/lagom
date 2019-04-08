@@ -39,9 +39,10 @@ class FpsUpdater extends System {
 
     lastFpsAvg: number = 1;
     lastDtAvg: number = 1;
-    samples: number = 100;
+    lastMsAvg: number = 1;
 
-    printFrame: number = 1;
+    samples: number = 100;
+    printFrame: number = 3;
     frameCount: number = 0;
 
     constructor() {
@@ -54,12 +55,17 @@ class FpsUpdater extends System {
         this.lastFpsAvg = fpsAvg;
         const dtAvg = this.lastDtAvg * (this.samples - 1) / this.samples + world.mainTicker.deltaTime / this.samples;
         this.lastDtAvg = dtAvg;
+        const msAvg = this.lastMsAvg * (this.samples - 1) / this.samples + world.mainTicker.elapsedMS / this.samples;
+        this.lastMsAvg = msAvg;
 
         this.frameCount++;
-        if (this.frameCount % this.printFrame === 0) {
+        if ((this.frameCount % this.printFrame) === 0) {
             World.runOnEntity((_: FpsTracker, text: TextDisp) => {
                 // text.pixiObj.text = world.app.ticker.FPS.toString();
-                text.pixiObj.text = `FPS: ${fpsAvg.toFixed(2)}\tdt:${dtAvg.toFixed(2)}\tscale: ${world.mainTicker.speed}`;
+                text.pixiObj.text = `FPS: ${fpsAvg.toFixed(2)}` +
+                                    `\tdt:${dtAvg.toFixed(2)}` +
+                                    `\tscale: ${world.mainTicker.speed}` +
+                                    `\telapsed:${msAvg.toFixed(2)}`;
                 // text.pixiObj.text += `\ninputTime: ${world.diag.inputUpdateTime.toFixed(2)}\tsysUpdateTime:
                 // ${world.diag.systemUpdateTime.toFixed(2)}\tworldSysUpdateTime:
                 // ${world.diag.worldSystemUpdateTime.toFixed(2)}`
