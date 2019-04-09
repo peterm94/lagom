@@ -515,6 +515,9 @@ export class Entity extends LifecycleObject {
     onRemoved() {
         super.onRemoved();
         this.removePending();
+
+        // Remove the entire PIXI container
+        World.instance.app.stage.removeChild(this.transform);
     }
 
     destroy() {

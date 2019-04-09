@@ -13,7 +13,7 @@ export class Diagnostics extends Entity {
         super.onAdded();
 
         this.addComponent(new FpsTracker());
-        this.addComponent(new TextDisp("", {fontSize: 5, fill: this.textCol}));
+        this.addComponent(new TextDisp("", {fontSize: 10, fill: this.textCol}));
         World.instance.addSystem(new FpsUpdater());
         World.instance.addWorldSystem(new DebugKeys());
     }
