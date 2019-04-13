@@ -278,7 +278,7 @@ class ShipMover extends System {
     update(world: World, delta: number, entity: Entity): void {
         World.runOnEntity((body: Rigidbody) => {
 
-            if (Keyboard.isKeyDown('ArrawowLeft', 'KeyA')) {
+            if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
                 entity.transform.rotation -= this.rotSpeed * delta;
             }
             if (Keyboard.isKeyDown('ArrowRight', 'KeyD')) {

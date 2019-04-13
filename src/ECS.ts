@@ -170,7 +170,7 @@ export class World {
 
             // We will be using the elapsed milliseconds as the delta.
             // The deltaTime property is kinda wacky
-            this.updateECS(this.mainTicker.elapsedMS);
+            this.updateECS(this.mainTicker.elapsedMS * this.mainTicker.deltaTime);
 
             Keyboard.update();
 
