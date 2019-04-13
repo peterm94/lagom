@@ -122,7 +122,7 @@ class FollowCamera extends System {
     update(world: World, delta: number, entity: Entity): void {
         World.runOnEntity(() => {
 
-            const worldPos = world.app.stage.position;
+            const worldPos = world.sceneNode.position;
             const midX = world.app.view.width / 2 - worldPos.x;
             const midY = world.app.view.height / 2 - worldPos.y;
 

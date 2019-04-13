@@ -1,4 +1,4 @@
-import {Component, Entity, System, World, WorldSystem} from "./ECS";
+import {Component, Entity, GUIEntity, System, World, WorldSystem} from "./ECS";
 import {TextDisp} from "./Components";
 
 const Keyboard = require('pixi.js-keyboard');
@@ -6,7 +6,7 @@ const Keyboard = require('pixi.js-keyboard');
 /**
  * Entity that adds FPS information to the canvas.
  */
-export class Diagnostics extends Entity {
+export class Diagnostics extends GUIEntity {
     private readonly textCol: string;
 
     onAdded() {

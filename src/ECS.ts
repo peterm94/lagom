@@ -39,6 +39,8 @@ export class World {
     gameOver: boolean = false;
 
     readonly app: PIXI.Application;
+    readonly sceneNode: PIXI.Container;
+    readonly guiNode: PIXI.Container;
     readonly smoothie: Smoothie;
     readonly mainTicker: PIXI.ticker.Ticker;
 
@@ -61,6 +63,13 @@ export class World {
         // Set it up in the page
         this.app.renderer.backgroundColor = backgroundCol;
         document.body.appendChild(this.app.view);
+
+        // set up the nodes for the ECS to interact with and add them to PIXI.
+        this.sceneNode = new PIXI.Container();
+        this.sceneNode.name = "scene";
+        this.guiNode = new PIXI.Container();
+        this.guiNode.name = "gui";
+        this.app.stage.addChild(this.sceneNode, this.guiNode);
 
         this.mainTicker = this.app.ticker.add(delta => {
             return this.gameLoop(delta);
@@ -467,7 +476,15 @@ export class Entity extends LifecycleObject {
         this.transform = new PIXI.Container();
         this.transform.x = x;
         this.transform.y = y;
-        World.instance.app.stage.addChild(this.transform);
+        this.addToScene();
+    }
+
+    protected addToScene() {
+        World.instance.sceneNode.addChild(this.transform);
+    }
+
+    protected removeFromScene() {
+        World.instance.sceneNode.removeChild(this.transform);
     }
 
     /**
@@ -519,12 +536,27 @@ export class Entity extends LifecycleObject {
         this.removePending();
 
         // Remove the entire PIXI container
-        World.instance.app.stage.removeChild(this.transform);
+        this.removeFromScene()
     }
 
     destroy() {
         Log.trace("Entity destroy() called for:", this);
         this.components.forEach((val) => this.removeComponent(val));
         World.instance.removeEntity(this);
+    }
+}
+
+/**
+ * Entity type that is not tied to a 'world' object. Positions etc. will remain fixed and not move with the viewport
+ * position. Use this to render to absolute positions on the canvas (e.g. GUI text).
+ */
+export class GUIEntity extends Entity {
+    protected addToScene(): void {
+        // Override addToScene(), add to the GUI node instead of the normal node. This will not move with the camera.
+        World.instance.guiNode.addChild(this.transform);
+    }
+
+    protected removeFromScene(): void {
+        World.instance.guiNode.removeChild(this.transform);
     }
 }

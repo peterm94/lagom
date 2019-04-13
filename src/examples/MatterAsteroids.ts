@@ -171,15 +171,15 @@ class WrapSprite extends Sprite {
             this.yChild.name = this.yId;
             this.yChild.anchor.x = this.pixiObj.anchor.x;
             this.yChild.anchor.y = this.pixiObj.anchor.y;
-            World.instance.app.stage.addChild(this.xChild, this.yChild);
+            World.instance.sceneNode.addChild(this.xChild, this.yChild);
         }
     }
 
     onRemoved(): void {
         super.onRemoved();
         if (this.xChild != null && this.yChild != null) {
-            World.instance.app.stage.removeChild(this.xChild);
-            World.instance.app.stage.removeChild(this.yChild);
+            World.instance.sceneNode.removeChild(this.xChild);
+            World.instance.sceneNode.removeChild(this.yChild);
         }
     }
 }
@@ -242,8 +242,8 @@ class SpriteWrapper extends System {
     update(world: World, delta: number, entity: Entity): void {
         World.runOnEntity((sprite: WrapSprite) => {
 
-            const xChild = world.app.stage.getChildByName(sprite.xId);
-            const yChild = world.app.stage.getChildByName(sprite.yId);
+            const xChild = world.sceneNode.getChildByName(sprite.xId);
+            const yChild = world.sceneNode.getChildByName(sprite.yId);
 
             xChild.rotation = entity.transform.rotation;
             yChild.rotation = entity.transform.rotation;
