@@ -108,7 +108,7 @@ class Asteroid extends Entity {
                 break;
         }
 
-        this.addComponent(new ConstantMotion(Math.random() * 0.4 + 0.1));
+        this.addComponent(new ConstantMotion(Math.random() * 0.04 + 0.1));
         this.addComponent(new ScreenWrap());
     }
 }
@@ -122,17 +122,15 @@ class Bullet extends Entity {
 
     onAdded() {
         super.onAdded();
-        this.addComponent(new Sprite(loader.resources[spr_bullet].texture)).pixiObj.anchor.set(0.5, 0.5);
-        this.addComponent(new ConstantMotion(5));
+        this.addComponent(new Sprite(loader.resources[spr_bullet].texture));
+        this.addComponent(new ConstantMotion(0.5));
         this.addComponent(new CircleCollider(2)).collisionEvent.register(Bullet.onHit);
         this.addComponent(new ScreenContained());
     }
 
     private static onHit(caller: Collider, other: Collider) {
-        if (other.entity instanceof Asteroid) {
-            // @ts-ignore
+        if (caller.entity && other.entity instanceof Asteroid) {
             caller.entity.destroy();
-            // @ts-ignore
             other.entity.addComponent(new Split());
         }
     }
@@ -186,7 +184,7 @@ class DestroyOffScreen extends System {
     private readonly tolerance: number = 50;
 
     update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((_: ScreenContained) => {
+        World.runOnEntity(() => {
             const pos = entity.transform.getGlobalPosition();
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
@@ -200,7 +198,7 @@ class DestroyOffScreen extends System {
 
 class AsteroidSplitter extends System {
     update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((_: Split) => {
+        World.runOnEntity(() => {
 
             const currSize = (<Asteroid>entity).size;
 
@@ -274,13 +272,13 @@ class PlayerControlled extends Component {
 
 class ShipMover extends System {
 
-    private readonly accSpeed = 2;
-    private readonly rotSpeed = MathUtil.degToRad(4);
+    private readonly accSpeed = 0.325;
+    private readonly rotSpeed = MathUtil.degToRad(0.2);
 
     update(world: World, delta: number, entity: Entity): void {
         World.runOnEntity((body: Rigidbody) => {
 
-            if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
+            if (Keyboard.isKeyDown('ArrawowLeft', 'KeyA')) {
                 entity.transform.rotation -= this.rotSpeed * delta;
             }
             if (Keyboard.isKeyDown('ArrowRight', 'KeyD')) {
@@ -288,7 +286,7 @@ class ShipMover extends System {
             }
             if (Keyboard.isKeyDown('ArrowUp', 'KeyW')) {
                 // Util.move(entity, this.accSpeed * delta);
-                body.addForceLocal(new Vector(7, 0));
+                body.addForceLocal(new Vector(this.accSpeed, 0));
             }
 
             if (Keyboard.isKeyPressed('Space')) {

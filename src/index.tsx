@@ -16,7 +16,7 @@ switch(window.location.search.substr(1).toLowerCase())
         break;
     case "matter":
         new MatterAsteroids();
-        break
+        break;
     default:
         new Asteroids();
 }

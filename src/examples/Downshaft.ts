@@ -82,8 +82,6 @@ class Player extends Entity {
         super.onAdded();
 
         const sprite = this.addComponent(new Sprite(loader.resources[spr_guy].texture));
-        // TODO
-        // https://github.com/liabru/matter-js/blob/7894b4b44d41077200cfe209c01b35b595db90f4/src/render/RenderPixi.js
         this.addComponent(new PlayerControlled());
         this.addComponent(new MCollider(Matter.Bodies.rectangle(0, 0, sprite.pixiObj.width,
                                                                 sprite.pixiObj.height)))

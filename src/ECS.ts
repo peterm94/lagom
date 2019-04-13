@@ -168,7 +168,9 @@ export class World {
             // Mouse.update();
             this.diag.inputUpdateTime = Date.now() - timeStart;
 
-            this.update(delta);
+            // We will be using the elapsed milliseconds as the delta.
+            // The deltaTime property is kinda wacky
+            this.updateECS(this.mainTicker.elapsedMS);
 
             Keyboard.update();
 
@@ -177,7 +179,7 @@ export class World {
         }
     }
 
-    private update(delta: number) {
+    private updateECS(delta: number) {
 
         // Update world systems
         for (let system of this.worldSystems) {
