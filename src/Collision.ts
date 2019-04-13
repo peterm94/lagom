@@ -1,6 +1,7 @@
 import {Entity, PIXIComponent, World, WorldSystem} from "./ECS";
 import {Observable} from "./Observer";
 import {Sprite} from "./Components";
+import {MathUtil} from "./Util";
 
 /**
  * Collection of collision detection functions and utilities.
@@ -32,30 +33,6 @@ export class Collision {
     }
 
     /**
-     * Return the distance between two points.
-     * @param x1 First point x.
-     * @param y1 First point y.
-     * @param x2 Second point x.
-     * @param y2 Second point y.
-     * @returns The distance between the provided points.
-     */
-    static pointDistance(x1: number, y1: number, x2: number, y2: number): number {
-        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
-    }
-
-    /**
-     * Distance squared between two sets of points.
-     * @param x1 Point 1 x.
-     * @param y1 Point 1 u.
-     * @param x2 Point 2 x.
-     * @param y2 Point 1 y.
-     * @returns The distance squared.
-     */
-    static distanceSquared(x1: number, y1: number, x2: number, y2: number): number {
-        return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
-    }
-
-    /**
      * Check if a point is on a given line.
      * @param px Point x.
      * @param py Point y.
@@ -69,9 +46,9 @@ export class Collision {
     static pointOnLine(px: number, py: number, x1: number, y1: number, x2: number, y2: number,
                        tolerance: number = 0.1): boolean {
         // Distance from each end to the point
-        const d1 = Collision.pointDistance(px, py, x1, y1);
-        const d2 = Collision.pointDistance(px, py, x2, y2);
-        const lineLength = Collision.pointDistance(x1, y1, x2, y2);
+        const d1 = MathUtil.pointDistance(px, py, x1, y1);
+        const d2 = MathUtil.pointDistance(px, py, x2, y2);
+        const lineLength = MathUtil.pointDistance(x1, y1, x2, y2);
 
         // If the sum of d1 and d2 is equal to the line length (with some tolerance), the point is on the line.
         return d1 + d2 >= lineLength - tolerance && d1 + d2 <= lineLength + tolerance;
@@ -86,7 +63,7 @@ export class Collision {
      */
     static pointInCircle(x: number, y: number, circle: CircleCollider): boolean {
         const cp = circle.pixiObj.getGlobalPosition(undefined, true);
-        return Collision.pointDistance(x, y, cp.x, cp.y) < circle.radius;
+        return MathUtil.pointDistance(x, y, cp.x, cp.y) < circle.radius;
     }
 
     /**
@@ -115,7 +92,7 @@ export class Collision {
         let p1 = c1.pixiObj.getGlobalPosition(undefined, true);
         let p2 = c2.pixiObj.getGlobalPosition(undefined, true);
 
-        const dst = Collision.distanceSquared(p1.x, p1.y, p2.x, p2.y);
+        const dst = MathUtil.distanceSquared(p1.x, p1.y, p2.x, p2.y);
         const rad = Math.pow(c1.radius + c2.radius, 2);
         return dst <= rad;
     }
@@ -130,7 +107,7 @@ export class Collision {
 
         const anchor1 = box1.pixiObj.getGlobalPosition(undefined, true);
         const anchor2 = box2.pixiObj.getGlobalPosition(undefined, true);
-        ;
+
 
         // TODO this only works for axis aligned
         const axisAligned = true;
@@ -158,12 +135,11 @@ export class Collision {
 
         // Find the closest point on the box edge to the circle and check the distance.
         const boxAnchor = box.pixiObj.getGlobalPosition(undefined, true);
-        ;
         const circleAnchor = circle.pixiObj.getGlobalPosition(undefined, true);
-        ;
-        return Collision.distanceSquared(circleAnchor.x, circleAnchor.y,
-                                         Math.max(boxAnchor.x, Math.min(circleAnchor.x, boxAnchor.x + box.width)),
-                                         Math.max(boxAnchor.y, Math.min(circleAnchor.y, boxAnchor.y + box.height)))
+
+        return MathUtil.distanceSquared(circleAnchor.x, circleAnchor.y,
+                                        Math.max(boxAnchor.x, Math.min(circleAnchor.x, boxAnchor.x + box.width)),
+                                        Math.max(boxAnchor.y, Math.min(circleAnchor.y, boxAnchor.y + box.height)))
                < circle.radius * circle.radius;
     }
 }

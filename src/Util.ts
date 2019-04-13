@@ -54,6 +54,43 @@ export class MathUtil {
     static lengthDirY(length: number, dir: number): number {
         return length * Math.sin(dir);
     }
+
+    /**
+     * Return the distance between two points.
+     * @param x1 First point x.
+     * @param y1 First point y.
+     * @param x2 Second point x.
+     * @param y2 Second point y.
+     * @returns The distance between the provided points.
+     */
+    static pointDistance(x1: number, y1: number, x2: number, y2: number): number {
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
+    }
+
+    /**
+     * Distance squared between two sets of points.
+     * @param x1 Point 1 x.
+     * @param y1 Point 1 y.
+     * @param x2 Point 2 x.
+     * @param y2 Point 2 y.
+     * @returns The distance squared.
+     */
+    static distanceSquared(x1: number, y1: number, x2: number, y2: number): number {
+        return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+    }
+
+    /**
+     * Calculate the direction of a vector descibed by two points on the line.
+     * @param x1 Point 1 x.
+     * @param y1 Point 1 y.
+     * @param x2 Point 2 x.
+     * @param y2 Point 2 y.
+     * @returns The direction between two points in radians.
+     */
+    static pointDirection(x1: number, y1: number, x2: number, y2: number): number {
+        // trig, tan = O(y)/A(x)
+        return -Math.atan2((y2 - y1), (x2 - x1));
+    }
 }
 
 enum LogLevel {

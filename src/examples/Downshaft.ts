@@ -6,6 +6,7 @@ import {Sprite} from "../Components";
 import {MatterEngine, MCollider} from "../MatterPhysics";
 import * as Matter from "matter-js";
 import {Vector} from "matter-js";
+import {Log, MathUtil} from "../Util";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -30,18 +31,21 @@ export class Downshaft {
 
             world.addEntity(new Player(128, 50));
 
-            for (let i = 0; i < 8; i++) {
-                world.addEntity(new Block(i * 32, 200));
+            // Make the vertical walls
+            const height = 250;
+            for (let i = 0; i < height; i++) {
+                world.addEntity(new Block(96, i * 32));
+                world.addEntity(new Block(416, i * 32));
             }
 
             world.addSystem(new PlayerMover());
+            world.addSystem(new FollowCamera());
             world.addWorldSystem(new MatterEngine(Vector.create(0, 1)));
 
             world.start();
         })
     }
 }
-
 
 class PlayerControlled extends Component {
 }
@@ -55,12 +59,10 @@ class PlayerMover extends System {
         World.runOnEntity((collider: MCollider) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
-                // Matter.Body.translate(collider.body, {x: -this.moveForce, y: 0});
-                Matter.Body.rotate(collider.body, -0.1);
+                Matter.Body.translate(collider.body, {x: -this.moveForce, y: 0});
             }
             if (Keyboard.isKeyDown('ArrowRight', 'KeyD')) {
-                // Matter.Body.translate(collider.body, {x: this.moveForce, y: 0});
-                Matter.Body.rotate(collider.body, 0.1);
+                Matter.Body.translate(collider.body, {x: this.moveForce, y: 0});
             }
             if (Keyboard.isKeyPressed('Space')) {
                 Matter.Body.applyForce(collider.body, {
@@ -68,8 +70,15 @@ class PlayerMover extends System {
                     y: collider.body.position.y
                 }, {x: 0, y: this.jumpForce});
             }
+
+            // Reset rotation, we don't want to fall over
+            Matter.Body.setAngle(collider.body, 0);
+
         }, entity, MCollider, PlayerControlled)
     }
+}
+
+class FollowMe extends Component {
 }
 
 class Player extends Entity {
@@ -84,7 +93,8 @@ class Player extends Entity {
         const sprite = this.addComponent(new Sprite(loader.resources[spr_guy].texture));
         this.addComponent(new PlayerControlled());
         this.addComponent(new MCollider(Matter.Bodies.rectangle(0, 0, sprite.pixiObj.width,
-                                                                sprite.pixiObj.height)))
+                                                                sprite.pixiObj.height)));
+        this.addComponent(new FollowMe());
     }
 }
 
@@ -100,5 +110,29 @@ class Block extends Entity {
         const sprite = this.addComponent(new Sprite(loader.resources[spr_block].texture));
         this.addComponent(new MCollider(Matter.Bodies.rectangle(0, 0, sprite.pixiObj.width,
                                                                 sprite.pixiObj.height, {isStatic: true})));
+    }
+}
+
+class FollowCamera extends System {
+
+    xPad = 150;
+    yPad = 150;
+    mSpeed = 0.1;
+
+    update(world: World, delta: number, entity: Entity): void {
+        World.runOnEntity(() => {
+
+            const worldPos = world.app.stage.position;
+            const midX = world.app.view.width / 2 - worldPos.x;
+            const midY = world.app.view.height / 2 - worldPos.y;
+
+            const dx = midX - entity.transform.x;
+            const dy = midY - entity.transform.y;
+
+            worldPos.x += Math.min(dx, this.mSpeed * delta);
+            worldPos.y += Math.min(dy, this.mSpeed * delta);
+
+
+        }, entity, FollowMe);
     }
 }
