@@ -197,8 +197,12 @@ class DestroyOffScreen extends System {
 
     private readonly tolerance: number = 50;
 
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((_: ScreenContained) => {
+    types(): { new(): Component }[] | any[] {
+        return [ScreenContained];
+    }
+
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity) => {
             const pos = entity.transform.getGlobalPosition();
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
@@ -206,14 +210,17 @@ class DestroyOffScreen extends System {
                 || pos.y > world.app.screen.height + this.tolerance) {
                 entity.destroy();
             }
-        }, entity, ScreenContained);
+        })
     }
 }
 
 class AsteroidSplitter extends System {
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((_: Split) => {
+    types(): { new(): Component }[] | any[] {
+        return [Split];
+    }
 
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity) => {
             const currSize = (<Asteroid>entity).size;
 
             if (currSize > 1) {
@@ -221,29 +228,39 @@ class AsteroidSplitter extends System {
                 world.addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
             }
             entity.destroy();
-        }, entity, Split);
+        })
     }
 }
 
 class ScreenWrapper extends System {
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((collider: MCollider) => {
+    types(): { new(): Component }[] | any[] {
+        return [MCollider, ScreenWrap];
+    }
 
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity, collider: MCollider) => {
             Matter.Body.setPosition(
                 collider.body,
                 Matter.Vector.create((collider.body.position.x + world.app.screen.width) % world.app.screen.width,
                                      (collider.body.position.y + world.app.screen.height) % world.app.screen.height))
-
-        }, entity, MCollider, ScreenWrap);
+        })
     }
 }
 
 class SpriteWrapper extends System {
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((sprite: WrapSprite) => {
+    types(): { new(): Component }[] | any[] {
+        return [WrapSprite];
+    }
 
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity, sprite: WrapSprite) => {
             const xChild = world.sceneNode.getChildByName(sprite.xId);
             const yChild = world.sceneNode.getChildByName(sprite.yId);
+
+            if (!xChild)
+            {
+                Log.warn("HOW")
+            }
 
             xChild.rotation = entity.transform.rotation;
             yChild.rotation = entity.transform.rotation;
@@ -261,7 +278,7 @@ class SpriteWrapper extends System {
             } else {
                 yChild.position.y = entity.transform.position.y + world.app.screen.height;
             }
-        }, entity, WrapSprite);
+        })
     }
 }
 
@@ -275,16 +292,21 @@ class ConstantMotion extends Component {
 }
 
 class ConstantMover extends System {
-    update(world: World, delta: number, entity: Entity): void {
+
+    types(): { new(): Component }[] | any[] {
+        return [ConstantMotion, MCollider];
+    }
+
+    update(world: World, delta: number): void {
         const ddelta = world.mainTicker.elapsedMS;
 
-        World.runOnEntity((motion: ConstantMotion, collider: MCollider) => {
+        this.runOnEntities((entity: Entity, motion: ConstantMotion, collider: MCollider) => {
 
             const xcomp = MathUtil.lengthDirX(motion.speed, entity.transform.rotation) * ddelta;
             const ycomp = MathUtil.lengthDirY(motion.speed, entity.transform.rotation) * ddelta;
 
             Matter.Body.translate(collider.body, Matter.Vector.create(xcomp, ycomp));
-        }, entity, ConstantMotion, MCollider);
+        });
     }
 }
 
@@ -296,11 +318,15 @@ class ShipMover extends System {
     private readonly accSpeed = 0.000002;
     private readonly rotSpeed = MathUtil.degToRad(0.24);
 
-    update(world: World, delta: number, entity: Entity): void {
 
+    types(): { new(): Component }[] | any[] {
+        return [MCollider, PlayerControlled];
+    }
+
+    update(world: World, delta: number): void {
         const ddelta = world.mainTicker.elapsedMS;
 
-        World.runOnEntity((collider: MCollider) => {
+        this.runOnEntities((entity: Entity, collider: MCollider) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
                 Matter.Body.rotate(collider.body, -this.rotSpeed * ddelta);
@@ -320,6 +346,6 @@ class ShipMover extends System {
             if (Keyboard.isKeyPressed('Space')) {
                 world.addEntity(new Bullet(entity.transform.x, entity.transform.y, entity.transform.rotation))
             }
-        }, entity, MCollider, PlayerControlled)
+        });
     }
 }

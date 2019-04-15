@@ -142,39 +142,40 @@ export class PhysicsSystem extends WorldSystem {
 
     update(world: World, delta: number, entities: Entity[]): void {
 
-        /* We need to do 3 things here.
-         - Calculate new positions
-         - Check for collisions
-         - Resolve collisions, bumping things if necessary
-         */
-        for (let entity of entities) {
-            World.runOnEntity((body: Rigidbody) => {
-
-                // Add gravity force if the object is dynamic
-                if (body.type === BodyType.Dynamic) {
-                    const gravForce = new Vector(this.gravityDir.x, this.gravityDir.y);
-                    gravForce.multiply(body.gravityScale * delta);
-                    body.addForce(gravForce);
-                }
-
-                let myColliders = entity.getComponentsOfType<Collider>(Collider);
-                myColliders = myColliders.filter((v) => {
-                    return !v.isTrigger
-                });
-
-                // Apply movement
-                entity.transform.x += body.velocity.x * delta;
-                entity.transform.y += body.velocity.y * delta;
-
-                // TODO instead of this, push out. We still want to slide along surfaces....
-                this.checkIfWeNeedToGoBack(entity, myColliders, body, delta, entities);
-
-                // Reduce velocity by xDrag amount for the next frame
-                body.velocity.x -= body.velocity.x * body.xDrag;
-                body.velocity.y -= body.velocity.y * body.yDrag;
-
-            }, entity, Rigidbody);
-        }
+        // TODO this is broken now
+        // /* We need to do 3 things here.
+        //  - Calculate new positions
+        //  - Check for collisions
+        //  - Resolve collisions, bumping things if necessary
+        //  */
+        // for (let entity of entities) {
+        //     World.runOnEntity((body: Rigidbody) => {
+        //
+        //         // Add gravity force if the object is dynamic
+        //         if (body.type === BodyType.Dynamic) {
+        //             const gravForce = new Vector(this.gravityDir.x, this.gravityDir.y);
+        //             gravForce.multiply(body.gravityScale * delta);
+        //             body.addForce(gravForce);
+        //         }
+        //
+        //         let myColliders = entity.getComponentsOfType<Collider>(Collider);
+        //         myColliders = myColliders.filter((v) => {
+        //             return !v.isTrigger
+        //         });
+        //
+        //         // Apply movement
+        //         entity.transform.x += body.velocity.x * delta;
+        //         entity.transform.y += body.velocity.y * delta;
+        //
+        //         // TODO instead of this, push out. We still want to slide along surfaces....
+        //         this.checkIfWeNeedToGoBack(entity, myColliders, body, delta, entities);
+        //
+        //         // Reduce velocity by xDrag amount for the next frame
+        //         body.velocity.x -= body.velocity.x * body.xDrag;
+        //         body.velocity.y -= body.velocity.y * body.yDrag;
+        //
+        //     }, entity, Rigidbody);
+        // }
     }
 
     private checkIfWeNeedToGoBack(entity: Entity, myColliders: Collider[],

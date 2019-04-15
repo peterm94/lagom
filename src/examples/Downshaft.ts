@@ -6,7 +6,6 @@ import {Sprite} from "../Components";
 import {MatterEngine, MCollider} from "../MatterPhysics";
 import * as Matter from "matter-js";
 import {Vector} from "matter-js";
-import {Log, MathUtil} from "../Util";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -40,7 +39,7 @@ export class Downshaft {
 
             world.addSystem(new PlayerMover());
             world.addSystem(new FollowCamera());
-            world.addWorldSystem(new MatterEngine(Vector.create(0, 1)));
+            world.addWorldSystem(new MatterEngine(Vector.create(0, 0.15)));
 
             world.start();
         })
@@ -55,8 +54,12 @@ class PlayerMover extends System {
     private readonly moveForce = 3;
     private readonly jumpForce = -0.01;
 
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((collider: MCollider) => {
+    types(): { new(): Component }[] | any[] {
+        return [MCollider, PlayerControlled];
+    }
+
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity, collider: MCollider) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
                 Matter.Body.translate(collider.body, {x: -this.moveForce, y: 0});
@@ -73,8 +76,7 @@ class PlayerMover extends System {
 
             // Reset rotation, we don't want to fall over
             Matter.Body.setAngle(collider.body, 0);
-
-        }, entity, MCollider, PlayerControlled)
+        });
     }
 }
 
@@ -115,12 +117,14 @@ class Block extends Entity {
 
 class FollowCamera extends System {
 
-    xPad = 150;
-    yPad = 150;
     mSpeed = 0.1;
 
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity(() => {
+    types(): { new(): Component }[] | any[] {
+        return [FollowMe];
+    }
+
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity) => {
 
             const worldPos = world.sceneNode.position;
             const midX = world.app.view.width / 2 - worldPos.x;
@@ -131,8 +135,6 @@ class FollowCamera extends System {
 
             worldPos.x += Math.min(dx, this.mSpeed * delta);
             worldPos.y += Math.min(dy, this.mSpeed * delta);
-
-
-        }, entity, FollowMe);
+        });
     }
 }

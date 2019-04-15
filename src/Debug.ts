@@ -42,14 +42,14 @@ class FpsUpdater extends System {
     lastMsAvg: number = 1;
 
     samples: number = 100;
-    printFrame: number = 3;
+    printFrame: number = 1;
     frameCount: number = 0;
 
     constructor() {
         super();
     }
 
-    update(world: World, delta: number, entity: Entity): void {
+    update(world: World, delta: number): void {
 
         const fpsAvg = this.lastFpsAvg * (this.samples - 1) / this.samples + world.mainTicker.FPS / this.samples;
         this.lastFpsAvg = fpsAvg;
@@ -60,16 +60,22 @@ class FpsUpdater extends System {
 
         this.frameCount++;
         if ((this.frameCount % this.printFrame) === 0) {
-            World.runOnEntity((_: FpsTracker, text: TextDisp) => {
-                // text.pixiObj.text = world.app.ticker.FPS.toString();
-                text.pixiObj.text = `FPS: ${fpsAvg.toFixed(2)}` +
-                                    `\tdt:${dtAvg.toFixed(2)}` +
-                                    `\tscale: ${world.mainTicker.speed}` +
-                                    `\telapsed:${msAvg.toFixed(2)}`;
-                // text.pixiObj.text += `\ninputTime: ${world.diag.inputUpdateTime.toFixed(2)}\tsysUpdateTime:
-                // ${world.diag.systemUpdateTime.toFixed(2)}\tworldSysUpdateTime:
-                // ${world.diag.worldSystemUpdateTime.toFixed(2)}`
-            }, entity, FpsTracker, TextDisp)
+            this.runOnEntities((entity: Entity, text: TextDisp) => {
+                {
+                    // text.pixiObj.text = world.app.ticker.FPS.toString();
+                    text.pixiObj.text = `FPS: ${fpsAvg.toFixed(2)}` +
+                                        `\tdt:${dtAvg.toFixed(2)}` +
+                                        `\tscale: ${world.mainTicker.speed}` +
+                                        `\telapsed:${msAvg.toFixed(2)}`;
+                    // text.pixiObj.text += `\ninputTime: ${world.diag.inputUpdateTime.toFixed(2)}\tsysUpdateTime:
+                    // ${world.diag.systemUpdateTime.toFixed(2)}\tworldSysUpdateTime:
+                    // ${world.diag.worldSystemUpdateTime.toFixed(2)}`
+                }
+            });
         }
+    }
+
+    types(): { new(): Component }[] | any[] {
+        return [TextDisp, FpsTracker];
     }
 }

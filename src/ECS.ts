@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
-import * as Matter from "matter-js";
 import {Smoothie} from "./Smoothie";
 import {Log, Util} from "./Util";
+import {Observable} from "./Observer";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
 // keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
@@ -31,7 +31,7 @@ export class World {
 
     // TODO can these be sets? need unique, but update order needs to be defined :/ i need a comparator for each
     // type that can define it's order.
-    private readonly entities: Entity[] = [];
+    readonly entities: Entity[] = [];
     private readonly systems: System[] = [];
     private readonly worldSystems: WorldSystem[] = [];
 
@@ -45,6 +45,9 @@ export class World {
     readonly mainTicker: PIXI.ticker.Ticker;
 
     readonly diag: Diag = new Diag();
+
+    readonly entityAddedEvent: Observable<World, Entity> = new Observable();
+    readonly entityRemovedEvent: Observable<World, Entity> = new Observable();
 
     /**
      * Create a new World.
@@ -116,13 +119,13 @@ export class World {
         // Trigger the onAdded() function
         entitiesInit.forEach((val) => {
             val.onAdded();
+            Log.trace("Entity Added", val);
+            this.entityAddedEvent.trigger(this, val);
         });
 
         systemsInit.forEach((val) => {
             val.onAdded();
         });
-
-
     }
 
     private removePending() {
@@ -139,8 +142,9 @@ export class World {
 
         // Trigger the onRemoved() function
         entitiesDestroy.forEach((val) => {
-            Log.trace("Removing entity:", val);
             val.onRemoved();
+            Log.trace("Entity Removed", val);
+            this.entityRemovedEvent.trigger(this, val);
         });
 
         systemsDestroy.forEach((val) => {
@@ -202,9 +206,8 @@ export class World {
 
         // Update normal systems
         for (let system of this.systems) {
-            for (let entity of this.entities) {
-                system.update(this, delta, entity);
-            }
+            system.update(this, delta);
+
         }
     }
 
@@ -276,31 +279,6 @@ export class World {
     getEntityWithName<T extends Entity>(name: string): T | null {
         const found = this.entities.find(value => value.name === name);
         return found != undefined ? found as T : null;
-    }
-
-
-    /**
-     * Utility function to run on all entities that match the specified type string. This will not run if all types are
-     * not matched.
-     *
-     * @param f A function which will handle the run call. The arguments will be an instance of every component type
-     * specified in `types`.
-     * @param entity The entity to run on.
-     * @param types A list of type names to populate the provided function with.
-     */
-    static runOnEntity<T extends Component>(f: Function, entity: Entity, ...types: { new(): T }[] | any[]) {
-
-        // It's dumb, I can't constrain `types` because of the way imports work, but this works as desired.
-        const inTypes: { new(): T }[] = types;
-
-        const ret: T[] = [];
-        for (let type of inTypes) {
-            const comp = entity.getComponent<T>(type);
-            if (comp == null) return;
-
-            ret.push(comp);
-        }
-        f(...ret);
     }
 
     static runOnComponents<T extends Component>(f: Function, entities: Entity[], ...types: { new(): T }[] | any[]) {
@@ -403,21 +381,6 @@ export abstract class WorldSystem extends LifecycleObject {
 }
 
 /**
- * System base class. Systems should be used to run on groups of components.
- */
-export abstract class System extends LifecycleObject {
-
-    /**
-     * Update will be called every game tick for every entity.
-     * TODO this should do the entity checks here instead of in each system. We can cache as well.
-     * @param world The World instance the system belongs to.
-     * @param delta The time since the last frame.
-     * @param entity The entity that is being updated.
-     */
-    abstract update(world: World, delta: number, entity: Entity): void;
-}
-
-/**
  * Entity base class. Raw entities can be used or subclasses can be defined similarly to prefabs.
  */
 export class Entity extends LifecycleObject {
@@ -425,11 +388,15 @@ export class Entity extends LifecycleObject {
     private componentsInit: Set<Component> = new Set();
     private componentsDestroy: Set<Component> = new Set();
 
+    readonly componentAddedEvent: Observable<Entity, Component> = new Observable();
+    readonly componentRemovedEvent: Observable<Entity, Component> = new Observable();
+
     transform: PIXI.Container;
     layer: number = 0;
 
     readonly name: string;
     private readonly components: Component[] = [];
+
 
     addPending() {
 
@@ -442,6 +409,8 @@ export class Entity extends LifecycleObject {
 
         componentsInit.forEach((val) => {
             val.onAdded();
+            Log.trace("Component Added", val);
+            this.componentAddedEvent.trigger(this, val);
         });
     }
 
@@ -451,6 +420,8 @@ export class Entity extends LifecycleObject {
 
         componentsDestroy.forEach((val) => {
             val.onRemoved();
+            Log.trace("Component Removed", val);
+            this.componentRemovedEvent.trigger(this, val);
         });
 
         componentsDestroy.forEach((val) => {
@@ -543,6 +514,130 @@ export class Entity extends LifecycleObject {
         Log.trace("Entity destroy() called for:", this);
         this.components.forEach((val) => this.removeComponent(val));
         World.instance.removeEntity(this);
+    }
+}
+
+/**
+ * System base class. Systems should be used to run on groups of components.
+ */
+export abstract class System extends LifecycleObject {
+    private readonly runOn: Map<Entity, Component[]> = new Map();
+
+    private onComponentAdded(entity: Entity, component: Component) {
+
+        if (this === undefined){
+            Log.debug(this);
+            return;
+        }
+        // Check if we care about this type at all
+        if (this.types().find((val) => {
+            return component instanceof val;
+        }) === undefined) return;
+
+        // Compute if we can run on this updated entity
+        let entry = this.runOn.get(entity);
+
+        // We already have an entry, nothing to do!
+        if (entry !== undefined) return;
+
+        // Check if we are now able to run on this entity
+        const ret = this.findComponents(entity);
+        if (ret === null) return;
+
+        // Can run, add to update list
+        this.runOn.set(entity, ret);
+    }
+
+    private findComponents(entity: Entity): Component[] | null {
+        // It's dumb, I can't constrain `types` because of the way imports work, but this works as desired.
+        const inTypes: { new(): Component }[] = this.types();
+        const ret: Component[] = [];
+        for (let type of inTypes) {
+            const comp = entity.getComponent(type);
+            if (comp == null) return null;
+            ret.push(comp);
+        }
+
+        return ret;
+    }
+
+    private onComponentRemoved(entity: Entity, component: Component) {
+        // Check if we care about this type at all
+        if (this.types().find((val) => {
+            return component instanceof val;
+        }) === undefined) return;
+
+        let entry = this.runOn.get(entity);
+
+        // Not actually registered, return
+        if (entry === undefined) return;
+
+        // Recompute if we can run on this entity, remove if we cannot
+        const ret = this.findComponents(entity);
+        if (ret === null) {
+            // Can't run, remove entry
+            this.runOn.delete(entity);
+        } else {
+            // Can run, update runOn
+            this.runOn.set(entity, ret);
+        }
+    }
+
+    private onEntityAdded(caller: World, entity: Entity) {
+        // Register for component changes
+        entity.componentAddedEvent.register(this.onComponentAdded.bind(this));
+        entity.componentRemovedEvent.register(this.onComponentRemoved.bind(this));
+    }
+
+    private onEntityRemoved(caller: World, entity: Entity) {
+        entity.componentAddedEvent.deregister(this.onComponentAdded.bind(this));
+        entity.componentRemovedEvent.deregister(this.onComponentRemoved.bind(this));
+
+        // Remove the entity from this System's run pool if it is registered.
+        this.runOn.delete(entity);
+    }
+
+    onAdded() {
+        super.onAdded();
+        World.instance.entityAddedEvent.register(this.onEntityAdded.bind(this));
+        World.instance.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
+
+        // We need to scan everything that already exists
+        World.instance.entities.forEach(entity => {
+            // Register listener for entity
+            this.onEntityAdded(World.instance, entity);
+
+            // Check it, add if ready.
+            const ret = this.findComponents(entity);
+            if (ret != null) {
+                this.runOn.set(entity, ret);
+            }
+        })
+    }
+
+    onRemoved() {
+        super.onRemoved();
+        World.instance.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
+        World.instance.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
+    }
+
+    /**
+     * Update will be called every game tick for every entity.
+     * @param world The World instance the system belongs to.
+     * @param delta The time since the last frame.
+     */
+    abstract update(world: World, delta: number): void;
+
+    abstract types(): { new(): Component }[] | any[]
+
+    protected runOnEntities(f: Function) {
+        this.runOn.forEach((value: Component[], key: Entity) => {
+            if (key === null)
+            {
+                Log.warn("WTF");
+            }
+            f(key, ...value);
+        })
     }
 }
 

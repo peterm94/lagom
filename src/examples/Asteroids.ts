@@ -183,8 +183,12 @@ class DestroyOffScreen extends System {
 
     private readonly tolerance: number = 50;
 
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity(() => {
+    types(): { new(): Component }[] | any[] {
+        return [ScreenContained];
+    }
+
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity) => {
             const pos = entity.transform.getGlobalPosition();
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
@@ -192,13 +196,17 @@ class DestroyOffScreen extends System {
                 || pos.y > world.app.screen.height + this.tolerance) {
                 entity.destroy();
             }
-        }, entity, ScreenContained);
+        });
     }
 }
 
 class AsteroidSplitter extends System {
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity(() => {
+    types(): { new(): Component }[] | any[] {
+        return [Split];
+    }
+
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity) => {
 
             const currSize = (<Asteroid>entity).size;
 
@@ -207,25 +215,31 @@ class AsteroidSplitter extends System {
                 world.addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
             }
             entity.destroy();
-        }, entity, Split);
+        });
     }
 
 }
 
 class ScreenWrapper extends System {
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((_: ScreenWrap) => {
+    types(): { new(): Component }[] | any[] {
+        return [ScreenWrap];
+    }
 
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity) => {
             entity.transform.x = (entity.transform.x + world.app.screen.width) % world.app.screen.width;
             entity.transform.y = (entity.transform.y + world.app.screen.height) % world.app.screen.height;
-
-        }, entity, ScreenWrap);
+        });
     }
 }
 
 class SpriteWrapper extends System {
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((sprite: WrapSprite) => {
+    types(): { new(): Component }[] | any[] {
+        return [WrapSprite];
+    }
+
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity, sprite: WrapSprite) => {
 
             const xChild = world.app.stage.getChildByName(sprite.xId);
             const yChild = world.app.stage.getChildByName(sprite.yId);
@@ -246,7 +260,7 @@ class SpriteWrapper extends System {
             } else {
                 yChild.position.y = entity.transform.position.y + world.app.screen.height;
             }
-        }, entity, WrapSprite);
+        });
     }
 }
 
@@ -260,10 +274,14 @@ class ConstantMotion extends Component {
 }
 
 class ConstantMover extends System {
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((motion: ConstantMotion) => {
+    types(): { new(): Component }[] | any[] {
+        return [ConstantMotion];
+    }
+
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity, motion: ConstantMotion) => {
             Util.move(entity, motion.speed * delta)
-        }, entity, ConstantMotion);
+        });
     }
 }
 
@@ -275,8 +293,12 @@ class ShipMover extends System {
     private readonly accSpeed = 0.325;
     private readonly rotSpeed = MathUtil.degToRad(0.2);
 
-    update(world: World, delta: number, entity: Entity): void {
-        World.runOnEntity((body: Rigidbody) => {
+    types(): { new(): Component }[] | any[] {
+        return [Rigidbody, PlayerControlled];
+    }
+
+    update(world: World, delta: number): void {
+        this.runOnEntities((entity: Entity, body: Rigidbody) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
                 entity.transform.rotation -= this.rotSpeed * delta;
@@ -292,6 +314,6 @@ class ShipMover extends System {
             if (Keyboard.isKeyPressed('Space')) {
                 world.addEntity(new Bullet(entity.transform.x, entity.transform.y, entity.transform.rotation))
             }
-        }, entity, Rigidbody, PlayerControlled)
+        });
     }
 }

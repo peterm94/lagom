@@ -163,8 +163,8 @@ export class MCollider extends Component {
                      " creating a collider.")
         }
 
-        // @ts-ignore TODO this is so dirty, is there a better way?
-        this.body.entity = this.entity;
+        // TODO this is so dirty, is there a better way?
+        (<any>this.body).entity = this.entity;
     }
 
     onRemoved() {
