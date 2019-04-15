@@ -207,7 +207,6 @@ export class World {
         // Update normal systems
         for (let system of this.systems) {
             system.update(this, delta);
-
         }
     }
 
@@ -525,10 +524,6 @@ export abstract class System extends LifecycleObject {
 
     private onComponentAdded(entity: Entity, component: Component) {
 
-        if (this === undefined){
-            Log.debug(this);
-            return;
-        }
         // Check if we care about this type at all
         if (this.types().find((val) => {
             return component instanceof val;
@@ -632,10 +627,6 @@ export abstract class System extends LifecycleObject {
 
     protected runOnEntities(f: Function) {
         this.runOn.forEach((value: Component[], key: Entity) => {
-            if (key === null)
-            {
-                Log.warn("WTF");
-            }
             f(key, ...value);
         })
     }
