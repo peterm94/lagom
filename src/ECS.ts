@@ -196,7 +196,7 @@ export class World {
 
         // Update world systems
         for (let system of this.worldSystems) {
-            system.update(this, delta, this.entities);
+            system.update(this, delta);
         }
 
         // Update entities
@@ -279,31 +279,6 @@ export class World {
         const found = this.entities.find(value => value.name === name);
         return found != undefined ? found as T : null;
     }
-
-    static runOnComponents<T extends Component>(f: Function, entities: Entity[], ...types: { new(): T }[] | any[]) {
-
-        const inTypes: { new(): T }[] = types;
-
-        const ret: Map<{ new(): T }, Component[]> = new Map();
-
-        for (let type of inTypes) {
-            ret.set(type, []);
-        }
-
-        // This is slow and bad but we can cache it one day
-        for (let entity of entities) {
-            for (let type of inTypes) {
-                const entryMap = ret.get(type);
-                if (entryMap === undefined) continue;
-
-                for (let comp of entity.getComponentsOfType<T>(type)) {
-                    entryMap.push(comp);
-                }
-            }
-        }
-
-        f(...Array.from(ret.values()));
-    }
 }
 
 /**
@@ -370,19 +345,103 @@ export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Compon
  */
 export abstract class WorldSystem extends LifecycleObject {
 
+    private readonly runOn: Map<{ new(): Component }, Component[]> = new Map();
+
     /**
      * Update will be called every game tick.
-     * @param world The world we are operating on
+     * @param world The world we are operating on.
      * @param delta The elapsed time since the last update call.
      * @param entities All entities in this world.
      */
-    abstract update(world: World, delta: number, entities: Entity[]): void;
+    abstract update(world: World, delta: number): void;
+
+    abstract types(): { new(): Component }[] | any[]
+
+    protected runOnComponents(f: Function) {
+        f(...Array.from(this.runOn.values()));
+    }
+
+    private onComponentAdded(entity: Entity, component: Component) {
+        // Check if we care about this type at all
+        const type = this.types().find((val) => {
+            return component instanceof val;
+        });
+
+        if (type === undefined) return;
+
+        let compMap = this.runOn.get(type);
+
+        if (compMap === undefined) {
+            Log.warn("Expected component map does not exist on WorldSystem.", this, type);
+            compMap = [];
+            this.runOn.set(type, compMap);
+        }
+        compMap.push(component);
+    }
+
+    private onComponentRemoved(entity: Entity, component: Component) {
+        // Check if we care about this type at all
+        const type = this.types().find((val) => {
+            return component instanceof val;
+        });
+
+        if (type === undefined) return;
+
+        let components = this.runOn.get(type);
+
+        // Nothing registered, return
+        if (components === undefined) return;
+
+        // Get it out of the list if it is in it
+        Util.remove(components, component);
+    }
+
+    private onEntityAdded(caller: World, entity: Entity) {
+        // Register for component changes
+        entity.componentAddedEvent.register(this.onComponentAdded.bind(this));
+        entity.componentRemovedEvent.register(this.onComponentRemoved.bind(this));
+    }
+
+    private onEntityRemoved(caller: World, entity: Entity) {
+        entity.componentAddedEvent.deregister(this.onComponentAdded.bind(this));
+        entity.componentRemovedEvent.deregister(this.onComponentRemoved.bind(this));
+    }
+
+    onAdded() {
+        super.onAdded();
+
+        // make each component map
+        this.types().forEach(type => {
+            this.runOn.set(type, []);
+        });
+
+        World.instance.entityAddedEvent.register(this.onEntityAdded.bind(this));
+        World.instance.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
+
+        // We need to scan everything that already exists
+        World.instance.entities.forEach((entity: Entity) => {
+            // Register listener for entity
+            this.onEntityAdded(World.instance, entity);
+
+            // Add any existing components
+            entity.components.forEach((component) => {
+                this.onComponentAdded(entity, component);
+            })
+        })
+    }
+
+    onRemoved() {
+        super.onRemoved();
+        World.instance.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
+        World.instance.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
+    }
 }
 
 /**
  * Entity base class. Raw entities can be used or subclasses can be defined similarly to prefabs.
  */
-export class Entity extends LifecycleObject {
+export class Entity
+    extends LifecycleObject {
 
     private componentsInit: Set<Component> = new Set();
     private componentsDestroy: Set<Component> = new Set();
@@ -394,7 +453,7 @@ export class Entity extends LifecycleObject {
     layer: number = 0;
 
     readonly name: string;
-    private readonly components: Component[] = [];
+    readonly components: Component[] = [];
 
 
     addPending() {

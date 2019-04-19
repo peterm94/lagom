@@ -3,19 +3,22 @@ import * as serviceWorker from './serviceWorker';
 import {Asteroids} from "./examples/Asteroids";
 import {Downshaft} from "./examples/Downshaft";
 import {MatterAsteroids} from "./examples/MatterAsteroids";
+import {PerfTest} from "./examples/PerfTest";
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
 serviceWorker.unregister();
 
-switch(window.location.search.substr(1).toLowerCase())
-{
+switch (window.location.search.substr(1).toLowerCase()) {
     case "downshaft":
         new Downshaft();
         break;
     case "matter":
         new MatterAsteroids();
+        break;
+    case "perf":
+        new PerfTest();
         break;
     default:
         new Asteroids();

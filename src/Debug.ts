@@ -25,10 +25,14 @@ export class Diagnostics extends GUIEntity {
 }
 
 class DebugKeys extends WorldSystem {
-    update(world: World, delta: number, entities: Entity[]): void {
+    update(world: World, delta: number): void {
         if (Keyboard.isKeyPressed('KeyT')) {
-            console.log(entities.map((e) => e.name));
+            console.log(world.entities.map((e) => e.name));
         }
+    }
+
+    types(): { new(): Component }[] | any[] {
+        return [];
     }
 }
 

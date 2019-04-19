@@ -1,4 +1,4 @@
-import {Entity, PIXIComponent, World, WorldSystem} from "./ECS";
+import {Component, Entity, PIXIComponent, World, WorldSystem} from "./ECS";
 import {Observable} from "./Observer";
 import {Sprite} from "./Components";
 import {MathUtil} from "./Util";
@@ -126,7 +126,7 @@ export class Collision {
 
     /**
      * Check for collisions between a box and a circle.
-     * TODO this doesnt work with rotated boxes
+     * TODO this doesn't work with rotated boxes
      * @param box The box to check.
      * @param circle The circle to check.
      * @returns True if the box and circle intersect.
@@ -190,9 +190,8 @@ export class CollisionSystem extends WorldSystem {
         this.collisionMatrix = collisions;
     }
 
-    update(world: World, delta: number, entities: Entity[]): void {
-
-        World.runOnComponents((colliders: Collider[]) => {
+    update(world: World, delta: number): void {
+        this.runOnComponents((colliders: Collider[]) => {
             for (let i = 0; i < colliders.length; i++) {
                 for (let j = i + 1; j < colliders.length; j++) {
                     const c1 = colliders[i];
@@ -209,7 +208,11 @@ export class CollisionSystem extends WorldSystem {
                     }
                 }
             }
-        }, entities, Collider);
+        });
+    }
+
+    types(): { new(): Component }[] | any[] {
+        return [Collider];
     }
 }
 

@@ -18,7 +18,7 @@ export class MatterEngine extends WorldSystem {
 
     readonly matterEngine: Matter.Engine;
 
-    constructor(gravity: Matter.Vector = Matter.Vector.create(0, 0)) {
+    constructor(gravity: Matter.Vector = Matter.Vector.create(0, 0), debug: boolean = false) {
         super();
 
         this.matterEngine = Matter.Engine.create();
@@ -32,7 +32,7 @@ export class MatterEngine extends WorldSystem {
             for (let i = 0; i < event.pairs.length; i++) {
 
                 const pair = event.pairs[i];
-                Log.debug("Collisiona event", pair, pair.bodyB);
+                Log.debug("Collision event", pair, pair.bodyB);
                 // @ts-ignore TODO make this happy
                 Matter.Events.trigger(pair.bodyA, "collisionStart", new CollisionEvent(pair, pair.bodyB));
                 // @ts-ignore
@@ -58,26 +58,29 @@ export class MatterEngine extends WorldSystem {
             }
         }));
 
-        const render = Matter.Render.create({
-                                                element: document.body,
-                                                engine: this.matterEngine,
-                                                options: {width: 512, height: 512}
-                                            });
-        Matter.Render.run(render);
+        if (debug) {
+            const render = Matter.Render.create({
+                                                    element: document.body,
+                                                    engine: this.matterEngine,
+                                                    options: {width: 512, height: 512}
+                                                });
+            Matter.Render.run(render);
+        }
     }
 
-    onAdded() {
-        super.onAdded();
+    types(): { new(): Component }[] | any[] {
+        return [MCollider];
     }
 
-    update(world: World, delta: number, entities: Entity[]): void {
-
-        // TODO check the delta here...
+    update(world: World, delta: number): void {
         // Update the physics state
         Matter.Engine.update(this.matterEngine, world.mainTicker.elapsedMS);
 
-        // Update Pixi positions to the matter positions
-        World.runOnComponents((colliders: MCollider[]) => {
+        // Run over all colliders
+        this.runOnComponents((colliders: MCollider[]) => {
+
+            // TODO check the delta here...
+            // Update Pixi positions to the matter positions
             for (let collider of colliders) {
 
                 if (collider.entity != null) {
@@ -86,7 +89,7 @@ export class MatterEngine extends WorldSystem {
                     collider.entity.transform.rotation = collider.body.angle;
                 }
             }
-        }, entities, MCollider);
+        })
     }
 }
 

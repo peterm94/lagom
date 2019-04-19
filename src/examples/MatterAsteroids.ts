@@ -257,11 +257,6 @@ class SpriteWrapper extends System {
             const xChild = world.sceneNode.getChildByName(sprite.xId);
             const yChild = world.sceneNode.getChildByName(sprite.yId);
 
-            if (!xChild)
-            {
-                Log.warn("HOW")
-            }
-
             xChild.rotation = entity.transform.rotation;
             yChild.rotation = entity.transform.rotation;
 
