@@ -265,16 +265,32 @@ export class World {
         this.entitiesDestroy.add(entity);
     }
 
+    /**
+     * Get a System of the provided type.
+     * @param type The type of system to search for.
+     * @returns The found system or null.
+     */
     getSystem<T extends System>(type: any | { new(): T }): T | null {
         const found = this.systems.find(value => value instanceof type);
         return found != undefined ? found as T : null;
     }
 
+    /**
+     * Get a WorldSystem of the provided type.
+     * @param type The type of system to search for.
+     * @returns The found system or null.
+     */
     getWorldSystem<T extends WorldSystem>(type: any | { new(): T }): T | null {
         const found = this.worldSystems.find(value => value instanceof type);
         return found != undefined ? found as T : null;
     }
 
+    /**
+     * Get an Entity with the given name. If multiple instances have the same name, only the first found will be
+     * returned.
+     * @param name The name of the Entity to search for.
+     * @returns The found Entity or null.
+     */
     getEntityWithName<T extends Entity>(name: string): T | null {
         const found = this.entities.find(value => value.name === name);
         return found != undefined ? found as T : null;
@@ -309,10 +325,31 @@ export abstract class LifecycleObject {
  * Component base class.
  */
 export abstract class Component extends LifecycleObject {
-    entity: Entity | null = null;
 
-    id() {
-        return this.constructor.name;
+    private entity: Entity | null = null;
+
+    /**
+     * For internal use only.
+     * Set the entity for this component. Please don't call this, ts doesn't have friend classes.
+     * @param entity The parent entity.
+     */
+    setEntity(entity: Entity) {
+        this.entity = entity;
+    }
+
+    /**
+     * Get the entity that owns this component.
+     * @returns The entity that this component is attached to.
+     */
+    getEntity(): Entity {
+        if (this.entity === null) {
+            Log.error("Entity referenced before Component added to scene. Use onAdded() for initialization instead" +
+                      " of the constructor.");
+            // TODO do we throw here? this is a real problemo.
+            return <any>null;
+        } else {
+            return this.entity;
+        }
     }
 }
 
@@ -329,19 +366,17 @@ export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Compon
 
     onAdded() {
         super.onAdded();
-        if (this.entity != null)
-            this.entity.transform.addChild(this.pixiObj);
+        this.getEntity().transform.addChild(this.pixiObj);
     }
 
     onRemoved() {
         super.onRemoved();
-        if (this.entity != null)
-            this.entity.transform.removeChild(this.pixiObj);
+        this.getEntity().transform.removeChild(this.pixiObj);
     }
 }
 
 /**
- * World system base class.
+ * World system base class. Designed to run on batches of Components.
  */
 export abstract class WorldSystem extends LifecycleObject {
 
@@ -351,12 +386,21 @@ export abstract class WorldSystem extends LifecycleObject {
      * Update will be called every game tick.
      * @param world The world we are operating on.
      * @param delta The elapsed time since the last update call.
-     * @param entities All entities in this world.
      */
     abstract update(world: World, delta: number): void;
 
+    /**
+     * An array of types that this WorldSystem will run on. This should remain static.
+     * @returns An array of component types to run on during update().
+     */
     abstract types(): { new(): Component }[] | any[]
 
+    /**
+     * Call this in update() to retrieve the collection of components to run on.
+     * @param f A function which accepts the a parameter for each type returned by in types(). For example, if
+     * types() returns [Sprite, Collider], the function will be passed two arrays, (sprites: Sprite[], colliders:
+     * Collider[]).
+     */
     protected runOnComponents(f: Function) {
         f(...Array.from(this.runOn.values()));
     }
@@ -456,7 +500,7 @@ export class Entity
     readonly components: Component[] = [];
 
 
-    addPending() {
+    private addPending() {
 
         const componentsInit = new Set(this.componentsInit);
         this.componentsInit.clear();
@@ -472,7 +516,7 @@ export class Entity
         });
     }
 
-    removePending() {
+    private removePending() {
         const componentsDestroy = new Set(this.componentsDestroy);
         this.componentsDestroy.clear();
 
@@ -523,7 +567,7 @@ export class Entity
      */
     addComponent<T extends Component>(component: T): T {
         this.componentsInit.add(component);
-        component.entity = this;
+        component.setEntity(this);
         return component;
     }
 
@@ -568,6 +612,9 @@ export class Entity
         this.removeFromScene()
     }
 
+    /**
+     * Destroy the Entity and all components on it.
+     */
     destroy() {
         Log.trace("Entity destroy() called for:", this);
         this.components.forEach((val) => this.removeComponent(val));
@@ -577,6 +624,7 @@ export class Entity
 
 /**
  * System base class. Systems should be used to run on groups of components.
+ * Note that this will only trigger if every component type is represented on an entity. Partial matches will not run.
  */
 export abstract class System extends LifecycleObject {
     private readonly runOn: Map<Entity, Component[]> = new Map();
@@ -682,8 +730,19 @@ export abstract class System extends LifecycleObject {
      */
     abstract update(world: World, delta: number): void;
 
+    /**
+     * Component types that this System runs on.
+     * @returns A list of Component types.
+     */
     abstract types(): { new(): Component }[] | any[]
 
+    /**
+     * Call this from update() to run on the requested component instances.
+     * @param f A function that will be called with the requested components passed through as parameters. The
+     * owning entity will always be the first parameter, followed by each component in the order defined by types().
+     * For example, if types() is [Sprite, MCollider], the function arguments would look as follows: (entity:
+     * Entity, sprite: Sprite, collider: MCollider).
+     */
     protected runOnEntities(f: Function) {
         this.runOn.forEach((value: Component[], key: Entity) => {
             f(key, ...value);

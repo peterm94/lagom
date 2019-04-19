@@ -6,8 +6,8 @@ import spr_asteroid2 from './resources/asteroid2.png'
 import spr_asteroid3 from './resources/asteroid3.png'
 import spr_ship from './resources/ship.png'
 import spr_bullet from './resources/bullet.png'
-import {Log, MathUtil, Util} from "../Util";
-import {CollisionEvent, MatterEngine, MCollider} from "../MatterPhysics";
+import {MathUtil} from "../Util";
+import {MatterEngine, MCollider} from "../MatterPhysics";
 import * as Matter from "matter-js";
 
 const Keyboard = require('pixi.js-keyboard');
@@ -123,25 +123,13 @@ class Bullet extends Entity {
                                                                               })));
         this.addComponent(new ScreenContained());
 
-        // @ts-ignore
-        Matter.Events.on(collider.body, "collisionStart", (event: CollisionEvent) => {
-            this.destroy();
-
-            // @ts-ignore
-            event.other.entity.addComponent(new Split());
-        });
+        collider.collisionStartEvent.register(this.onCollision.bind(this));
     }
 
-    // private static onHit(pair: Matter.IPair) {
-    //     // Figure out which is which
-    //     if (pair.bodyA === )
-    //     if (other.entity instanceof Asteroid) {
-    //         // @ts-ignore
-    //         caller.entity.destroy();
-    //         // @ts-ignore
-    //         other.entity.addComponent(new Split());
-    //     }
-    // }
+    onCollision(caller: MCollider, other: MCollider) {
+        this.destroy();
+        other.getEntity().addComponent(new Split());
+    }
 }
 
 enum CollLayers {
@@ -161,18 +149,16 @@ class WrapSprite extends Sprite {
     onAdded(): void {
         super.onAdded();
 
-        if (this.entity != null) {
-            // Add 2 new sprites that shadow the real one
-            this.xChild = new PIXI.Sprite(this.pixiObj.texture);
-            this.xChild.name = this.xId;
-            this.xChild.anchor.x = this.pixiObj.anchor.x;
-            this.xChild.anchor.y = this.pixiObj.anchor.y;
-            this.yChild = new PIXI.Sprite(this.pixiObj.texture);
-            this.yChild.name = this.yId;
-            this.yChild.anchor.x = this.pixiObj.anchor.x;
-            this.yChild.anchor.y = this.pixiObj.anchor.y;
-            World.instance.sceneNode.addChild(this.xChild, this.yChild);
-        }
+        // Add 2 new sprites that shadow the real one
+        this.xChild = new PIXI.Sprite(this.pixiObj.texture);
+        this.xChild.name = this.xId;
+        this.xChild.anchor.x = this.pixiObj.anchor.x;
+        this.xChild.anchor.y = this.pixiObj.anchor.y;
+        this.yChild = new PIXI.Sprite(this.pixiObj.texture);
+        this.yChild.name = this.yId;
+        this.yChild.anchor.x = this.pixiObj.anchor.x;
+        this.yChild.anchor.y = this.pixiObj.anchor.y;
+        World.instance.sceneNode.addChild(this.xChild, this.yChild);
     }
 
     onRemoved(): void {

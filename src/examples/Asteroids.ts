@@ -129,9 +129,10 @@ class Bullet extends Entity {
     }
 
     private static onHit(caller: Collider, other: Collider) {
-        if (caller.entity && other.entity instanceof Asteroid) {
-            caller.entity.destroy();
-            other.entity.addComponent(new Split());
+        const otherEntity = other.getEntity();
+        if (otherEntity instanceof Asteroid) {
+            caller.getEntity().destroy();
+            otherEntity.addComponent(new Split());
         }
     }
 }
@@ -147,18 +148,16 @@ class WrapSprite extends Sprite {
     onAdded(): void {
         super.onAdded();
 
-        if (this.entity != null) {
-            // Add 2 new sprites that shadow the real one
-            this.xChild = new PIXI.Sprite(this.pixiObj.texture);
-            this.xChild.name = this.xId;
-            this.xChild.anchor.x = this.pixiObj.anchor.x;
-            this.xChild.anchor.y = this.pixiObj.anchor.y;
-            this.yChild = new PIXI.Sprite(this.pixiObj.texture);
-            this.yChild.name = this.yId;
-            this.yChild.anchor.x = this.pixiObj.anchor.x;
-            this.yChild.anchor.y = this.pixiObj.anchor.y;
-            World.instance.app.stage.addChild(this.xChild, this.yChild);
-        }
+        // Add 2 new sprites that shadow the real one
+        this.xChild = new PIXI.Sprite(this.pixiObj.texture);
+        this.xChild.name = this.xId;
+        this.xChild.anchor.x = this.pixiObj.anchor.x;
+        this.xChild.anchor.y = this.pixiObj.anchor.y;
+        this.yChild = new PIXI.Sprite(this.pixiObj.texture);
+        this.yChild.name = this.yId;
+        this.yChild.anchor.x = this.pixiObj.anchor.x;
+        this.yChild.anchor.y = this.pixiObj.anchor.y;
+        World.instance.app.stage.addChild(this.xChild, this.yChild);
     }
 
     onRemoved(): void {
