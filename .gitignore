@@ -136,6 +136,9 @@ typings/
 .idea/**/dictionaries
 .idea/**/shelf
 
+.idea/workspace.xml
+.idea/codeStyles/codeStyleConfig.xml
+
 # Generated files
 .idea/**/contentModel.xml
 
