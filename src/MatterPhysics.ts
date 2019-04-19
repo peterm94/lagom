@@ -131,8 +131,8 @@ export class MatterEngine extends WorldSystem {
 //         super.onAdded();
 //         Matter.World.addComposite(World.instance.matterEngine.world, this.composite);
 //         Matter.Composite.allBodies(this.composite).forEach((body) => {
-//             // @ts-ignore
-//             Matter.Body.setPosition(body, Matter.Vector.create(this.entity.transform.x, this.entity.transform.y));
+//             Matter.Body.setPosition(body, Matter.Vector.create(this.getEntity().transform.x,
+//                                                                this.entity.transform.y));
 //         })
 //     }
 //

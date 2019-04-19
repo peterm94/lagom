@@ -198,8 +198,7 @@ export class CollisionSystem extends WorldSystem {
                     const c2 = colliders[j];
 
                     // check layers can intersect, exit if they cannot
-                    // @ts-ignore
-                    if (!this.collisionMatrix.canCollide(c1.entity.layer, c2.entity.layer)) continue;
+                    if (!this.collisionMatrix.canCollide(c1.getEntity().layer, c2.getEntity().layer)) continue;
 
                     // Trigger the collision event, passing through 'other'.
                     if (Collision.checkCollision(c1, c2)) {

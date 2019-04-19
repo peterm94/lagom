@@ -114,8 +114,7 @@ export class Rigidbody extends Component {
      */
     addForceLocal(vector: Vector, impulse: boolean = false) {
 
-        // @ts-ignore
-        const angle = this.entity.transform.rotation;
+        const angle = this.getEntity().transform.rotation;
 
         const x2 = vector.x * Math.cos(angle) - vector.y * Math.sin(angle);
         const y2 = vector.x * Math.sin(angle) + vector.y * Math.cos(angle);
