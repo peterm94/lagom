@@ -6,6 +6,7 @@ import {Sprite} from "../Components";
 import {MatterEngine, MCollider} from "../MatterPhysics";
 import * as Matter from "matter-js";
 import {Vector} from "matter-js";
+import {CollisionMatrix} from "../Collision";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -13,7 +14,6 @@ const loader = PIXI.loader;
 
 
 enum Layers {
-    Default,
     Solid,
     Player
 }
@@ -39,7 +39,11 @@ export class Downshaft {
 
             world.addSystem(new PlayerMover());
             world.addSystem(new FollowCamera());
-            world.addWorldSystem(new MatterEngine(Vector.create(0, 0.15)));
+
+            const matrix = new CollisionMatrix();
+            matrix.addCollision(Layers.Solid, Layers.Player);
+
+            world.addWorldSystem(new MatterEngine(matrix, Vector.create(0, 0.15)));
 
             world.start();
         })
@@ -95,7 +99,7 @@ class Player extends Entity {
         const sprite = this.addComponent(new Sprite(loader.resources[spr_guy].texture));
         this.addComponent(new PlayerControlled());
         this.addComponent(new MCollider(Matter.Bodies.rectangle(0, 0, sprite.pixiObj.width,
-                                                                sprite.pixiObj.height)));
+                                                                sprite.pixiObj.height), {layer: Layers.Player}));
         this.addComponent(new FollowMe());
     }
 }
@@ -111,7 +115,8 @@ class Block extends Entity {
 
         const sprite = this.addComponent(new Sprite(loader.resources[spr_block].texture));
         this.addComponent(new MCollider(Matter.Bodies.rectangle(0, 0, sprite.pixiObj.width,
-                                                                sprite.pixiObj.height, {isStatic: true})));
+                                                                sprite.pixiObj.height),
+                                        {layer: Layers.Solid, isStatic: true}));
     }
 }
 

@@ -9,10 +9,18 @@ import spr_bullet from './resources/bullet.png'
 import {MathUtil} from "../Util";
 import {MatterEngine, MCollider} from "../MatterPhysics";
 import * as Matter from "matter-js";
+import {CollisionMatrix} from "../Collision";
 
 const Keyboard = require('pixi.js-keyboard');
 
 const loader = PIXI.loader;
+
+enum CollLayers {
+    Asteroid,
+    Ship,
+    Bullet
+}
+
 
 export class MatterAsteroids {
     constructor() {
@@ -40,7 +48,11 @@ export class MatterAsteroids {
             world.addSystem(new AsteroidSplitter());
             world.addSystem(new DestroyOffScreen());
 
-            world.addWorldSystem(new MatterEngine());
+            // Set up collision rules
+            const matrix = new CollisionMatrix();
+            matrix.addCollision(CollLayers.Asteroid, CollLayers.Bullet);
+
+            world.addWorldSystem(new MatterEngine(matrix));
             world.start();
         });
     }
@@ -57,7 +69,8 @@ class Ship extends Entity {
         this.addComponent(new WrapSprite(loader.resources[spr_ship].texture));
         this.addComponent(new PlayerControlled());
         this.addComponent(new ScreenWrap());
-        this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 8, {isSensor: true})));
+        this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 8),
+                                        {layer: CollLayers.Ship, isSensor: true}));
     }
 }
 
@@ -73,27 +86,21 @@ class Asteroid extends Entity {
     onAdded() {
         super.onAdded();
 
-        const collOptions = {
-            isSensor: true,
-            collisionFilter: {
-                group: 0,
-                category: CollLayers.Asteroid,
-                mask: CollLayers.Bullet
-            }
-        };
-
         switch (this.size) {
             case 3:
                 this.addComponent(new WrapSprite(loader.resources[spr_asteroid].texture));
-                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 32, collOptions)));
+                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 32),
+                                                {layer: CollLayers.Asteroid, isSensor: true}));
                 break;
             case 2:
                 this.addComponent(new WrapSprite(loader.resources[spr_asteroid2].texture));
-                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 16, collOptions)));
+                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 16),
+                                                {layer: CollLayers.Asteroid, isSensor: true}));
                 break;
             default:
                 this.addComponent(new WrapSprite(loader.resources[spr_asteroid3].texture));
-                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 8, collOptions)));
+                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 8),
+                                                {layer: CollLayers.Asteroid, isSensor: true}));
                 break;
         }
 
@@ -112,15 +119,8 @@ class Bullet extends Entity {
         super.onAdded();
         this.addComponent(new Sprite(loader.resources[spr_bullet].texture));
         this.addComponent(new ConstantMotion(0.5));
-        const collider = this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 2,
-                                                                              {
-                                                                                  isSensor: true,
-                                                                                  collisionFilter: {
-                                                                                      group: 0,
-                                                                                      category: CollLayers.Bullet,
-                                                                                      mask: CollLayers.Asteroid
-                                                                                  }
-                                                                              })));
+        const collider = this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 2),
+                                                         {layer: CollLayers.Bullet, isSensor: true}));
         this.addComponent(new ScreenContained());
 
         collider.collisionStartEvent.register(this.onCollision.bind(this));
@@ -130,12 +130,6 @@ class Bullet extends Entity {
         this.destroy();
         other.getEntity().addComponent(new Split());
     }
-}
-
-enum CollLayers {
-    Asteroid = 1 << 1,
-    Ship     = 1 << 2,
-    Bullet   = 1 << 3
 }
 
 class WrapSprite extends Sprite {

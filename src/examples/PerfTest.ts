@@ -6,6 +6,7 @@ import {Vector} from "matter-js";
 import spr_block from './resources/block.png';
 import {Sprite} from "../Components";
 import * as Matter from "matter-js";
+import {CollisionMatrix} from "../Collision";
 
 const loader = PIXI.loader;
 
@@ -21,11 +22,11 @@ export class PerfTest {
 
             for (let i = 0; i < 50; i++) {
                 for (let j = 0; j < 10; j++) {
-                    world.addEntity(new Block(i*32, j*32));
+                    world.addEntity(new Block(i * 32, j * 32));
                 }
             }
 
-            world.addWorldSystem(new MatterEngine(Vector.create(0, 0.15)));
+            world.addWorldSystem(new MatterEngine(new CollisionMatrix(), Vector.create(0, 0.15)));
 
             world.start();
         })
@@ -44,6 +45,6 @@ class Block extends Entity {
 
         const sprite = this.addComponent(new Sprite(loader.resources[spr_block].texture));
         this.addComponent(new MCollider(Matter.Bodies.rectangle(0, 0, sprite.pixiObj.width,
-                                                                sprite.pixiObj.height, {isStatic: true})));
+                                                                sprite.pixiObj.height), {layer: 0, isStatic: true}));
     }
 }

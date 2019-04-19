@@ -2,6 +2,7 @@ import {Component, World, WorldSystem} from "./ECS";
 import * as Matter from "matter-js";
 import {Log} from "./Util";
 import {Observable} from "./Observer";
+import {CollisionMatrix} from "./Collision";
 
 export class CollisionEvent {
     readonly pair: Matter.IPair;
@@ -22,15 +23,19 @@ export class CollisionEvent {
 export class MatterEngine extends WorldSystem {
 
     readonly matterEngine: Matter.Engine;
+    readonly collisionMatrix: CollisionMatrix;
 
     /**
      * Create a new system. This is required to actually make use of the engine.
+     * @param collisionMatrix The collision matrix defining collision rules for layers.
      * @param gravity The world gravity as a vector.
      * @param debug If enabled, a separate canvas will be rendered with the physics simulation.
      */
-    constructor(gravity: Matter.Vector = Matter.Vector.create(0, 0), debug: boolean = false) {
+    constructor(collisionMatrix: CollisionMatrix,
+                gravity: Matter.Vector = Matter.Vector.create(0, 0), debug: boolean = false) {
         super();
 
+        this.collisionMatrix = collisionMatrix;
         this.matterEngine = Matter.Engine.create();
         this.matterEngine.world.gravity.x = gravity.x;
         this.matterEngine.world.gravity.y = gravity.y;
@@ -101,6 +106,7 @@ export class MatterEngine extends WorldSystem {
     update(world: World, delta: number): void {
 
         // TODO this delta is not fixed, it probably should be.
+        // TODO this can be optimized to not run on static colliders
         // Update the physics state
         Matter.Engine.update(this.matterEngine, delta);
 
@@ -165,10 +171,23 @@ export class MCollider extends Component {
     readonly body: Matter.Body;
     readonly debugDraw: boolean = true;
     private engine: MatterEngine | null = null;
+    private readonly layer: number;
 
-    constructor(body: Matter.Body) {
+    /**
+     *
+     * @param body The matter-js physics body. If providing options, collisionFilter and isSensor should be omitted
+     * in favour of the constructor arguments.
+     * @param options Options for the body. Includes the layer that this collider is on, if the body is a sensor or
+     * a real object, and if the body is static or not.
+     */
+    constructor(body: Matter.Body, options: { layer: number, isSensor?: boolean, isStatic?: boolean }) {
         super();
         this.body = body;
+        this.body.isSensor = options.isSensor || false;
+        this.body.isStatic = options.isStatic || false;
+
+        // layer settings are delegated to onAdded()
+        this.layer = options.layer;
     }
 
     onAdded() {
@@ -179,10 +198,21 @@ export class MCollider extends Component {
         if (this.engine != null) {
             const entity = this.getEntity();
 
+            // Set up the collision filter for the Body
+            this.body.collisionFilter = {
+                // If this is not 0, different collision rules apply.
+                group: 0,
+                // Get the internal layer for the object, set the bit layer.
+                category: 1 << CollisionMatrix.layerInternal(this.layer),
+                // Collision mask for this object, taken from the engine.
+                mask: this.engine.collisionMatrix.maskFor(this.layer)
+            };
+
             // Add a backref to the body for the component.
             (<any>this.body).lagom_component = this;
 
             // Sync the body to the current position of the entity
+            Matter.Body.setStatic(this.body, this.body.isStatic);
             Matter.Body.setPosition(this.body, {x: entity.transform.x, y: entity.transform.y});
             Matter.Body.setAngle(this.body, entity.transform.rotation);
             Matter.World.addBody(this.engine.matterEngine.world, this.body);
