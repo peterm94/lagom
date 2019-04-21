@@ -273,12 +273,11 @@ class ConstantMover extends System {
     }
 
     update(world: World, delta: number): void {
-        const ddelta = world.mainTicker.elapsedMS;
 
         this.runOnEntities((entity: Entity, motion: ConstantMotion, collider: MCollider) => {
 
-            const xcomp = MathUtil.lengthDirX(motion.speed, entity.transform.rotation) * ddelta;
-            const ycomp = MathUtil.lengthDirY(motion.speed, entity.transform.rotation) * ddelta;
+            const xcomp = MathUtil.lengthDirX(motion.speed, entity.transform.rotation) * delta;
+            const ycomp = MathUtil.lengthDirY(motion.speed, entity.transform.rotation) * delta;
 
             Matter.Body.translate(collider.body, Matter.Vector.create(xcomp, ycomp));
         });
@@ -299,20 +298,21 @@ class ShipMover extends System {
     }
 
     update(world: World, delta: number): void {
-        const ddelta = world.mainTicker.elapsedMS;
+
+        const dt2 = world.mainTicker.deltaTime / PIXI.settings.TARGET_FPMS;
 
         this.runOnEntities((entity: Entity, collider: MCollider) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
-                Matter.Body.rotate(collider.body, -this.rotSpeed * ddelta);
+                Matter.Body.rotate(collider.body, -this.rotSpeed * delta);
             }
             if (Keyboard.isKeyDown('ArrowRight', 'KeyD')) {
-                Matter.Body.rotate(collider.body, this.rotSpeed * ddelta);
+                Matter.Body.rotate(collider.body, this.rotSpeed * delta);
             }
             if (Keyboard.isKeyDown('ArrowUp', 'KeyW')) {
 
-                const xcomp = MathUtil.lengthDirX(this.accSpeed, entity.transform.rotation) * ddelta;
-                const ycomp = MathUtil.lengthDirY(this.accSpeed, entity.transform.rotation) * ddelta;
+                const xcomp = MathUtil.lengthDirX(this.accSpeed, entity.transform.rotation) * delta;
+                const ycomp = MathUtil.lengthDirY(this.accSpeed, entity.transform.rotation) * delta;
 
                 Matter.Body.applyForce(collider.body, collider.body.position,
                                        Matter.Vector.create(xcomp, ycomp));

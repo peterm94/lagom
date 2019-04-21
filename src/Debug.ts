@@ -46,7 +46,7 @@ class FpsUpdater extends System {
     lastMsAvg: number = 1;
 
     samples: number = 100;
-    printFrame: number = 1;
+    printFrame: number = 10;
     frameCount: number = 0;
 
     constructor() {
@@ -67,13 +67,21 @@ class FpsUpdater extends System {
             this.runOnEntities((entity: Entity, text: TextDisp) => {
                 {
                     // text.pixiObj.text = world.app.ticker.FPS.toString();
-                    text.pixiObj.text = `FPS: ${fpsAvg.toFixed(2)}` +
-                                        `\tdt:${dtAvg.toFixed(2)}` +
-                                        `\tscale: ${world.mainTicker.speed}` +
-                                        `\telapsed:${msAvg.toFixed(2)}`;
+                    // text.pixiObj.text = `FPS: ${fpsAvg.toFixed(2)}` +
+                    //                     `\tdt:${dtAvg.toFixed(2)}` +
+                    //                     `\tspeed: ${world.mainTicker.speed}` +
+                    //                     `\telapsed:${msAvg.toFixed(2)}`;
                     // text.pixiObj.text += `\ninputTime: ${world.diag.inputUpdateTime.toFixed(2)}\tsysUpdateTime:
                     // ${world.diag.systemUpdateTime.toFixed(2)}\tworldSysUpdateTime:
                     // ${world.diag.worldSystemUpdateTime.toFixed(2)}`
+
+
+                    text.pixiObj.text = `FPS: ${world.mainTicker.FPS.toFixed(2)}` +
+                                        `\tdt:${world.mainTicker.deltaTime.toFixed(2)}` +
+                                        `\tspeed: ${world.mainTicker.speed}` +
+                                        `\telapsed:${world.mainTicker.elapsedMS.toFixed(2)}` +
+                                        `\tcalcDt:${delta.toFixed(2)}` +
+                                        `\ttarg:${PIXI.settings.TARGET_FPMS}`;
                 }
             });
         }

@@ -41,7 +41,7 @@ export class World {
     readonly app: PIXI.Application;
     readonly sceneNode: PIXI.Container;
     readonly guiNode: PIXI.Container;
-    readonly smoothie: Smoothie;
+    // readonly smoothie: Smoothie;
     readonly mainTicker: PIXI.ticker.Ticker;
 
     readonly diag: Diag = new Diag();
@@ -60,8 +60,8 @@ export class World {
 
         this.app = new PIXI.Application(options);
 
-        this.smoothie = new Smoothie(this.app.renderer, this.app.stage,
-                                     this.gameLoop.bind(this), true, 144, -1);
+        // this.smoothie = new Smoothie(this.app.renderer, this.app.stage,
+        //                              this.gameLoop.bind(this), true, 144, -1);
 
         // Set it up in the page
         this.app.renderer.backgroundColor = backgroundCol;
@@ -74,10 +74,11 @@ export class World {
         this.guiNode.name = "gui";
         this.app.stage.addChild(this.sceneNode, this.guiNode);
 
-        this.mainTicker = this.app.ticker.add(delta => {
+        this.mainTicker = new PIXI.ticker.Ticker();
+        this.mainTicker.stop();
+        this.mainTicker.add(delta => {
             return this.gameLoop(delta);
         });
-        this.mainTicker.stop();
     }
 
     /**
@@ -183,7 +184,7 @@ export class World {
 
             // We will be using the elapsed milliseconds as the delta.
             // The deltaTime property is kinda wacky
-            this.updateECS(this.mainTicker.elapsedMS * this.mainTicker.deltaTime);
+            this.updateECS(this.mainTicker.deltaTime / PIXI.settings.TARGET_FPMS);
 
             Keyboard.update();
 
