@@ -41,7 +41,6 @@ export class World {
     readonly app: PIXI.Application;
     readonly sceneNode: PIXI.Container;
     readonly guiNode: PIXI.Container;
-    // readonly smoothie: Smoothie;
     readonly mainTicker: PIXI.ticker.Ticker;
 
     readonly diag: Diag = new Diag();
@@ -59,9 +58,6 @@ export class World {
         World.instance = this;
 
         this.app = new PIXI.Application(options);
-
-        // this.smoothie = new Smoothie(this.app.renderer, this.app.stage,
-        //                              this.gameLoop.bind(this), true, 144, -1);
 
         // Set it up in the page
         this.app.renderer.backgroundColor = backgroundCol;
@@ -182,8 +178,6 @@ export class World {
             // Mouse.update();
             this.diag.inputUpdateTime = Date.now() - timeStart;
 
-            // We will be using the elapsed milliseconds as the delta.
-            // The deltaTime property is kinda wacky
             this.updateECS(this.mainTicker.deltaTime / PIXI.settings.TARGET_FPMS);
 
             Keyboard.update();
