@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import {Component, Entity, System, World} from "../ECS";
 import {Sprite} from "../Components";
 import {Diagnostics} from "../Debug";
@@ -12,7 +13,7 @@ import {BodyType, PhysicsSystem, Rigidbody, Vector} from "../Physics";
 
 const Keyboard = require('pixi.js-keyboard');
 
-const loader = PIXI.loader;
+const loader = new PIXI.Loader();
 
 export class Asteroids {
     constructor() {
@@ -23,13 +24,13 @@ export class Asteroids {
                     spr_ship,
                     spr_bullet]).load(() => {
 
-            let world = new World({width: 512, height: 512, resolution: 1}, 0x200140);
+            let world = new World({width: 512, height: 512, resolution: 1, backgroundColor: 0x200140});
 
-            world.addEntity(new Ship(world.app.screen.width / 2, world.app.screen.height / 2));
+            world.addEntity(new Ship(world.renderer.screen.width / 2, world.renderer.screen.height / 2));
 
             for (let i = 0; i < 10; i++) {
-                world.addEntity(new Asteroid(Math.random() * world.app.screen.width,
-                                             Math.random() * world.app.screen.height, 3))
+                world.addEntity(new Asteroid(Math.random() * world.renderer.screen.width,
+                                             Math.random() * world.renderer.screen.height, 3))
             }
 
             world.addEntity(new Diagnostics("white"));
@@ -157,14 +158,14 @@ class WrapSprite extends Sprite {
         this.yChild.name = this.yId;
         this.yChild.anchor.x = this.pixiObj.anchor.x;
         this.yChild.anchor.y = this.pixiObj.anchor.y;
-        World.instance.app.stage.addChild(this.xChild, this.yChild);
+        World.instance.sceneNode.addChild(this.xChild, this.yChild);
     }
 
     onRemoved(): void {
         super.onRemoved();
         if (this.xChild != null && this.yChild != null) {
-            World.instance.app.stage.removeChild(this.xChild);
-            World.instance.app.stage.removeChild(this.yChild);
+            World.instance.sceneNode.removeChild(this.xChild);
+            World.instance.sceneNode.removeChild(this.yChild);
         }
     }
 }
@@ -188,11 +189,13 @@ class DestroyOffScreen extends System {
 
     update(world: World, delta: number): void {
         this.runOnEntities((entity: Entity) => {
-            const pos = entity.transform.getGlobalPosition();
+            // TODO this function apparently takes null as a first parameter, but the typedef doesn't allow it.
+            // Submit an issue?
+            const pos = entity.transform.getGlobalPosition(<any>undefined, false);
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
-                || pos.x > world.app.screen.width + this.tolerance
-                || pos.y > world.app.screen.height + this.tolerance) {
+                || pos.x > world.renderer.screen.width + this.tolerance
+                || pos.y > world.renderer.screen.height + this.tolerance) {
                 entity.destroy();
             }
         });
@@ -226,8 +229,8 @@ class ScreenWrapper extends System {
 
     update(world: World, delta: number): void {
         this.runOnEntities((entity: Entity) => {
-            entity.transform.x = (entity.transform.x + world.app.screen.width) % world.app.screen.width;
-            entity.transform.y = (entity.transform.y + world.app.screen.height) % world.app.screen.height;
+            entity.transform.x = (entity.transform.x + world.renderer.screen.width) % world.renderer.screen.width;
+            entity.transform.y = (entity.transform.y + world.renderer.screen.height) % world.renderer.screen.height;
         });
     }
 }
@@ -240,8 +243,8 @@ class SpriteWrapper extends System {
     update(world: World, delta: number): void {
         this.runOnEntities((entity: Entity, sprite: WrapSprite) => {
 
-            const xChild = world.app.stage.getChildByName(sprite.xId);
-            const yChild = world.app.stage.getChildByName(sprite.yId);
+            const xChild = world.sceneNode.getChildByName(sprite.xId);
+            const yChild = world.sceneNode.getChildByName(sprite.yId);
 
             xChild.rotation = entity.transform.rotation;
             yChild.rotation = entity.transform.rotation;
@@ -249,15 +252,15 @@ class SpriteWrapper extends System {
             xChild.position.y = entity.transform.y;
             yChild.position.x = entity.transform.x;
 
-            if (entity.transform.position.x > world.app.screen.width / 2) {
-                xChild.position.x = entity.transform.position.x - world.app.screen.width;
+            if (entity.transform.position.x > world.renderer.screen.width / 2) {
+                xChild.position.x = entity.transform.position.x - world.renderer.screen.width;
             } else {
-                xChild.position.x = entity.transform.position.x + world.app.screen.width;
+                xChild.position.x = entity.transform.position.x + world.renderer.screen.width;
             }
-            if (entity.transform.position.y > world.app.screen.height / 2) {
-                yChild.position.y = entity.transform.position.y - world.app.screen.height;
+            if (entity.transform.position.y > world.renderer.screen.height / 2) {
+                yChild.position.y = entity.transform.position.y - world.renderer.screen.height;
             } else {
-                yChild.position.y = entity.transform.position.y + world.app.screen.height;
+                yChild.position.y = entity.transform.position.y + world.renderer.screen.height;
             }
         });
     }

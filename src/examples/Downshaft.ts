@@ -1,3 +1,5 @@
+import * as PIXI from "pixi.js";
+
 import spr_block from './resources/block.png';
 import spr_guy from './resources/guy.png';
 import {Component, Entity, System, World} from "../ECS";
@@ -10,7 +12,7 @@ import {CollisionMatrix} from "../Collision";
 
 const Keyboard = require('pixi.js-keyboard');
 
-const loader = PIXI.loader;
+const loader = new PIXI.Loader();
 
 
 enum Layers {
@@ -24,7 +26,7 @@ export class Downshaft {
 
         loader.add([spr_block, spr_guy]).load(() => {
 
-            let world = new World({width: 512, height: 512, resolution: 1}, 0xA1B1A1);
+            let world = new World({width: 512, height: 512, resolution: 1, backgroundColor: 0xA1B1A1});
 
             world.addEntity(new Diagnostics("white"));
 
@@ -132,8 +134,8 @@ class FollowCamera extends System {
         this.runOnEntities((entity: Entity) => {
 
             const worldPos = world.sceneNode.position;
-            const midX = world.app.view.width / 2 - worldPos.x;
-            const midY = world.app.view.height / 2 - worldPos.y;
+            const midX = world.renderer.view.width / 2 - worldPos.x;
+            const midY = world.renderer.view.height / 2 - worldPos.y;
 
             const dx = midX - entity.transform.x;
             const dy = midY - entity.transform.y;

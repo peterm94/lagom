@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import {Component, World, WorldSystem} from "./ECS";
 import * as Matter from "matter-js";
 import {Log} from "./Util";
@@ -105,7 +106,6 @@ export class MatterEngine extends WorldSystem {
 
     update(world: World, delta: number): void {
 
-        // TODO this delta is not fixed, it probably should be.
         // TODO this can be optimized to not run on static colliders
         // Update the physics state
         Matter.Engine.update(this.matterEngine, delta);
@@ -218,8 +218,8 @@ export class MCollider extends Component {
             Matter.World.addBody(this.engine.matterEngine.world, this.body);
 
             if (this.debugDraw) {
-                const xoff = entity.transform.getGlobalPosition().x;
-                const yoff = entity.transform.getGlobalPosition().y;
+                const xoff = entity.transform.getGlobalPosition(<any>undefined, false).x;
+                const yoff = entity.transform.getGlobalPosition(<any>undefined, false).y;
                 const poly = new PIXI.Graphics();
                 poly.lineStyle(1, 0xFF3300, 1);
                 poly.drawPolygon(this.body.vertices.flatMap((val) => {

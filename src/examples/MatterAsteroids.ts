@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import {Component, Entity, System, World} from "../ECS";
 import {Sprite} from "../Components";
 import {Diagnostics} from "../Debug";
@@ -13,7 +14,7 @@ import {CollisionMatrix} from "../Collision";
 
 const Keyboard = require('pixi.js-keyboard');
 
-const loader = PIXI.loader;
+const loader = new PIXI.Loader();
 
 enum CollLayers {
     Asteroid,
@@ -31,13 +32,13 @@ export class MatterAsteroids {
                     spr_ship,
                     spr_bullet]).load(() => {
 
-            let world = new World({width: 512, height: 512, resolution: 1}, 0x200140);
+            let world = new World({width: 512, height: 512, resolution: 1, backgroundColor: 0x200140});
 
-            world.addEntity(new Ship(world.app.screen.width / 2, world.app.screen.height / 2));
+            world.addEntity(new Ship(world.renderer.screen.width / 2, world.renderer.screen.height / 2));
 
             for (let i = 0; i < 10; i++) {
-                world.addEntity(new Asteroid(Math.random() * world.app.screen.width,
-                                             Math.random() * world.app.screen.height, 3))
+                world.addEntity(new Asteroid(Math.random() * world.renderer.screen.width,
+                                             Math.random() * world.renderer.screen.height, 3))
             }
 
             world.addEntity(new Diagnostics("white"));
@@ -183,11 +184,11 @@ class DestroyOffScreen extends System {
 
     update(world: World, delta: number): void {
         this.runOnEntities((entity: Entity) => {
-            const pos = entity.transform.getGlobalPosition();
+            const pos = entity.transform.getGlobalPosition(<any>undefined, false);
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
-                || pos.x > world.app.screen.width + this.tolerance
-                || pos.y > world.app.screen.height + this.tolerance) {
+                || pos.x > world.renderer.screen.width + this.tolerance
+                || pos.y > world.renderer.screen.height + this.tolerance) {
                 entity.destroy();
             }
         })
@@ -221,8 +222,9 @@ class ScreenWrapper extends System {
         this.runOnEntities((entity: Entity, collider: MCollider) => {
             Matter.Body.setPosition(
                 collider.body,
-                Matter.Vector.create((collider.body.position.x + world.app.screen.width) % world.app.screen.width,
-                                     (collider.body.position.y + world.app.screen.height) % world.app.screen.height))
+                Matter.Vector.create(
+                    (collider.body.position.x + world.renderer.screen.width) % world.renderer.screen.width,
+                    (collider.body.position.y + world.renderer.screen.height) % world.renderer.screen.height))
         })
     }
 }
@@ -243,15 +245,15 @@ class SpriteWrapper extends System {
             xChild.position.y = entity.transform.y;
             yChild.position.x = entity.transform.x;
 
-            if (entity.transform.position.x > world.app.screen.width / 2) {
-                xChild.position.x = entity.transform.position.x - world.app.screen.width;
+            if (entity.transform.position.x > world.renderer.screen.width / 2) {
+                xChild.position.x = entity.transform.position.x - world.renderer.screen.width;
             } else {
-                xChild.position.x = entity.transform.position.x + world.app.screen.width;
+                xChild.position.x = entity.transform.position.x + world.renderer.screen.width;
             }
-            if (entity.transform.position.y > world.app.screen.height / 2) {
-                yChild.position.y = entity.transform.position.y - world.app.screen.height;
+            if (entity.transform.position.y > world.renderer.screen.height / 2) {
+                yChild.position.y = entity.transform.position.y - world.renderer.screen.height;
             } else {
-                yChild.position.y = entity.transform.position.y + world.app.screen.height;
+                yChild.position.y = entity.transform.position.y + world.renderer.screen.height;
             }
         })
     }
@@ -298,8 +300,6 @@ class ShipMover extends System {
     }
 
     update(world: World, delta: number): void {
-
-        const dt2 = world.mainTicker.deltaTime / PIXI.settings.TARGET_FPMS;
 
         this.runOnEntities((entity: Entity, collider: MCollider) => {
 

@@ -1,3 +1,5 @@
+import * as PIXI from "pixi.js";
+
 import {Entity, World} from "../ECS";
 import {Diagnostics} from "../Debug";
 import {MatterEngine, MCollider} from "../MatterPhysics";
@@ -8,7 +10,7 @@ import {Sprite} from "../Components";
 import * as Matter from "matter-js";
 import {CollisionMatrix} from "../Collision";
 
-const loader = PIXI.loader;
+const loader = new PIXI.Loader();
 
 export class PerfTest {
 
@@ -16,7 +18,7 @@ export class PerfTest {
 
         loader.add([spr_block]).load(() => {
 
-            let world = new World({width: 1024, height: 700, resolution: 1}, 0xA1B1A1);
+            let world = new World({width: 1024, height: 700, resolution: 1, backgroundColor: 0xA1B1A1});
 
             world.addEntity(new Diagnostics("white"));
 

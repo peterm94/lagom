@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
-import {Smoothie} from "./Smoothie";
-import {Log, Util} from "./Util";
+import {Log, MathUtil, Util} from "./Util";
 import {Observable} from "./Observer";
+import {Simulate} from "react-dom/test-utils";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
 // keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
@@ -22,6 +22,7 @@ export class World {
 
     static instance: World;
 
+    // ECS control lists
     private entitiesInit: Set<Entity> = new Set();
     private entitiesDestroy: Set<Entity> = new Set();
     private systemsInit: Set<System> = new Set();
@@ -38,10 +39,54 @@ export class World {
     // Set this to true to end the game
     gameOver: boolean = false;
 
-    readonly app: PIXI.Application;
+    // Main PIXI renderer
+    readonly renderer: PIXI.Renderer;
+
+    // Top level PIXI Container that will be passed to the renderer.
+    readonly stage: PIXI.Container;
+
+    // Node for scene objects. This can be offset to simulate camera movement.
     readonly sceneNode: PIXI.Container;
+
+    // GUI top level node. This node should not be offset, allowing for static GUI elements.
     readonly guiNode: PIXI.Container;
-    readonly mainTicker: PIXI.ticker.Ticker;
+
+    // Track total time
+    private timeMs = 0;
+
+    // Time since last frame was triggered
+    private lastFrameTime = Date.now();
+
+    // Accumulated time since the last update. Used to keep the framerate fixed independently of the elapsed time.
+    private elapsedSinceUpdate = 0;
+
+    // Fixed timestep rate for logic updates (60hz)
+    private readonly dtMs = 1000 / 60;
+
+    updateLoop() {
+
+        if (!this.gameOver) {
+            const now = Date.now();
+            let deltaTime = now - this.lastFrameTime;
+            this.lastFrameTime = now;
+
+            this.elapsedSinceUpdate += deltaTime;
+
+            while (this.elapsedSinceUpdate >= this.dtMs) {
+
+                // Update the ECS
+                this.updateECS(this.dtMs);
+
+                this.elapsedSinceUpdate -= this.dtMs;
+                this.timeMs += this.dtMs;
+            }
+
+            this.renderer.render(this.stage);
+
+            requestAnimationFrame(this.updateLoop.bind(this));
+        }
+    }
+
 
     readonly diag: Diag = new Diag();
 
@@ -50,31 +95,38 @@ export class World {
 
     /**
      * Create a new World.
-     * @param options Options for PIXI.
-     * @param backgroundCol The canvas background colour.
+     * @param options Options for the PIXI Renderer.
      */
-    constructor(options: PIXI.ApplicationOptions, backgroundCol: number) {
+    constructor(options?: {
+        width?: number;
+        height?: number;
+        view?: HTMLCanvasElement;
+        transparent?: boolean;
+        autoDensity?: boolean;
+        antialias?: boolean;
+        forceFXAA?: boolean;
+        resolution?: number;
+        clearBeforeRender?: boolean;
+        preserveDrawingBuffer?: boolean;
+        backgroundColor?: number;
+        powerPreference?: string;
+        context?: any;
+    }) {
 
         World.instance = this;
 
-        this.app = new PIXI.Application(options);
-
         // Set it up in the page
-        this.app.renderer.backgroundColor = backgroundCol;
-        document.body.appendChild(this.app.view);
+        this.renderer = new PIXI.Renderer(options);
+        document.body.appendChild(this.renderer.view);
+
+        this.stage = new PIXI.Container();
 
         // set up the nodes for the ECS to interact with and add them to PIXI.
         this.sceneNode = new PIXI.Container();
         this.sceneNode.name = "scene";
         this.guiNode = new PIXI.Container();
         this.guiNode.name = "gui";
-        this.app.stage.addChild(this.sceneNode, this.guiNode);
-
-        this.mainTicker = new PIXI.ticker.Ticker();
-        this.mainTicker.stop();
-        this.mainTicker.add(delta => {
-            return this.gameLoop(delta);
-        });
+        this.stage.addChild(this.sceneNode, this.guiNode);
     }
 
     /**
@@ -82,8 +134,9 @@ export class World {
      */
     start() {
 
-        // this.smoothie.start();
-        this.mainTicker.start();
+        // Start the update loop
+        this.lastFrameTime = Date.now();
+        this.updateLoop()
     }
 
     private addPending() {
@@ -167,27 +220,14 @@ export class World {
         });
     }
 
-    private gameLoop(delta: number) {
-
-        if (!this.gameOver) {
-
-            this.addPending();
-            this.removePending();
-
-            const timeStart = Date.now();
-            // Mouse.update();
-            this.diag.inputUpdateTime = Date.now() - timeStart;
-
-            this.updateECS(this.mainTicker.deltaTime / PIXI.settings.TARGET_FPMS);
-
-            Keyboard.update();
-
-        } else {
-            this.app.stop();
-        }
-    }
-
     private updateECS(delta: number) {
+
+        this.addPending();
+        this.removePending();
+
+        const timeStart = Date.now();
+        // Mouse.update();
+        this.diag.inputUpdateTime = Date.now() - timeStart;
 
         // Update world systems
         for (let system of this.worldSystems) {
@@ -203,6 +243,8 @@ export class World {
         for (let system of this.systems) {
             system.update(this, delta);
         }
+
+        Keyboard.update();
     }
 
     /**
