@@ -1,7 +1,6 @@
 import * as PIXI from "pixi.js";
-import {Log, MathUtil, Util} from "./Util";
+import {Log, Util} from "./Util";
 import {Observable} from "./Observer";
-import {Simulate} from "react-dom/test-utils";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
 // keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
@@ -9,7 +8,8 @@ const Keyboard = require('pixi.js-keyboard');
 
 // const Mouse = require('pixi.js-mouse');
 
-class Diag {
+class Diag
+{
     inputUpdateTime: number = 0;
     systemUpdateTime: number = 0;
     worldSystemUpdateTime: number = 0;
@@ -18,8 +18,8 @@ class Diag {
 /**
  * Entire Scene instance Access via World.instance after creation.
  */
-export class World {
-
+export class World
+{
     static instance: World;
 
     // ECS control lists
@@ -63,16 +63,18 @@ export class World {
     // Fixed timestep rate for logic updates (60hz)
     private readonly dtMs = 1000 / 60;
 
-    updateLoop() {
-
-        if (!this.gameOver) {
+    updateLoop()
+    {
+        if (!this.gameOver)
+        {
             const now = Date.now();
             let deltaTime = now - this.lastFrameTime;
             this.lastFrameTime = now;
 
             this.elapsedSinceUpdate += deltaTime;
 
-            while (this.elapsedSinceUpdate >= this.dtMs) {
+            while (this.elapsedSinceUpdate >= this.dtMs)
+            {
 
                 // Update the ECS
                 this.updateECS(this.dtMs);
@@ -86,7 +88,6 @@ export class World {
             requestAnimationFrame(this.updateLoop.bind(this));
         }
     }
-
 
     readonly diag: Diag = new Diag();
 
@@ -111,8 +112,8 @@ export class World {
         backgroundColor?: number;
         powerPreference?: string;
         context?: any;
-    }) {
-
+    })
+    {
         World.instance = this;
 
         // Set it up in the page
@@ -132,14 +133,15 @@ export class World {
     /**
      * Start the game loop.
      */
-    start() {
-
+    start()
+    {
         // Start the update loop
         this.lastFrameTime = Date.now();
         this.updateLoop()
     }
 
-    private addPending() {
+    private addPending()
+    {
         // Copy the lists so any new things additions/removals triggered get in for the next frame.
         const entitiesInit = new Set(this.entitiesInit);
         const systemsInit = new Set(this.systemsInit);
@@ -178,8 +180,8 @@ export class World {
         });
     }
 
-    private removePending() {
-
+    private removePending()
+    {
         // Copy the lists so any new things additions/removals triggered get in for the next frame.
         const entitiesDestroy = new Set(this.entitiesDestroy);
         const systemsDestroy = new Set(this.systemsDestroy);
@@ -220,7 +222,8 @@ export class World {
         });
     }
 
-    private updateECS(delta: number) {
+    private updateECS(delta: number)
+    {
 
         this.addPending();
         this.removePending();
@@ -230,17 +233,20 @@ export class World {
         this.diag.inputUpdateTime = Date.now() - timeStart;
 
         // Update world systems
-        for (let system of this.worldSystems) {
+        for (let system of this.worldSystems)
+        {
             system.update(this, delta);
         }
 
         // Update entities
-        for (let entity of this.entities) {
+        for (let entity of this.entities)
+        {
             entity.internalUpdate();
         }
 
         // Update normal systems
-        for (let system of this.systems) {
+        for (let system of this.systems)
+        {
             system.update(this, delta);
         }
 
@@ -252,7 +258,8 @@ export class World {
      * @param system The system to add
      * @returns The added system.
      */
-    addSystem<T extends System>(system: T): T {
+    addSystem<T extends System>(system: T): T
+    {
         this.systemsInit.add(system);
         return system;
     }
@@ -262,7 +269,8 @@ export class World {
      * @param system The system to add.
      * @returns The added system.
      */
-    addWorldSystem<T extends WorldSystem>(system: T): T {
+    addWorldSystem<T extends WorldSystem>(system: T): T
+    {
         this.worldSystemsInit.add(system);
         return system;
     }
@@ -272,7 +280,8 @@ export class World {
      * @param entity The entity to add.
      * @returns The added entity.
      */
-    addEntity<T extends Entity>(entity: T): T {
+    addEntity<T extends Entity>(entity: T): T
+    {
         this.entitiesInit.add(entity);
         return entity;
     }
@@ -281,7 +290,8 @@ export class World {
      * Remove a system from the world.
      * @param system The system to remove.
      */
-    removeSystem(system: System) {
+    removeSystem(system: System)
+    {
         this.systemsDestroy.add(system);
     }
 
@@ -289,7 +299,8 @@ export class World {
      * Remove a world system from the world.
      * @param system The system to remove.
      */
-    removeWorldSystem(system: WorldSystem) {
+    removeWorldSystem(system: WorldSystem)
+    {
         this.worldSystemsDestroy.add(system);
     }
 
@@ -297,7 +308,8 @@ export class World {
      * Remove an entity from the world. This will also remove any components the entity owns.
      * @param entity The entity to remove.
      */
-    removeEntity(entity: Entity) {
+    removeEntity(entity: Entity)
+    {
         Log.trace("Entity removal scheduled for:", entity);
         this.entitiesDestroy.add(entity);
     }
@@ -307,7 +319,8 @@ export class World {
      * @param type The type of system to search for.
      * @returns The found system or null.
      */
-    getSystem<T extends System>(type: any | { new(): T }): T | null {
+    getSystem<T extends System>(type: any | { new(): T }): T | null
+    {
         const found = this.systems.find(value => value instanceof type);
         return found != undefined ? found as T : null;
     }
@@ -317,7 +330,8 @@ export class World {
      * @param type The type of system to search for.
      * @returns The found system or null.
      */
-    getWorldSystem<T extends WorldSystem>(type: any | { new(): T }): T | null {
+    getWorldSystem<T extends WorldSystem>(type: any | { new(): T }): T | null
+    {
         const found = this.worldSystems.find(value => value instanceof type);
         return found != undefined ? found as T : null;
     }
@@ -328,7 +342,8 @@ export class World {
      * @param name The name of the Entity to search for.
      * @returns The found Entity or null.
      */
-    getEntityWithName<T extends Entity>(name: string): T | null {
+    getEntityWithName<T extends Entity>(name: string): T | null
+    {
         const found = this.entities.find(value => value.name === name);
         return found != undefined ? found as T : null;
     }
@@ -337,32 +352,35 @@ export class World {
 /**
  * Base class for any lifecycle-aware object.
  */
-export abstract class LifecycleObject {
-
+export abstract class LifecycleObject
+{
     /**
      * Will be called when added to the World.
      */
-    onAdded() {
+    onAdded()
+    {
     }
 
     /**
      * Will be called once per frame.
      */
-    internalUpdate() {
+    internalUpdate()
+    {
     }
 
     /**
      * Will be called when removed from the world.
      */
-    onRemoved() {
+    onRemoved()
+    {
     }
 }
 
 /**
  * Component base class.
  */
-export abstract class Component extends LifecycleObject {
-
+export abstract class Component extends LifecycleObject
+{
     private entity: Entity | null = null;
 
     /**
@@ -370,7 +388,8 @@ export abstract class Component extends LifecycleObject {
      * Set the entity for this component. Please don't call this, ts doesn't have friend classes.
      * @param entity The parent entity.
      */
-    setEntity(entity: Entity) {
+    setEntity(entity: Entity)
+    {
         this.entity = entity;
     }
 
@@ -378,13 +397,17 @@ export abstract class Component extends LifecycleObject {
      * Get the entity that owns this component.
      * @returns The entity that this component is attached to.
      */
-    getEntity(): Entity {
-        if (this.entity === null) {
+    getEntity(): Entity
+    {
+        if (this.entity === null)
+        {
             Log.error("Entity referenced before Component added to scene. Use onAdded() for initialization instead" +
-                      " of the constructor.");
+                          " of the constructor.");
             // TODO do we throw here? this is a real problemo.
             return <any>null;
-        } else {
+        }
+        else
+        {
             return this.entity;
         }
     }
@@ -393,20 +416,24 @@ export abstract class Component extends LifecycleObject {
 /**
  * PIXI Component base class. More for convenience than anything else, will add to the PIXI tree.
  */
-export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Component {
+export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Component
+{
     readonly pixiObj: T;
 
-    protected constructor(pixiComp: T) {
+    protected constructor(pixiComp: T)
+    {
         super();
         this.pixiObj = pixiComp;
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
         this.getEntity().transform.addChild(this.pixiObj);
     }
 
-    onRemoved() {
+    onRemoved()
+    {
         super.onRemoved();
         this.getEntity().transform.removeChild(this.pixiObj);
     }
@@ -415,8 +442,8 @@ export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Compon
 /**
  * World system base class. Designed to run on batches of Components.
  */
-export abstract class WorldSystem extends LifecycleObject {
-
+export abstract class WorldSystem extends LifecycleObject
+{
     private readonly runOn: Map<{ new(): Component }, Component[]> = new Map();
 
     /**
@@ -438,11 +465,13 @@ export abstract class WorldSystem extends LifecycleObject {
      * types() returns [Sprite, Collider], the function will be passed two arrays, (sprites: Sprite[], colliders:
      * Collider[]).
      */
-    protected runOnComponents(f: Function) {
+    protected runOnComponents(f: Function)
+    {
         f(...Array.from(this.runOn.values()));
     }
 
-    private onComponentAdded(entity: Entity, component: Component) {
+    private onComponentAdded(entity: Entity, component: Component)
+    {
         // Check if we care about this type at all
         const type = this.types().find((val) => {
             return component instanceof val;
@@ -452,7 +481,8 @@ export abstract class WorldSystem extends LifecycleObject {
 
         let compMap = this.runOn.get(type);
 
-        if (compMap === undefined) {
+        if (compMap === undefined)
+        {
             Log.warn("Expected component map does not exist on WorldSystem.", this, type);
             compMap = [];
             this.runOn.set(type, compMap);
@@ -460,7 +490,8 @@ export abstract class WorldSystem extends LifecycleObject {
         compMap.push(component);
     }
 
-    private onComponentRemoved(entity: Entity, component: Component) {
+    private onComponentRemoved(entity: Entity, component: Component)
+    {
         // Check if we care about this type at all
         const type = this.types().find((val) => {
             return component instanceof val;
@@ -477,18 +508,21 @@ export abstract class WorldSystem extends LifecycleObject {
         Util.remove(components, component);
     }
 
-    private onEntityAdded(caller: World, entity: Entity) {
+    private onEntityAdded(caller: World, entity: Entity)
+    {
         // Register for component changes
         entity.componentAddedEvent.register(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.register(this.onComponentRemoved.bind(this));
     }
 
-    private onEntityRemoved(caller: World, entity: Entity) {
+    private onEntityRemoved(caller: World, entity: Entity)
+    {
         entity.componentAddedEvent.deregister(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.deregister(this.onComponentRemoved.bind(this));
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
 
         // make each component map
@@ -511,7 +545,8 @@ export abstract class WorldSystem extends LifecycleObject {
         })
     }
 
-    onRemoved() {
+    onRemoved()
+    {
         super.onRemoved();
         World.instance.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
         World.instance.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
@@ -521,9 +556,8 @@ export abstract class WorldSystem extends LifecycleObject {
 /**
  * Entity base class. Raw entities can be used or subclasses can be defined similarly to prefabs.
  */
-export class Entity
-    extends LifecycleObject {
-
+export class Entity extends LifecycleObject
+{
     private componentsInit: Set<Component> = new Set();
     private componentsDestroy: Set<Component> = new Set();
 
@@ -536,8 +570,8 @@ export class Entity
     readonly name: string;
     readonly components: Component[] = [];
 
-
-    private addPending() {
+    private addPending()
+    {
 
         const componentsInit = new Set(this.componentsInit);
         this.componentsInit.clear();
@@ -553,7 +587,8 @@ export class Entity
         });
     }
 
-    private removePending() {
+    private removePending()
+    {
         const componentsDestroy = new Set(this.componentsDestroy);
         this.componentsDestroy.clear();
 
@@ -568,7 +603,8 @@ export class Entity
         });
     }
 
-    internalUpdate() {
+    internalUpdate()
+    {
         this.addPending();
         this.removePending();
     }
@@ -579,7 +615,8 @@ export class Entity
      * @param x The starting x position.
      * @param y The starting y position.
      */
-    constructor(name: string, x: number = 0, y: number = 0) {
+    constructor(name: string, x: number = 0, y: number = 0)
+    {
         super();
         this.name = name;
 
@@ -589,11 +626,13 @@ export class Entity
         this.addToScene();
     }
 
-    protected addToScene() {
+    protected addToScene()
+    {
         World.instance.sceneNode.addChild(this.transform);
     }
 
-    protected removeFromScene() {
+    protected removeFromScene()
+    {
         World.instance.sceneNode.removeChild(this.transform);
     }
 
@@ -602,7 +641,8 @@ export class Entity
      * @param component The component to add.
      * @returns The added component.
      */
-    addComponent<T extends Component>(component: T): T {
+    addComponent<T extends Component>(component: T): T
+    {
         this.componentsInit.add(component);
         component.setEntity(this);
         return component;
@@ -613,7 +653,8 @@ export class Entity
      * @param type The type of component to search for.
      * @returns An array of all matching components.
      */
-    getComponentsOfType<T extends Component>(type: any | { new(): T }): T[] {
+    getComponentsOfType<T extends Component>(type: any | { new(): T }): T[]
+    {
         return this.components.filter(value => value instanceof type) as T[];
     }
 
@@ -622,7 +663,8 @@ export class Entity
      * @param type the type of component to search for.
      * @returns The component if found, otherwise null.
      */
-    getComponent<T extends Component>(type: any | { new(): T }): T | null {
+    getComponent<T extends Component>(type: any | { new(): T }): T | null
+    {
         const found = this.components.find(value => value instanceof type);
         return found != undefined ? found as T : null;
     }
@@ -631,17 +673,20 @@ export class Entity
      * Remove a component from the entity.
      * @param component The component to remove.
      */
-    removeComponent(component: Component) {
+    removeComponent(component: Component)
+    {
         Log.trace("Component removal scheduled for:", component);
         this.componentsDestroy.add(component);
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
         this.addPending();
     }
 
-    onRemoved() {
+    onRemoved()
+    {
         super.onRemoved();
         this.removePending();
 
@@ -652,7 +697,8 @@ export class Entity
     /**
      * Destroy the Entity and all components on it.
      */
-    destroy() {
+    destroy()
+    {
         Log.trace("Entity destroy() called for:", this);
         this.components.forEach((val) => this.removeComponent(val));
         World.instance.removeEntity(this);
@@ -663,15 +709,20 @@ export class Entity
  * System base class. Systems should be used to run on groups of components.
  * Note that this will only trigger if every component type is represented on an entity. Partial matches will not run.
  */
-export abstract class System extends LifecycleObject {
+export abstract class System extends LifecycleObject
+{
     private readonly runOn: Map<Entity, Component[]> = new Map();
 
-    private onComponentAdded(entity: Entity, component: Component) {
+    private onComponentAdded(entity: Entity, component: Component)
+    {
 
         // Check if we care about this type at all
         if (this.types().find((val) => {
             return component instanceof val;
-        }) === undefined) return;
+        }) === undefined)
+        {
+            return;
+        }
 
         // Compute if we can run on this updated entity
         let entry = this.runOn.get(entity);
@@ -687,11 +738,13 @@ export abstract class System extends LifecycleObject {
         this.runOn.set(entity, ret);
     }
 
-    private findComponents(entity: Entity): Component[] | null {
+    private findComponents(entity: Entity): Component[] | null
+    {
         // It's dumb, I can't constrain `types` because of the way imports work, but this works as desired.
         const inTypes: { new(): Component }[] = this.types();
         const ret: Component[] = [];
-        for (let type of inTypes) {
+        for (let type of inTypes)
+        {
             const comp = entity.getComponent(type);
             if (comp == null) return null;
             ret.push(comp);
@@ -700,11 +753,15 @@ export abstract class System extends LifecycleObject {
         return ret;
     }
 
-    private onComponentRemoved(entity: Entity, component: Component) {
+    private onComponentRemoved(entity: Entity, component: Component)
+    {
         // Check if we care about this type at all
         if (this.types().find((val) => {
             return component instanceof val;
-        }) === undefined) return;
+        }) === undefined)
+        {
+            return;
+        }
 
         let entry = this.runOn.get(entity);
 
@@ -713,22 +770,27 @@ export abstract class System extends LifecycleObject {
 
         // Recompute if we can run on this entity, remove if we cannot
         const ret = this.findComponents(entity);
-        if (ret === null) {
+        if (ret === null)
+        {
             // Can't run, remove entry
             this.runOn.delete(entity);
-        } else {
+        }
+        else
+        {
             // Can run, update runOn
             this.runOn.set(entity, ret);
         }
     }
 
-    private onEntityAdded(caller: World, entity: Entity) {
+    private onEntityAdded(caller: World, entity: Entity)
+    {
         // Register for component changes
         entity.componentAddedEvent.register(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.register(this.onComponentRemoved.bind(this));
     }
 
-    private onEntityRemoved(caller: World, entity: Entity) {
+    private onEntityRemoved(caller: World, entity: Entity)
+    {
         entity.componentAddedEvent.deregister(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.deregister(this.onComponentRemoved.bind(this));
 
@@ -736,7 +798,8 @@ export abstract class System extends LifecycleObject {
         this.runOn.delete(entity);
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
         World.instance.entityAddedEvent.register(this.onEntityAdded.bind(this));
         World.instance.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
@@ -748,13 +811,15 @@ export abstract class System extends LifecycleObject {
 
             // Check it, add if ready.
             const ret = this.findComponents(entity);
-            if (ret != null) {
+            if (ret != null)
+            {
                 this.runOn.set(entity, ret);
             }
         })
     }
 
-    onRemoved() {
+    onRemoved()
+    {
         super.onRemoved();
         World.instance.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
         World.instance.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
@@ -780,7 +845,8 @@ export abstract class System extends LifecycleObject {
      * For example, if types() is [Sprite, MCollider], the function arguments would look as follows: (entity:
      * Entity, sprite: Sprite, collider: MCollider).
      */
-    protected runOnEntities(f: Function) {
+    protected runOnEntities(f: Function)
+    {
         this.runOn.forEach((value: Component[], key: Entity) => {
             f(key, ...value);
         })
@@ -791,13 +857,16 @@ export abstract class System extends LifecycleObject {
  * Entity type that is not tied to a 'world' object. Positions etc. will remain fixed and not move with the viewport
  * position. Use this to render to absolute positions on the canvas (e.g. GUI text).
  */
-export class GUIEntity extends Entity {
-    protected addToScene(): void {
+export class GUIEntity extends Entity
+{
+    protected addToScene(): void
+    {
         // Override addToScene(), add to the GUI node instead of the normal node. This will not move with the camera.
         World.instance.guiNode.addChild(this.transform);
     }
 
-    protected removeFromScene(): void {
+    protected removeFromScene(): void
+    {
         World.instance.guiNode.removeChild(this.transform);
     }
 }

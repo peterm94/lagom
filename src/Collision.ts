@@ -7,7 +7,8 @@ import {MathUtil} from "./Util";
 /**
  * Collection of collision detection functions and utilities.
  */
-export class Collision {
+export class Collision
+{
 
     /**
      * Check for a collision between any two collider types.
@@ -15,19 +16,31 @@ export class Collision {
      * @param collider2 The second collider to check.
      * @returns True on collision, false otherwise.
      */
-    static checkCollision(collider1: Collider, collider2: Collider): boolean {
+    static checkCollision(collider1: Collider, collider2: Collider): boolean
+    {
 
         // Need to figure out what type of collider we have
-        if (collider1 instanceof BoxCollider) {
+        if (collider1 instanceof BoxCollider)
+        {
             if (collider2 instanceof BoxCollider)
+            {
                 return Collision.checkCollisionBoxBox(collider1, collider2);
+            }
             else if (collider2 instanceof CircleCollider)
+            {
                 return Collision.checkCollisionBoxCircle(collider1, collider2);
-        } else if (collider1 instanceof CircleCollider) {
+            }
+        }
+        else if (collider1 instanceof CircleCollider)
+        {
             if (collider2 instanceof BoxCollider)
+            {
                 return Collision.checkCollisionBoxCircle(collider2, collider1);
+            }
             else if (collider2 instanceof CircleCollider)
+            {
                 return Collision.checkCollisionCircleCircle(collider1, collider2);
+            }
         }
         // TODO unsupported collider type
         return false;
@@ -45,7 +58,8 @@ export class Collision {
      * @returns True if the point is on the line, false otherwise.
      */
     static pointOnLine(px: number, py: number, x1: number, y1: number, x2: number, y2: number,
-                       tolerance: number = 0.1): boolean {
+                       tolerance: number = 0.1): boolean
+    {
         // Distance from each end to the point
         const d1 = MathUtil.pointDistance(px, py, x1, y1);
         const d2 = MathUtil.pointDistance(px, py, x2, y2);
@@ -62,7 +76,8 @@ export class Collision {
      * @param circle The circle to check.
      * @returns True if the point is in the circle.
      */
-    static pointInCircle(x: number, y: number, circle: CircleCollider): boolean {
+    static pointInCircle(x: number, y: number, circle: CircleCollider): boolean
+    {
         const cp = circle.pixiObj.getGlobalPosition(<any>undefined, true);
         return MathUtil.pointDistance(x, y, cp.x, cp.y) < circle.radius;
     }
@@ -74,12 +89,13 @@ export class Collision {
      * @param rect The rectangle to check.
      * @returns True if the point is in the rectangle.
      */
-    static pointInRectangle(x: number, y: number, rect: BoxCollider): boolean {
+    static pointInRectangle(x: number, y: number, rect: BoxCollider): boolean
+    {
         // TODO check rotation cases
         const anchor = rect.pixiObj.getGlobalPosition(<any>undefined, true);
 
         return x > anchor.x && x < anchor.x + rect.width &&
-               y > anchor.y && y < anchor.y + rect.height;
+            y > anchor.y && y < anchor.y + rect.height;
     }
 
     /**
@@ -88,7 +104,8 @@ export class Collision {
      * @param c2 The second circle.
      * @returns True if the circles collide.
      */
-    static checkCollisionCircleCircle(c1: CircleCollider, c2: CircleCollider): boolean {
+    static checkCollisionCircleCircle(c1: CircleCollider, c2: CircleCollider): boolean
+    {
         // TODO check how offsets work.. i think global handles it but make sure
         let p1 = c1.pixiObj.getGlobalPosition(<any>undefined, true);
         let p2 = c2.pixiObj.getGlobalPosition(<any>undefined, true);
@@ -104,7 +121,8 @@ export class Collision {
      * @param box2 The second box.
      * @returns True if the boxes collide.
      */
-    static checkCollisionBoxBox(box1: BoxCollider, box2: BoxCollider): boolean {
+    static checkCollisionBoxBox(box1: BoxCollider, box2: BoxCollider): boolean
+    {
 
         const anchor1 = box1.pixiObj.getGlobalPosition(<any>undefined, true);
         const anchor2 = box2.pixiObj.getGlobalPosition(<any>undefined, true);
@@ -112,14 +130,17 @@ export class Collision {
 
         // TODO this only works for axis aligned
         const axisAligned = true;
-        if (axisAligned) {
+        if (axisAligned)
+        {
             // Do AABB collision, simple
             if (anchor1.y + box1.height <= anchor2.y) return false;
             if (anchor2.y + box2.height <= anchor1.y) return false;
             if (anchor1.x + box1.width <= anchor2.x) return false;
             return anchor2.x + box2.width > anchor1.x;
 
-        } else {
+        }
+        else
+        {
             // haven't done this yet
             return false;
         }
@@ -132,7 +153,8 @@ export class Collision {
      * @param circle The circle to check.
      * @returns True if the box and circle intersect.
      */
-    static checkCollisionBoxCircle(box: BoxCollider, circle: CircleCollider): boolean {
+    static checkCollisionBoxCircle(box: BoxCollider, circle: CircleCollider): boolean
+    {
 
         // Find the closest point on the box edge to the circle and check the distance.
         const boxAnchor = box.pixiObj.getGlobalPosition(<any>undefined, true);
@@ -141,26 +163,30 @@ export class Collision {
         return MathUtil.distanceSquared(circleAnchor.x, circleAnchor.y,
                                         Math.max(boxAnchor.x, Math.min(circleAnchor.x, boxAnchor.x + box.width)),
                                         Math.max(boxAnchor.y, Math.min(circleAnchor.y, boxAnchor.y + box.height)))
-               < circle.radius * circle.radius;
+            < circle.radius * circle.radius;
     }
 }
 
-export abstract class Collider extends PIXIComponent<PIXI.Container> {
+export abstract class Collider extends PIXIComponent<PIXI.Container>
+{
 
     readonly collisionEvent: Observable<Collider, Collider> = new Observable();
     isTrigger: boolean;
 
-    protected constructor(trigger: boolean = true) {
+    protected constructor(trigger: boolean = true)
+    {
         super(new PIXI.Container());
         this.isTrigger = trigger;
     }
 }
 
-export class BoxCollider extends Collider {
+export class BoxCollider extends Collider
+{
     width: number;
     height: number;
 
-    constructor(width: number, height: number, xoff: number = 0, yoff: number = 0, isTrigger: boolean = true) {
+    constructor(width: number, height: number, xoff: number = 0, yoff: number = 0, isTrigger: boolean = true)
+    {
         super(isTrigger);
         this.width = width;
         this.height = height;
@@ -169,32 +195,40 @@ export class BoxCollider extends Collider {
         this.pixiObj.y += yoff;
     }
 
-    static fromSprite(sprite: Sprite, xoff: number = 0, yoff: number = 0, isTrigger: boolean = true): BoxCollider {
+    static fromSprite(sprite: Sprite, xoff: number = 0, yoff: number = 0, isTrigger: boolean = true): BoxCollider
+    {
         return new BoxCollider(sprite.pixiObj.width, sprite.pixiObj.height, xoff, yoff, isTrigger);
     }
 }
 
-export class CircleCollider extends Collider {
+export class CircleCollider extends Collider
+{
     radius: number;
 
-    constructor(radius: number, isTrigger: boolean = true) {
+    constructor(radius: number, isTrigger: boolean = true)
+    {
         super(isTrigger);
         this.radius = radius;
     }
 }
 
-export class CollisionSystem extends WorldSystem {
+export class CollisionSystem extends WorldSystem
+{
     private readonly collisionMatrix: CollisionMatrix;
 
-    constructor(collisions: CollisionMatrix) {
+    constructor(collisions: CollisionMatrix)
+    {
         super();
         this.collisionMatrix = collisions;
     }
 
-    update(world: World, delta: number): void {
+    update(world: World, delta: number): void
+    {
         this.runOnComponents((colliders: Collider[]) => {
-            for (let i = 0; i < colliders.length; i++) {
-                for (let j = i + 1; j < colliders.length; j++) {
+            for (let i = 0; i < colliders.length; i++)
+            {
+                for (let j = i + 1; j < colliders.length; j++)
+                {
                     const c1 = colliders[i];
                     const c2 = colliders[j];
 
@@ -202,7 +236,8 @@ export class CollisionSystem extends WorldSystem {
                     if (!this.collisionMatrix.canCollide(c1.getEntity().layer, c2.getEntity().layer)) continue;
 
                     // Trigger the collision event, passing through 'other'.
-                    if (Collision.checkCollision(c1, c2)) {
+                    if (Collision.checkCollision(c1, c2))
+                    {
                         c1.collisionEvent.trigger(c1, c2);
                         c2.collisionEvent.trigger(c2, c1);
                     }
@@ -211,7 +246,8 @@ export class CollisionSystem extends WorldSystem {
         });
     }
 
-    types(): { new(): Component }[] | any[] {
+    types(): { new(): Component }[] | any[]
+    {
         return [Collider];
     }
 }
@@ -219,7 +255,8 @@ export class CollisionSystem extends WorldSystem {
 /**
  * A matrix representing all valid collisions for a physics engine. An enum is recommended for keeping track of layers.
  */
-export class CollisionMatrix {
+export class CollisionMatrix
+{
     private readonly maxLayer = 31;
 
     // Nothing collides with anything by default.
@@ -230,9 +267,11 @@ export class CollisionMatrix {
      * @param l1 The first layer.
      * @param l2 The second layer.
      */
-    addCollision(l1: number, l2: number) {
+    addCollision(l1: number, l2: number)
+    {
 
-        if (!this.validLayer(l1) || !this.validLayer(l2)) {
+        if (!this.validLayer(l1) || !this.validLayer(l2))
+        {
             throw Error(`Layer must be between 1 and ${this.maxLayer}`);
         }
 
@@ -255,7 +294,8 @@ export class CollisionMatrix {
      * @param layer2 The second layer to check.
      * @returns True if the layers can collide.
      */
-    canCollide(layer1: number, layer2: number): boolean {
+    canCollide(layer1: number, layer2: number): boolean
+    {
         const layerMask = this.layers.get(CollisionMatrix.layerInternal(layer1));
         if (layerMask === undefined) return false;
         return (layerMask & 1 << CollisionMatrix.layerInternal(layer2)) != 0;
@@ -266,7 +306,8 @@ export class CollisionMatrix {
      * @param layer The layer to use in the lookup.
      * @returns The valid collisions. If the mask is not valid or no collision are registered, will return 0.
      */
-    maskFor(layer: number): number {
+    maskFor(layer: number): number
+    {
         const layerMask = this.layers.get(CollisionMatrix.layerInternal(layer));
         return layerMask !== undefined ? layerMask : 0;
     }
@@ -276,7 +317,8 @@ export class CollisionMatrix {
      * @param layer The layer to convert.
      * @returns The internal layer value.
      */
-    static layerInternal(layer: number): number {
+    static layerInternal(layer: number): number
+    {
         return layer + 1;
     }
 
@@ -285,7 +327,8 @@ export class CollisionMatrix {
      * @param layer The layer to check.
      * @returns True if valid, false otherwise.
      */
-    private validLayer(layer: number): boolean {
+    private validLayer(layer: number): boolean
+    {
         return layer >= 0 && layer < this.maxLayer;
     }
 }

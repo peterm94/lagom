@@ -7,10 +7,12 @@ const Keyboard = require('pixi.js-keyboard');
 /**
  * Entity that adds FPS information to the canvas.
  */
-export class Diagnostics extends GUIEntity {
+export class Diagnostics extends GUIEntity
+{
     private readonly textCol: string;
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
 
         this.addComponent(new FpsTracker());
@@ -19,39 +21,48 @@ export class Diagnostics extends GUIEntity {
         World.instance.addWorldSystem(new DebugKeys());
     }
 
-    constructor(textCol: string) {
+    constructor(textCol: string)
+    {
         super("diagnostics");
         this.textCol = textCol;
     }
 }
 
-class DebugKeys extends WorldSystem {
-    update(world: World, delta: number): void {
-        if (Keyboard.isKeyPressed('KeyT')) {
+class DebugKeys extends WorldSystem
+{
+    update(world: World, delta: number): void
+    {
+        if (Keyboard.isKeyPressed('KeyT'))
+        {
             console.log(world.entities.map((e) => e.name));
         }
     }
 
-    types(): { new(): Component }[] | any[] {
+    types(): { new(): Component }[] | any[]
+    {
         return [];
     }
 }
 
-class FpsTracker extends Component {
+class FpsTracker extends Component
+{
 }
 
-class FpsUpdater extends System {
-
+class FpsUpdater extends System
+{
     printFrame: number = 10;
     frameCount: number = 0;
 
-    constructor() {
+    constructor()
+    {
         super();
     }
 
-    update(world: World, delta: number): void {
+    update(world: World, delta: number): void
+    {
         this.frameCount++;
-        if ((this.frameCount % this.printFrame) === 0) {
+        if ((this.frameCount % this.printFrame) === 0)
+        {
             this.runOnEntities((entity: Entity, text: TextDisp) => {
                 {
                     // text.pixiObj.text = `FPS: ${world.mainTicker.FPS.toFixed(2)}` +
@@ -65,7 +76,8 @@ class FpsUpdater extends System {
         }
     }
 
-    types(): { new(): Component }[] | any[] {
+    types(): { new(): Component }[] | any[]
+    {
         return [TextDisp, FpsTracker];
     }
 }

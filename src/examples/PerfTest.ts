@@ -12,18 +12,21 @@ import {CollisionMatrix} from "../Collision";
 
 const loader = new PIXI.Loader();
 
-export class PerfTest {
+export class PerfTest
+{
 
-    constructor() {
-
+    constructor()
+    {
         loader.add([spr_block]).load(() => {
 
             let world = new World({width: 1024, height: 700, resolution: 1, backgroundColor: 0xA1B1A1});
 
             world.addEntity(new Diagnostics("white"));
 
-            for (let i = 0; i < 50; i++) {
-                for (let j = 0; j < 10; j++) {
+            for (let i = 0; i < 50; i++)
+            {
+                for (let j = 0; j < 10; j++)
+                {
                     world.addEntity(new Block(i * 32, j * 32));
                 }
             }
@@ -36,13 +39,15 @@ export class PerfTest {
 }
 
 
-class Block extends Entity {
-
-    constructor(x: number, y: number) {
+class Block extends Entity
+{
+    constructor(x: number, y: number)
+    {
         super("block", x, y);
     }
 
-    onAdded(): void {
+    onAdded(): void
+    {
         super.onAdded();
 
         const sprite = this.addComponent(new Sprite(loader.resources[spr_block].texture));

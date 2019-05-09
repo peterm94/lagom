@@ -1,20 +1,24 @@
 import {Entity} from "./ECS";
 
-export class Util {
+export class Util
+{
     /**
      * Convenience list removal function.
      * @param list The list to remove an element from.
      * @param element The element to remove.
      */
-    static remove<T>(list: T[], element: T) {
+    static remove<T>(list: T[], element: T)
+    {
         const idx = list.indexOf(element);
 
-        if (idx > -1) {
+        if (idx > -1)
+        {
             list.splice(idx, 1);
         }
     }
 
-    static move(e: Entity, dist: number) {
+    static move(e: Entity, dist: number)
+    {
         const mx = MathUtil.lengthDirX(dist, e.transform.rotation);
         const my = MathUtil.lengthDirY(dist, e.transform.rotation);
 
@@ -23,15 +27,17 @@ export class Util {
     }
 }
 
-export class MathUtil {
-
+export class MathUtil
+{
     private static conv: number = 0.0174532925;
 
-    static degToRad(deg: number): number {
+    static degToRad(deg: number): number
+    {
         return MathUtil.conv * deg;
     }
 
-    static radToDeg(rad: number): number {
+    static radToDeg(rad: number): number
+    {
         return rad / MathUtil.conv;
     }
 
@@ -41,7 +47,8 @@ export class MathUtil {
      * @param dir Vector direction in radians.
      * @returns The x component of the vector.
      */
-    static lengthDirX(length: number, dir: number): number {
+    static lengthDirX(length: number, dir: number): number
+    {
         return length * Math.cos(dir);
     }
 
@@ -51,7 +58,8 @@ export class MathUtil {
      * @param dir Vector direction in radians.
      * @returns The y component of the vector.
      */
-    static lengthDirY(length: number, dir: number): number {
+    static lengthDirY(length: number, dir: number): number
+    {
         return length * Math.sin(dir);
     }
 
@@ -63,7 +71,8 @@ export class MathUtil {
      * @param y2 Second point y.
      * @returns The distance between the provided points.
      */
-    static pointDistance(x1: number, y1: number, x2: number, y2: number): number {
+    static pointDistance(x1: number, y1: number, x2: number, y2: number): number
+    {
         return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
     }
 
@@ -75,7 +84,8 @@ export class MathUtil {
      * @param y2 Point 2 y.
      * @returns The distance squared.
      */
-    static distanceSquared(x1: number, y1: number, x2: number, y2: number): number {
+    static distanceSquared(x1: number, y1: number, x2: number, y2: number): number
+    {
         return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
     }
 
@@ -87,13 +97,15 @@ export class MathUtil {
      * @param y2 Point 2 y.
      * @returns The direction between two points in radians.
      */
-    static pointDirection(x1: number, y1: number, x2: number, y2: number): number {
+    static pointDirection(x1: number, y1: number, x2: number, y2: number): number
+    {
         // trig, tan = O(y)/A(x)
         return -Math.atan2((y2 - y1), (x2 - x1));
     }
 }
 
-enum LogLevel {
+enum LogLevel
+{
     NONE,
     ERROR,
     WARN,
@@ -102,31 +114,47 @@ enum LogLevel {
     ALL
 }
 
-export class Log {
+export class Log
+{
     static logLevel: LogLevel = LogLevel.DEBUG;
 
-    static error(...x: any[]) {
+    static error(...x: any[])
+    {
         if (this.logLevel >= LogLevel.ERROR)
+        {
             console.log("%cERROR", 'color: red', ...x);
+        }
     }
 
-    static warn(...x: any[]) {
+    static warn(...x: any[])
+    {
         if (this.logLevel >= LogLevel.WARN)
+        {
             console.log("%cWARN ", 'color: orange', ...x);
+        }
     }
 
-    static info(...x: any[]) {
+    static info(...x: any[])
+    {
         if (this.logLevel >= LogLevel.INFO)
+        {
             console.log("%cINFO ", 'color: blue', ...x);
+        }
     }
 
-    static debug(...x: any[]) {
+    static debug(...x: any[])
+    {
         if (this.logLevel >= LogLevel.DEBUG)
+        {
             console.log("%cDEBUG", 'color: #6797c2', ...x);
+        }
     }
 
-    static trace(...x: any[]) {
+    static trace(...x: any[])
+    {
         if (this.logLevel >= LogLevel.ALL)
+        {
             console.log("%cTRACE", 'color: #65c4ff', ...x);
+        }
     }
 }

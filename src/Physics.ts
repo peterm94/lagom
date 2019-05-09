@@ -1,82 +1,97 @@
 import {Component, Entity, System, World, WorldSystem} from "./ECS";
 import {Collider, Collision} from "./Collision";
 
-export enum BodyType {
+export enum BodyType
+{
     Dynamic,
     Static
 }
 
-export class Vector {
+export class Vector
+{
     x: number;
     y: number;
 
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number)
+    {
         this.x = x;
         this.y = y;
     }
 
-    static zero(): Vector {
+    static zero(): Vector
+    {
         return new Vector(0, 0)
     };
 
-    static left(): Vector {
+    static left(): Vector
+    {
         return new Vector(-1, 0)
     };
 
-    static right(): Vector {
+    static right(): Vector
+    {
         return new Vector(1, 0)
     };
 
-    static up(): Vector {
+    static up(): Vector
+    {
         return new Vector(0, -1)
     };
 
-    static down(): Vector {
+    static down(): Vector
+    {
         return new Vector(0, 1)
     };
 
-    add(other: Vector): Vector {
+    add(other: Vector): Vector
+    {
         this.x += other.x;
         this.y += other.y;
         return this;
     }
 
-    sub(other: Vector): Vector {
+    sub(other: Vector): Vector
+    {
         this.x -= other.x;
         this.y -= other.y;
         return this;
     }
 
-    length(): number {
+    length(): number
+    {
         return Math.sqrt((this.x * this.x) + (this.y * this.y));
     }
 
-    normalized(): Vector {
+    normalized(): Vector
+    {
         const len = this.length();
         return new Vector(this.x / len, this.y / len);
     }
 
-    normalize(): Vector {
+    normalize(): Vector
+    {
         const len = this.length();
         this.divide(len);
         return this;
     }
 
-    divide(scalar: number): Vector {
+    divide(scalar: number): Vector
+    {
         this.x /= scalar;
         this.y /= scalar;
         return this;
     }
 
-    multiply(scalar: number): Vector {
+    multiply(scalar: number): Vector
+    {
         this.x *= scalar;
         this.y *= scalar;
         return this;
     }
 }
 
-export class Rigidbody extends Component {
-
+export class Rigidbody extends Component
+{
     readonly type: BodyType;
     mass: number = 100;
 
@@ -91,17 +106,21 @@ export class Rigidbody extends Component {
     gravityScale: number = 1;
 
 
-    constructor(type: BodyType) {
+    constructor(type: BodyType)
+    {
         super();
         this.type = type;
     }
 
-    addForce(force: Vector, impulse: boolean = false) {
-
+    addForce(force: Vector, impulse: boolean = false)
+    {
         // No mass calculation
-        if (impulse) {
+        if (impulse)
+        {
             this.velocity.add(force);
-        } else {
+        }
+        else
+        {
             // a = F/m
             this.velocity.add(force.divide(this.mass));
         }
@@ -112,8 +131,8 @@ export class Rigidbody extends Component {
      * @param vector
      * @param impulse
      */
-    addForceLocal(vector: Vector, impulse: boolean = false) {
-
+    addForceLocal(vector: Vector, impulse: boolean = false)
+    {
         const angle = this.getEntity().transform.rotation;
 
         const x2 = vector.x * Math.cos(angle) - vector.y * Math.sin(angle);
@@ -121,26 +140,30 @@ export class Rigidbody extends Component {
         const force = new Vector(x2, y2);
 
         // No mass calculation
-        if (impulse) {
+        if (impulse)
+        {
             this.velocity.add(force);
-        } else {
+        }
+        else
+        {
             // a = F/m
             this.velocity.add(force.divide(this.mass));
         }
     }
 }
 
-export class PhysicsSystem extends WorldSystem {
-
+export class PhysicsSystem extends WorldSystem
+{
     gravityDir: Vector;
 
-    constructor(gravityDir: Vector = new Vector(0, 9.8)) {
+    constructor(gravityDir: Vector = new Vector(0, 9.8))
+    {
         super();
         this.gravityDir = gravityDir;
     }
 
-
-    update(world: World, delta: number): void {
+    update(world: World, delta: number): void
+    {
     }
 
     // TODO this is very broken
@@ -197,7 +220,8 @@ export class PhysicsSystem extends WorldSystem {
     //     });
     // }
 
-    types(): { new(): Component }[] | any[] {
+    types(): { new(): Component }[] | any[]
+    {
         return [Collider];
     }
 }

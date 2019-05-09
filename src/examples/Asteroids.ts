@@ -15,8 +15,10 @@ const Keyboard = require('pixi.js-keyboard');
 
 const loader = new PIXI.Loader();
 
-export class Asteroids {
-    constructor() {
+export class Asteroids
+{
+    constructor()
+    {
 
         loader.add([spr_asteroid,
                     spr_asteroid2,
@@ -24,13 +26,17 @@ export class Asteroids {
                     spr_ship,
                     spr_bullet]).load(() => {
 
-            let world = new World({width: 512, height: 512, resolution: 1, backgroundColor: 0x200140});
+            let world = new World(
+                {width: 512, height: 512, resolution: 1, backgroundColor: 0x200140});
 
-            world.addEntity(new Ship(world.renderer.screen.width / 2, world.renderer.screen.height / 2));
+            world.addEntity(new Ship(world.renderer.screen.width / 2,
+                                     world.renderer.screen.height / 2));
 
-            for (let i = 0; i < 10; i++) {
+            for (let i = 0; i < 10; i++)
+            {
                 world.addEntity(new Asteroid(Math.random() * world.renderer.screen.width,
-                                             Math.random() * world.renderer.screen.height, 3))
+                                             Math.random() * world.renderer.screen.height,
+                                             3))
             }
 
             world.addEntity(new Diagnostics("white"));
@@ -54,14 +60,17 @@ export class Asteroids {
     }
 }
 
-class Ship extends Entity {
+class Ship extends Entity
+{
 
-    constructor(x: number, y: number) {
+    constructor(x: number, y: number)
+    {
         super("ship", x, y);
         this.layer = Layers.Ship;
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
         this.addComponent(new WrapSprite(loader.resources[spr_ship].texture));
         this.addComponent(new PlayerControlled());
@@ -74,27 +83,32 @@ class Ship extends Entity {
     }
 }
 
-enum Layers {
+enum Layers
+{
     Default,
     Bullet,
     Ship,
     Asteroid
 }
 
-class Asteroid extends Entity {
+class Asteroid extends Entity
+{
     readonly size: number;
 
-    constructor(x: number, y: number, size: number) {
+    constructor(x: number, y: number, size: number)
+    {
         super(`asteroid_${size}`, x, y);
         this.transform.rotation = Math.random() * 2 * Math.PI;
         this.layer = Layers.Asteroid;
         this.size = size;
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
 
-        switch (this.size) {
+        switch (this.size)
+        {
             case 3:
                 this.addComponent(new WrapSprite(loader.resources[spr_asteroid].texture));
                 this.addComponent(new CircleCollider(32));
@@ -114,14 +128,17 @@ class Asteroid extends Entity {
     }
 }
 
-class Bullet extends Entity {
-    constructor(x: number, y: number, dir: number) {
+class Bullet extends Entity
+{
+    constructor(x: number, y: number, dir: number)
+    {
         super("bullet", x, y);
         this.transform.rotation = dir;
         this.layer = Layers.Bullet;
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
         this.addComponent(new Sprite(loader.resources[spr_bullet].texture));
         this.addComponent(new ConstantMotion(0.5));
@@ -129,16 +146,19 @@ class Bullet extends Entity {
         this.addComponent(new ScreenContained());
     }
 
-    private static onHit(caller: Collider, other: Collider) {
+    private static onHit(caller: Collider, other: Collider)
+    {
         const otherEntity = other.getEntity();
-        if (otherEntity instanceof Asteroid) {
+        if (otherEntity instanceof Asteroid)
+        {
             caller.getEntity().destroy();
             otherEntity.addComponent(new Split());
         }
     }
 }
 
-class WrapSprite extends Sprite {
+class WrapSprite extends Sprite
+{
 
     private static count = 0;
     xId: string = `__wrapSprite${++WrapSprite.count}`;
@@ -146,7 +166,8 @@ class WrapSprite extends Sprite {
     xChild: PIXI.Sprite | null = null;
     yChild: PIXI.Sprite | null = null;
 
-    onAdded(): void {
+    onAdded(): void
+    {
         super.onAdded();
 
         // Add 2 new sprites that shadow the real one
@@ -161,58 +182,71 @@ class WrapSprite extends Sprite {
         World.instance.sceneNode.addChild(this.xChild, this.yChild);
     }
 
-    onRemoved(): void {
+    onRemoved(): void
+    {
         super.onRemoved();
-        if (this.xChild != null && this.yChild != null) {
+        if (this.xChild != null && this.yChild != null)
+        {
             World.instance.sceneNode.removeChild(this.xChild);
             World.instance.sceneNode.removeChild(this.yChild);
         }
     }
 }
 
-class Split extends Component {
+class Split extends Component
+{
 }
 
-class ScreenWrap extends Component {
+class ScreenWrap extends Component
+{
 }
 
-class ScreenContained extends Component {
+class ScreenContained extends Component
+{
 }
 
-class DestroyOffScreen extends System {
+class DestroyOffScreen extends System
+{
 
     private readonly tolerance: number = 50;
 
-    types(): { new(): Component }[] | any[] {
+    types(): { new(): Component }[] | any[]
+    {
         return [ScreenContained];
     }
 
-    update(world: World, delta: number): void {
+    update(world: World, delta: number): void
+    {
         this.runOnEntities((entity: Entity) => {
-            // TODO this function apparently takes null as a first parameter, but the typedef doesn't allow it.
-            // Submit an issue?
+            // TODO this function apparently takes null as a first parameter, but the typedef
+            // doesn't allow it. Submit an issue?
             const pos = entity.transform.getGlobalPosition(<any>undefined, false);
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
                 || pos.x > world.renderer.screen.width + this.tolerance
-                || pos.y > world.renderer.screen.height + this.tolerance) {
+                || pos.y > world.renderer.screen.height + this.tolerance)
+            {
                 entity.destroy();
             }
         });
     }
 }
 
-class AsteroidSplitter extends System {
-    types(): { new(): Component }[] | any[] {
+class AsteroidSplitter extends System
+{
+    types(): { new(): Component }[] | any[]
+    {
         return [Split];
     }
 
-    update(world: World, delta: number): void {
+    update(world: World, delta: number): void
+    {
         this.runOnEntities((entity: Entity) => {
 
             const currSize = (<Asteroid>entity).size;
 
-            if (currSize > 1) {
+            if (currSize > 1)
+            {
                 world.addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
                 world.addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
             }
@@ -222,25 +256,33 @@ class AsteroidSplitter extends System {
 
 }
 
-class ScreenWrapper extends System {
-    types(): { new(): Component }[] | any[] {
+class ScreenWrapper extends System
+{
+    types(): { new(): Component }[] | any[]
+    {
         return [ScreenWrap];
     }
 
-    update(world: World, delta: number): void {
+    update(world: World, delta: number): void
+    {
         this.runOnEntities((entity: Entity) => {
-            entity.transform.x = (entity.transform.x + world.renderer.screen.width) % world.renderer.screen.width;
-            entity.transform.y = (entity.transform.y + world.renderer.screen.height) % world.renderer.screen.height;
+            entity.transform.x =
+                (entity.transform.x + world.renderer.screen.width) % world.renderer.screen.width;
+            entity.transform.y =
+                (entity.transform.y + world.renderer.screen.height) % world.renderer.screen.height;
         });
     }
 }
 
-class SpriteWrapper extends System {
-    types(): { new(): Component }[] | any[] {
+class SpriteWrapper extends System
+{
+    types(): { new(): Component }[] | any[]
+    {
         return [WrapSprite];
     }
 
-    update(world: World, delta: number): void {
+    update(world: World, delta: number): void
+    {
         this.runOnEntities((entity: Entity, sprite: WrapSprite) => {
 
             const xChild = world.sceneNode.getChildByName(sprite.xId);
@@ -252,69 +294,89 @@ class SpriteWrapper extends System {
             xChild.position.y = entity.transform.y;
             yChild.position.x = entity.transform.x;
 
-            if (entity.transform.position.x > world.renderer.screen.width / 2) {
+            if (entity.transform.position.x > world.renderer.screen.width / 2)
+            {
                 xChild.position.x = entity.transform.position.x - world.renderer.screen.width;
-            } else {
+            }
+            else
+            {
                 xChild.position.x = entity.transform.position.x + world.renderer.screen.width;
             }
-            if (entity.transform.position.y > world.renderer.screen.height / 2) {
+            if (entity.transform.position.y > world.renderer.screen.height / 2)
+            {
                 yChild.position.y = entity.transform.position.y - world.renderer.screen.height;
-            } else {
+            }
+            else
+            {
                 yChild.position.y = entity.transform.position.y + world.renderer.screen.height;
             }
         });
     }
 }
 
-class ConstantMotion extends Component {
+class ConstantMotion extends Component
+{
     speed: number;
 
-    constructor(speed: number) {
+    constructor(speed: number)
+    {
         super();
         this.speed = speed;
     }
 }
 
-class ConstantMover extends System {
-    types(): { new(): Component }[] | any[] {
+class ConstantMover extends System
+{
+    types(): { new(): Component }[] | any[]
+    {
         return [ConstantMotion];
     }
 
-    update(world: World, delta: number): void {
+    update(world: World, delta: number): void
+    {
         this.runOnEntities((entity: Entity, motion: ConstantMotion) => {
             Util.move(entity, motion.speed * delta)
         });
     }
 }
 
-class PlayerControlled extends Component {
+class PlayerControlled extends Component
+{
 }
 
-class ShipMover extends System {
+class ShipMover extends System
+{
 
     private readonly accSpeed = 0.325;
     private readonly rotSpeed = MathUtil.degToRad(0.2);
 
-    types(): { new(): Component }[] | any[] {
+    types(): { new(): Component }[] | any[]
+    {
         return [Rigidbody, PlayerControlled];
     }
 
-    update(world: World, delta: number): void {
+    update(world: World, delta: number): void
+    {
         this.runOnEntities((entity: Entity, body: Rigidbody) => {
 
-            if (Keyboard.isKeyDown('ArrowLeft', 'KeyA')) {
+            if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
+            {
                 entity.transform.rotation -= this.rotSpeed * delta;
             }
-            if (Keyboard.isKeyDown('ArrowRight', 'KeyD')) {
+            if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
+            {
                 entity.transform.rotation += this.rotSpeed * delta;
             }
-            if (Keyboard.isKeyDown('ArrowUp', 'KeyW')) {
+            if (Keyboard.isKeyDown('ArrowUp', 'KeyW'))
+            {
                 // Util.move(entity, this.accSpeed * delta);
                 body.addForceLocal(new Vector(this.accSpeed, 0));
             }
 
-            if (Keyboard.isKeyPressed('Space')) {
-                world.addEntity(new Bullet(entity.transform.x, entity.transform.y, entity.transform.rotation))
+            if (Keyboard.isKeyPressed('Space'))
+            {
+                world.addEntity(
+                    new Bullet(entity.transform.x, entity.transform.y, entity.transform.rotation))
             }
         });
     }

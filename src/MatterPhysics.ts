@@ -5,12 +5,13 @@ import {Log} from "./Util";
 import {Observable} from "./Observer";
 import {CollisionMatrix} from "./Collision";
 
-export class CollisionEvent {
+export class CollisionEvent
+{
     readonly pair: Matter.IPair;
     readonly other: Matter.Body;
 
-
-    constructor(pair: Matter.IPair, other: Matter.Body) {
+    constructor(pair: Matter.IPair, other: Matter.Body)
+    {
         this.pair = pair;
         this.other = other;
     }
@@ -21,8 +22,8 @@ export class CollisionEvent {
  * This engine MUST be added to a scene before any components are created. Same frame is fine, as WorldSystems are
  * processed before Entities.
  */
-export class MatterEngine extends WorldSystem {
-
+export class MatterEngine extends WorldSystem
+{
     readonly matterEngine: Matter.Engine;
     readonly collisionMatrix: CollisionMatrix;
 
@@ -33,7 +34,9 @@ export class MatterEngine extends WorldSystem {
      * @param debug If enabled, a separate canvas will be rendered with the physics simulation.
      */
     constructor(collisionMatrix: CollisionMatrix,
-                gravity: Matter.Vector = Matter.Vector.create(0, 0), debug: boolean = false) {
+                gravity: Matter.Vector = Matter.Vector.create(0, 0),
+                debug: boolean = false)
+    {
         super();
 
         this.collisionMatrix = collisionMatrix;
@@ -45,7 +48,8 @@ export class MatterEngine extends WorldSystem {
         // Register collision handlers. This will dispatch collision events to the actual collider components in the
         // collision.
         Matter.Events.on(this.matterEngine, "collisionStart", ((event) => {
-            for (let i = 0; i < event.pairs.length; i++) {
+            for (let i = 0; i < event.pairs.length; i++)
+            {
 
                 const pair = event.pairs[i];
                 const compA = (<any>pair.bodyA).lagom_component as MCollider;
@@ -63,7 +67,8 @@ export class MatterEngine extends WorldSystem {
         }));
 
         Matter.Events.on(this.matterEngine, "collisionActive", ((event) => {
-            for (let i = 0; i < event.pairs.length; i++) {
+            for (let i = 0; i < event.pairs.length; i++)
+            {
 
                 const pair = event.pairs[i];
                 const compA = (<any>pair.bodyA).lagom_component as MCollider;
@@ -75,7 +80,8 @@ export class MatterEngine extends WorldSystem {
         }));
 
         Matter.Events.on(this.matterEngine, "collisionEnd", ((event) => {
-            for (let i = 0; i < event.pairs.length; i++) {
+            for (let i = 0; i < event.pairs.length; i++)
+            {
 
                 const pair = event.pairs[i];
                 const compA = (<any>pair.bodyA).lagom_component as MCollider;
@@ -89,7 +95,8 @@ export class MatterEngine extends WorldSystem {
         // Create the debug renderer if enabled. Not really configurable, I might remove it entirely when I am
         // confident it is working correctly.
         // TODO remove this at some point
-        if (debug) {
+        if (debug)
+        {
             const render = Matter.Render.create(
                 {
                     element: document.body,
@@ -100,11 +107,13 @@ export class MatterEngine extends WorldSystem {
         }
     }
 
-    types(): { new(): Component }[] | any[] {
+    types(): { new(): Component }[] | any[]
+    {
         return [MCollider];
     }
 
-    update(world: World, delta: number): void {
+    update(world: World, delta: number): void
+    {
 
         // TODO this can be optimized to not run on static colliders
         // Update the physics state
@@ -113,7 +122,8 @@ export class MatterEngine extends WorldSystem {
         // Run over all colliders
         this.runOnComponents((colliders: MCollider[]) => {
             // Update Pixi positions to the matter positions
-            for (let collider of colliders) {
+            for (let collider of colliders)
+            {
 
                 const entity = collider.getEntity();
                 entity.transform.y = collider.body.position.y;
@@ -151,7 +161,8 @@ export class MatterEngine extends WorldSystem {
 /**
  * Collider component for matter-js physics.
  */
-export class MCollider extends Component {
+export class MCollider extends Component
+{
 
     /**
      * This event will trigger when a collision first occurs between this collider and another.
@@ -180,7 +191,8 @@ export class MCollider extends Component {
      * @param options Options for the body. Includes the layer that this collider is on, if the body is a sensor or
      * a real object, and if the body is static or not.
      */
-    constructor(body: Matter.Body, options: { layer: number, isSensor?: boolean, isStatic?: boolean }) {
+    constructor(body: Matter.Body, options: { layer: number, isSensor?: boolean, isStatic?: boolean })
+    {
         super();
         this.body = body;
         this.body.isSensor = options.isSensor || false;
@@ -190,12 +202,14 @@ export class MCollider extends Component {
         this.layer = options.layer;
     }
 
-    onAdded() {
+    onAdded()
+    {
         super.onAdded();
 
         // Add the body to the matter system
         this.engine = World.instance.getWorldSystem<MatterEngine>(MatterEngine) as MatterEngine;
-        if (this.engine != null) {
+        if (this.engine != null)
+        {
             const entity = this.getEntity();
 
             // Set up the collision filter for the Body
@@ -217,7 +231,8 @@ export class MCollider extends Component {
             Matter.Body.setAngle(this.body, entity.transform.rotation);
             Matter.World.addBody(this.engine.matterEngine.world, this.body);
 
-            if (this.debugDraw) {
+            if (this.debugDraw)
+            {
                 const xoff = entity.transform.getGlobalPosition(<any>undefined, false).x;
                 const yoff = entity.transform.getGlobalPosition(<any>undefined, false).y;
                 const poly = new PIXI.Graphics();
@@ -235,17 +250,22 @@ export class MCollider extends Component {
                 poly.drawRect(0, 0, 1, 1);
                 entity.transform.addChild(poly);
             }
-        } else {
+        }
+        else
+        {
             Log.warn("Could not add Collider to Matter world instance. Ensure MatterEngine System is loaded before" +
-                     " creating a Collider.")
+                         " creating a Collider.")
         }
     }
 
-    onRemoved() {
+    onRemoved()
+    {
         super.onRemoved();
 
         // Remove the physics body matter world.
         if (this.engine !== null)
+        {
             Matter.World.remove(this.engine.matterEngine.world, this.body);
+        }
     }
 }
