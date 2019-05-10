@@ -209,7 +209,9 @@ export class MCollider extends Component
         super.onAdded();
 
         // Add the body to the matter system
-        this.engine = World.instance.getWorldSystem<MatterEngine>(MatterEngine) as MatterEngine;
+        const world = this.getParent() as World;
+        this.engine = world.getWorldSystem<MatterEngine>(MatterEngine) as MatterEngine;
+
         if (this.engine != null)
         {
             const entity = this.getEntity();

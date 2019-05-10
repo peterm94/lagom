@@ -22,8 +22,10 @@ export class Diagnostics extends GUIEntity
 
         this.addComponent(new FpsTracker());
         this.addComponent(new TextDisp("", new PIXI.TextStyle({fontSize: 10, fill: this.textCol})));
-        World.instance.addSystem(new FpsUpdater());
-        World.instance.addWorldSystem(new DebugKeys());
+
+        const world = this.getParent() as World;
+        world.addSystem(new FpsUpdater());
+        world.addWorldSystem(new DebugKeys());
     }
 
     constructor(textCol: string)

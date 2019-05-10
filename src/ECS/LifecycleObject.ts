@@ -1,4 +1,3 @@
-import {World} from "./World";
 import {Log} from "../Util";
 
 export enum ObjectState
@@ -104,5 +103,5 @@ export interface Updatable
 
 export interface Renderable
 {
-    update(world: World, delta: number): void;
+    update(delta: number): void;
 }

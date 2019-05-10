@@ -106,7 +106,7 @@ export class Entity extends ContainerLifecyleObject
 
     rootNode(): PIXI.Container
     {
-        return World.instance.sceneNode;
+        return (this.getParent() as World).sceneNode;
     }
 }
 
@@ -118,6 +118,6 @@ export class GUIEntity extends Entity
 {
     rootNode(): PIXI.Container
     {
-        return World.instance.guiNode;
+        return (this.getParent() as World).guiNode;
     }
 }
