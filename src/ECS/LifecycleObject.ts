@@ -60,7 +60,7 @@ export abstract class LifecycleObject
 export type PendingUpdate = { state: ObjectState, object: LifecycleObject }
 
 
-export abstract class ContainerLifecyleObject extends LifecycleObject implements Updatable
+export abstract class ContainerLifecycleObject extends LifecycleObject implements Updatable
 {
     toUpdate: PendingUpdate[] = [];
 

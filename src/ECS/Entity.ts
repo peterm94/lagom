@@ -3,12 +3,12 @@ import * as PIXI from "pixi.js";
 import {Log, Util} from "../Util";
 import {World} from "./World";
 import {Component} from "./Component";
-import {ContainerLifecyleObject, ObjectState} from "./LifecycleObject";
+import {ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
 
 /**
  * Entity base class. Raw entities can be used or subclasses can be defined similarly to prefabs.
  */
-export class Entity extends ContainerLifecyleObject
+export class Entity extends ContainerLifecycleObject
 {
     readonly componentAddedEvent: Observable<Entity, Component> = new Observable();
     readonly componentRemovedEvent: Observable<Entity, Component> = new Observable();

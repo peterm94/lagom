@@ -3,7 +3,7 @@ import {System} from "./System";
 import {WorldSystem} from "./WorldSystem";
 import * as PIXI from "pixi.js";
 import {Observable} from "../Observer";
-import {ContainerLifecyleObject, ObjectState} from "./LifecycleObject";
+import {ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
 // keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
@@ -23,7 +23,7 @@ class Diag
 /**
  * Entire Scene instance Access via World.instance after creation.
  */
-export class World extends ContainerLifecyleObject
+export class World extends ContainerLifecycleObject
 {
     static instance: World;
 
