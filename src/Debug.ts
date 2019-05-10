@@ -41,6 +41,10 @@ class DebugKeys extends WorldSystem
         {
             console.log(world.entities.map((e) => e.name));
         }
+        if (Keyboard.isKeyPressed('KeyY'))
+        {
+            console.log(world);
+        }
     }
 
     types(): { new(): Component }[] | any[]

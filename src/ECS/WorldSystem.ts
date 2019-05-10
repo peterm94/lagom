@@ -90,18 +90,21 @@ export abstract class WorldSystem extends LifecycleObject
     {
         super.onAdded();
 
+        const world = this.getParent() as World;
+        world.worldSystems.push(this);
+
         // make each component map
         this.types().forEach(type => {
             this.runOn.set(type, []);
         });
 
-        World.instance.entityAddedEvent.register(this.onEntityAdded.bind(this));
-        World.instance.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
+        world.entityAddedEvent.register(this.onEntityAdded.bind(this));
+        world.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
 
         // We need to scan everything that already exists
-        World.instance.entities.forEach((entity: Entity) => {
+        world.entities.forEach((entity: Entity) => {
             // Register listener for entity
-            this.onEntityAdded(World.instance, entity);
+            this.onEntityAdded(world, entity);
 
             // Add any existing components
             entity.components.forEach((component) => {
@@ -113,7 +116,11 @@ export abstract class WorldSystem extends LifecycleObject
     onRemoved()
     {
         super.onRemoved();
-        World.instance.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
-        World.instance.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
+
+        const world = this.getParent() as World;
+        Util.remove(world.worldSystems, this);
+
+        world.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
+        world.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
     }
 }

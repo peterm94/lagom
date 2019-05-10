@@ -3,16 +3,13 @@ import * as PIXI from "pixi.js";
 import {Log, Util} from "../Util";
 import {World} from "./World";
 import {Component} from "./Component";
-import {LifecycleObject} from "./LifecycleObject";
+import {ContainerLifecyleObject, ObjectState} from "./LifecycleObject";
 
 /**
  * Entity base class. Raw entities can be used or subclasses can be defined similarly to prefabs.
  */
-export class Entity extends LifecycleObject
+export class Entity extends ContainerLifecyleObject
 {
-    private componentsInit: Set<Component> = new Set();
-    private componentsDestroy: Set<Component> = new Set();
-
     readonly componentAddedEvent: Observable<Entity, Component> = new Observable();
     readonly componentRemovedEvent: Observable<Entity, Component> = new Observable();
 
@@ -21,45 +18,6 @@ export class Entity extends LifecycleObject
 
     readonly name: string;
     readonly components: Component[] = [];
-
-    private addPending()
-    {
-
-        const componentsInit = new Set(this.componentsInit);
-        this.componentsInit.clear();
-
-        componentsInit.forEach((val) => {
-            this.components.push(val);
-        });
-
-        componentsInit.forEach((val) => {
-            val.onAdded();
-            Log.trace("Component Added", val);
-            this.componentAddedEvent.trigger(this, val);
-        });
-    }
-
-    private removePending()
-    {
-        const componentsDestroy = new Set(this.componentsDestroy);
-        this.componentsDestroy.clear();
-
-        componentsDestroy.forEach((val) => {
-            val.onRemoved();
-            Log.trace("Component Removed", val);
-            this.componentRemovedEvent.trigger(this, val);
-        });
-
-        componentsDestroy.forEach((val) => {
-            Util.remove(this.components, val);
-        });
-    }
-
-    internalUpdate()
-    {
-        this.addPending();
-        this.removePending();
-    }
 
     /**
      * Create a new entity. It must be added to a World to actually do anything.
@@ -75,17 +33,6 @@ export class Entity extends LifecycleObject
         this.transform = new PIXI.Container();
         this.transform.x = x;
         this.transform.y = y;
-        this.addToScene();
-    }
-
-    protected addToScene()
-    {
-        World.instance.sceneNode.addChild(this.transform);
-    }
-
-    protected removeFromScene()
-    {
-        World.instance.sceneNode.removeChild(this.transform);
     }
 
     /**
@@ -95,8 +42,8 @@ export class Entity extends LifecycleObject
      */
     addComponent<T extends Component>(component: T): T
     {
-        this.componentsInit.add(component);
-        component.setEntity(this);
+        component.setParent(this);
+        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: component});
         return component;
     }
 
@@ -121,39 +68,45 @@ export class Entity extends LifecycleObject
         return found != undefined ? found as T : null;
     }
 
-    /**
-     * Remove a component from the entity.
-     * @param component The component to remove.
-     */
-    removeComponent(component: Component)
-    {
-        Log.trace("Component removal scheduled for:", component);
-        this.componentsDestroy.add(component);
-    }
-
     onAdded()
     {
         super.onAdded();
-        this.addPending();
+
+        // Add to the scene
+        const world = this.getParent() as World;
+        world.entities.push(this);
+        world.entityAddedEvent.trigger(world, this);
+
+        // Add this PIXI container
+        this.rootNode().addChild(this.transform);
     }
 
     onRemoved()
     {
         super.onRemoved();
-        this.removePending();
+
+        const world = this.getParent() as World;
+        Util.remove(world.entities, this);
+        world.entityRemovedEvent.trigger(world, this);
 
         // Remove the entire PIXI container
-        this.removeFromScene()
+        this.rootNode().removeChild(this.transform);
     }
 
-    /**
-     * Destroy the Entity and all components on it.
-     */
     destroy()
     {
+        super.destroy();
+
         Log.trace("Entity destroy() called for:", this);
-        this.components.forEach((val) => this.removeComponent(val));
-        World.instance.removeEntity(this);
+        (this.getParent() as World).toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
+
+        // Take any components with us
+        this.components.forEach((val) => val.destroy());
+    }
+
+    rootNode(): PIXI.Container
+    {
+        return World.instance.sceneNode;
     }
 }
 
@@ -163,14 +116,8 @@ export class Entity extends LifecycleObject
  */
 export class GUIEntity extends Entity
 {
-    protected addToScene(): void
+    rootNode(): PIXI.Container
     {
-        // Override addToScene(), add to the GUI node instead of the normal node. This will not move with the camera.
-        World.instance.guiNode.addChild(this.transform);
-    }
-
-    protected removeFromScene(): void
-    {
-        World.instance.guiNode.removeChild(this.transform);
+        return World.instance.guiNode;
     }
 }

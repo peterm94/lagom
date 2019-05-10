@@ -2,6 +2,7 @@ import {Entity} from "./Entity";
 import {World} from "./World";
 import {Component} from "./Component";
 import {LifecycleObject} from "./LifecycleObject";
+import {Util} from "../Util";
 
 /**
  * System base class. Systems should be used to run on groups of components.
@@ -99,13 +100,17 @@ export abstract class System extends LifecycleObject
     onAdded()
     {
         super.onAdded();
-        World.instance.entityAddedEvent.register(this.onEntityAdded.bind(this));
-        World.instance.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
+
+        const world = this.getParent() as World;
+        world.systems.push(this);
+
+        world.entityAddedEvent.register(this.onEntityAdded.bind(this));
+        world.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
 
         // We need to scan everything that already exists
-        World.instance.entities.forEach(entity => {
+        world.entities.forEach(entity => {
             // Register listener for entity
-            this.onEntityAdded(World.instance, entity);
+            this.onEntityAdded(world, entity);
 
             // Check it, add if ready.
             const ret = this.findComponents(entity);
@@ -119,8 +124,12 @@ export abstract class System extends LifecycleObject
     onRemoved()
     {
         super.onRemoved();
-        World.instance.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
-        World.instance.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
+
+        const world = this.getParent() as World;
+        Util.remove(world.systems, this);
+
+        world.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
+        world.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
     }
 
     /**

@@ -1,41 +1,42 @@
 import {Entity} from "./Entity";
-import {Log} from "../Util";
-import {LifecycleObject} from "./LifecycleObject";
+import {Util} from "../Util";
+import {LifecycleObject, ObjectState} from "./LifecycleObject";
 
 /**
  * Component base class.
  */
 export abstract class Component extends LifecycleObject
 {
-    private entity: Entity | null = null;
-
-    /**
-     * For internal use only.
-     * Set the entity for this component. Please don't call this, ts doesn't have friend classes.
-     * @param entity The parent entity.
-     */
-    setEntity(entity: Entity)
-    {
-        this.entity = entity;
-    }
-
     /**
      * Get the entity that owns this component.
      * @returns The entity that this component is attached to.
      */
     getEntity(): Entity
     {
-        if (this.entity === null)
-        {
-            Log.error("Entity referenced before Component added to scene. Use onAdded() for initialization instead" +
-                          " of the constructor.");
-            // TODO do we throw here? this is a real problemo.
-            return <any>null;
-        }
-        else
-        {
-            return this.entity;
-        }
+        return this.getParent() as Entity;
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        const parent = this.getEntity();
+        parent.components.push(this);
+        parent.componentAddedEvent.trigger(parent, this);
+    }
+
+    onRemoved()
+    {
+        super.onRemoved();
+        const parent = this.getEntity();
+        Util.remove(parent.components, this);
+        parent.componentRemovedEvent.trigger(parent, this);
+    }
+
+
+    destroy()
+    {
+        super.destroy();
+        this.getEntity().toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
     }
 }
 
