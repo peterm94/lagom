@@ -1,4 +1,4 @@
-import {Entity} from "./ECS";
+import {Entity} from "./ECS/Entity";
 
 export class Util
 {

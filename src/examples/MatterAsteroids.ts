@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import {Component, Entity, System, World} from "../ECS";
+import {World} from "../ECS/World";
 import {Sprite} from "../Components";
 import {Diagnostics} from "../Debug";
 import spr_asteroid from './resources/asteroid.png'
@@ -11,6 +11,9 @@ import {MathUtil} from "../Util";
 import {MatterEngine, MCollider} from "../MatterPhysics";
 import * as Matter from "matter-js";
 import {CollisionMatrix} from "../Collision";
+import {Entity} from "../ECS/Entity";
+import {System} from "../ECS/System";
+import {Component} from "../ECS/Component";
 
 const Keyboard = require('pixi.js-keyboard');
 

@@ -1,4 +1,4 @@
-import {PIXIComponent} from "./ECS";
+import {PIXIComponent} from "./ECS/Component";
 import * as PIXI from "pixi.js";
 
 export class Sprite extends PIXIComponent<PIXI.Sprite>

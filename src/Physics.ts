@@ -1,5 +1,9 @@
-import {Component, Entity, System, World, WorldSystem} from "./ECS";
+import {World} from "./ECS/World";
 import {Collider, Collision} from "./Collision";
+import {WorldSystem} from "./ECS/WorldSystem";
+import {Entity} from "./ECS/Entity";
+import {System} from "./ECS/System";
+import {Component} from "./ECS/Component";
 
 export enum BodyType
 {

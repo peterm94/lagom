@@ -1,7 +1,11 @@
 import * as PIXI from "pixi.js";
-import {Component, Entity, GUIEntity, System, World, WorldSystem} from "./ECS";
+import {GUIEntity} from "./ECS/Entity";
 import {TextDisp} from "./Components";
-import {Key} from "react";
+import {WorldSystem} from "./ECS/WorldSystem";
+import {Entity} from "./ECS/Entity";
+import {System} from "./ECS/System";
+import {Component} from "./ECS/Component";
+import {World} from "./ECS/World";
 
 const Keyboard = require('pixi.js-keyboard');
 

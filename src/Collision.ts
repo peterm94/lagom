@@ -1,8 +1,12 @@
 import * as PIXI from "pixi.js";
-import {Component, Entity, PIXIComponent, World, WorldSystem} from "./ECS";
+import {PIXIComponent} from "./ECS/Component";
 import {Observable} from "./Observer";
 import {Sprite} from "./Components";
 import {MathUtil} from "./Util";
+import {WorldSystem} from "./ECS/WorldSystem";
+import {Entity} from "./ECS/Entity";
+import {Component} from "./ECS/Component";
+import {World} from "./ECS/World";
 
 /**
  * Collection of collision detection functions and utilities.

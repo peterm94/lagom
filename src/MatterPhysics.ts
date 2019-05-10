@@ -1,9 +1,11 @@
 import * as PIXI from "pixi.js";
-import {Component, World, WorldSystem} from "./ECS";
+import {World} from "./ECS/World";
 import * as Matter from "matter-js";
 import {Log} from "./Util";
 import {Observable} from "./Observer";
 import {CollisionMatrix} from "./Collision";
+import {WorldSystem} from "./ECS/WorldSystem";
+import {Component} from "./ECS/Component";
 
 export class CollisionEvent
 {
