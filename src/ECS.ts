@@ -10,9 +10,9 @@ const Keyboard = require('pixi.js-keyboard');
 
 class Diag
 {
-    inputUpdateTime: number = 0;
-    systemUpdateTime: number = 0;
-    worldSystemUpdateTime: number = 0;
+    renderTime: number = 0;
+    ecsUpdateTime: number = 0;
+    totalFrameTime: number = 0;
 }
 
 /**
@@ -63,27 +63,33 @@ export class World
     // Fixed timestep rate for logic updates (60hz)
     private readonly dtMs = 1000 / 60;
 
+    deltaTime = 0;
+
     updateLoop()
     {
         if (!this.gameOver)
         {
             const now = Date.now();
-            let deltaTime = now - this.lastFrameTime;
+            this.deltaTime = now - this.lastFrameTime;
             this.lastFrameTime = now;
 
-            this.elapsedSinceUpdate += deltaTime;
+            this.elapsedSinceUpdate += this.deltaTime;
 
             while (this.elapsedSinceUpdate >= this.dtMs)
             {
-
                 // Update the ECS
                 this.updateECS(this.dtMs);
+                this.diag.ecsUpdateTime = Date.now() - now;
 
                 this.elapsedSinceUpdate -= this.dtMs;
                 this.timeMs += this.dtMs;
             }
 
+
+            const renderStart = Date.now();
             this.renderer.render(this.stage);
+            this.diag.renderTime = Date.now() - renderStart;
+            this.diag.totalFrameTime = Date.now() - now;
 
             requestAnimationFrame(this.updateLoop.bind(this));
         }
@@ -228,9 +234,7 @@ export class World
         this.addPending();
         this.removePending();
 
-        const timeStart = Date.now();
         // Mouse.update();
-        this.diag.inputUpdateTime = Date.now() - timeStart;
 
         // Update world systems
         for (let system of this.worldSystems)

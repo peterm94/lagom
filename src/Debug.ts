@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import {Component, Entity, GUIEntity, System, World, WorldSystem} from "./ECS";
 import {TextDisp} from "./Components";
+import {Key} from "react";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -65,12 +66,11 @@ class FpsUpdater extends System
         {
             this.runOnEntities((entity: Entity, text: TextDisp) => {
                 {
-                    // text.pixiObj.text = `FPS: ${world.mainTicker.FPS.toFixed(2)}` +
-                    //                     `\tdt:${world.mainTicker.deltaTime.toFixed(2)}` +
-                    //                     `\tspeed: ${world.mainTicker.speed}` +
-                    //                     `\telapsed:${world.mainTicker.elapsedMS.toFixed(2)}` +
-                    //                     `\tcalcDt:${delta.toFixed(2)}` +
-                    //                     `\ttarg:${PIXI.settings.TARGET_FPMS}`;
+                    text.pixiObj.text = `UpdateDelta: ${delta.toFixed(2)}ms // ${(1000 / delta).toFixed(2)}`
+                        + `\nAnimationDelta: ${(world.deltaTime).toFixed(2)}ms // ${(1000 / world.deltaTime).toFixed(2)}`
+                        + `\nECSUpdateTime: ${world.diag.ecsUpdateTime.toFixed(2)}ms`
+                        + `\nRenderTime: ${world.diag.renderTime.toFixed(2)}ms`
+                        + `\nTotalFrameTime: ${world.diag.totalFrameTime.toFixed(2)}ms`
                 }
             });
         }
