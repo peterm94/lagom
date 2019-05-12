@@ -115,7 +115,7 @@ export class MatterEngine extends WorldSystem
         return [MCollider];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
 
         // TODO this can be optimized to not run on static colliders

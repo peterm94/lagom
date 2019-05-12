@@ -1,7 +1,7 @@
 import {Entity} from "./Entity";
 import {World} from "./World";
 import {Component} from "./Component";
-import {LifecycleObject} from "./LifecycleObject";
+import {LifecycleObject, Updatable} from "./LifecycleObject";
 import {Util} from "../Util";
 import {Scene} from "./Scene";
 
@@ -9,7 +9,7 @@ import {Scene} from "./Scene";
  * System base class. Systems should be used to run on groups of components.
  * Note that this will only trigger if every component type is represented on an entity. Partial matches will not run.
  */
-export abstract class System extends LifecycleObject
+export abstract class System extends LifecycleObject implements Updatable
 {
     private readonly runOn: Map<Entity, Component[]> = new Map();
 
@@ -134,11 +134,10 @@ export abstract class System extends LifecycleObject
     }
 
     /**
-     * Update will be called every game tick for every entity.
-     * @param world The World instance the system belongs to.
-     * @param delta The time since the last frame.
+     * Update will be called every game tick.
+     * @param delta The elapsed time since the last update call.
      */
-    abstract update(world: World, delta: number): void;
+    abstract update(delta: number): void;
 
     /**
      * Component types that this System runs on.
@@ -160,7 +159,7 @@ export abstract class System extends LifecycleObject
         })
     }
 
-    getScene() : Scene
+    getScene(): Scene
     {
         return this.getParent() as Scene;
     }

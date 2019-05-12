@@ -20,8 +20,6 @@ class Diag
  */
 export class World extends ContainerLifecycleObject
 {
-    static instance: World;
-
     // Set this to true to end the game
     gameOver: boolean = false;
 
@@ -82,7 +80,7 @@ export class World extends ContainerLifecycleObject
      * @param scene The first scene to load.
      * @param options Options for the PIXI Renderer.
      */
-    constructor(scene : Scene, options?: {
+    constructor(scene: Scene, options?: {
         width?: number;
         height?: number;
         view?: HTMLCanvasElement;
@@ -99,8 +97,6 @@ export class World extends ContainerLifecycleObject
     })
     {
         super();
-
-        World.instance = this;
 
         this.setScene(scene);
 

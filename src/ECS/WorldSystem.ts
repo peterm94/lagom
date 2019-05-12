@@ -2,22 +2,21 @@ import {Log, Util} from "../Util";
 import {World} from "./World";
 import {Entity} from "./Entity";
 import {Component} from "./Component";
-import {LifecycleObject} from "./LifecycleObject";
+import {LifecycleObject, Updatable} from "./LifecycleObject";
 import {Scene} from "./Scene";
 
 /**
  * World system base class. Designed to run on batches of Components.
  */
-export abstract class WorldSystem extends LifecycleObject
+export abstract class WorldSystem extends LifecycleObject implements Updatable
 {
     private readonly runOn: Map<{ new(): Component }, Component[]> = new Map();
 
     /**
      * Update will be called every game tick.
-     * @param world The world we are operating on.
      * @param delta The elapsed time since the last update call.
      */
-    abstract update(world: World, delta: number): void;
+    abstract update(delta: number): void;
 
     /**
      * An array of types that this WorldSystem will run on. This should remain static.
@@ -125,7 +124,7 @@ export abstract class WorldSystem extends LifecycleObject
         scene.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
     }
 
-    getScene() : Scene
+    getScene(): Scene
     {
         return this.getParent() as Scene;
     }

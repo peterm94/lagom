@@ -38,7 +38,7 @@ export class Diagnostics extends GUIEntity
 
 class DebugKeys extends WorldSystem
 {
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         if (Keyboard.isKeyPressed('KeyT'))
         {
@@ -46,7 +46,7 @@ class DebugKeys extends WorldSystem
         }
         if (Keyboard.isKeyPressed('KeyY'))
         {
-            console.log(world);
+            console.log(this.getScene().getWorld());
         }
     }
 
@@ -65,12 +65,15 @@ class FpsUpdater extends System
     printFrame: number = 10;
     frameCount: number = 0;
 
-    constructor()
+    private world!: World;
+
+    onAdded(): void
     {
-        super();
+        super.onAdded();
+        this.world = this.getScene().getWorld();
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.frameCount++;
         if ((this.frameCount % this.printFrame) === 0)
@@ -78,10 +81,11 @@ class FpsUpdater extends System
             this.runOnEntities((entity: Entity, text: TextDisp) => {
                 {
                     text.pixiObj.text = `UpdateDelta: ${delta.toFixed(2)}ms // ${(1000 / delta).toFixed(2)}`
-                        + `\nAnimationDelta: ${(world.deltaTime).toFixed(2)}ms // ${(1000 / world.deltaTime).toFixed(2)}`
-                        + `\nECSUpdateTime: ${world.diag.ecsUpdateTime.toFixed(2)}ms`
-                        + `\nRenderTime: ${world.diag.renderTime.toFixed(2)}ms`
-                        + `\nTotalFrameTime: ${world.diag.totalFrameTime.toFixed(2)}ms`
+                        + `\nAnimationDelta: ${(this.world.deltaTime).toFixed(2)}ms // ${(1000 /
+                            this.world.deltaTime).toFixed(2)}`
+                        + `\nECSUpdateTime: ${this.world.diag.ecsUpdateTime.toFixed(2)}ms`
+                        + `\nRenderTime: ${this.world.diag.renderTime.toFixed(2)}ms`
+                        + `\nTotalFrameTime: ${this.world.diag.totalFrameTime.toFixed(2)}ms`
                 }
             });
         }

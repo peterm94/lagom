@@ -22,7 +22,6 @@ export abstract class LifecycleObject
         this.parent = parent;
     }
 
-    // TODO generic for this type? will save some dangerous casts and invalid trees
     getParent(): LifecycleObject
     {
         if (this.parent == null)

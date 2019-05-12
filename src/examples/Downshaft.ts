@@ -81,7 +81,7 @@ class PlayerMover extends System
         return [MCollider, PlayerControlled];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity, collider: MCollider) => {
 
@@ -152,18 +152,27 @@ class FollowCamera extends System
 {
     mSpeed = 0.1;
 
+    private renderer!: PIXI.Renderer;
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.renderer = this.getScene().getWorld().renderer;
+    }
+
     types(): { new(): Component }[] | any[]
     {
         return [FollowMe];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
 
             const worldPos = this.getScene().sceneNode.position;
-            const midX = world.renderer.view.width / 2 - worldPos.x;
-            const midY = world.renderer.view.height / 2 - worldPos.y;
+            const midX = this.renderer.view.width / 2 - worldPos.x;
+            const midY = this.renderer.view.height / 2 - worldPos.y;
 
             const dx = midX - entity.transform.x;
             const dy = midY - entity.transform.y;

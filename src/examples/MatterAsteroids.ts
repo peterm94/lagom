@@ -47,7 +47,7 @@ class Inspector extends WorldSystem
         return [];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.text.textContent = this.getScene().entities.map(
             entity => entity.name + ":\n" + entity.components.map(component => component.constructor.name).join("\n"))
@@ -244,19 +244,28 @@ class DestroyOffScreen extends System
 {
     private readonly tolerance: number = 50;
 
+    private renderer!: PIXI.Renderer;
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.renderer = this.getScene().getWorld().renderer;
+    }
+
     types(): { new(): Component }[] | any[]
     {
         return [ScreenContained];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
             const pos = entity.transform.getGlobalPosition(<any>undefined, false);
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
-                || pos.x > world.renderer.screen.width + this.tolerance
-                || pos.y > world.renderer.screen.height + this.tolerance)
+                || pos.x > this.renderer.screen.width + this.tolerance
+                || pos.y > this.renderer.screen.height + this.tolerance)
             {
                 entity.destroy();
             }
@@ -271,7 +280,7 @@ class AsteroidSplitter extends System
         return [Split];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
             const currSize = (<Asteroid>entity).size;
@@ -288,31 +297,49 @@ class AsteroidSplitter extends System
 
 class ScreenWrapper extends System
 {
+    private renderer!: PIXI.Renderer;
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.renderer = this.getScene().getWorld().renderer;
+    }
+
     types(): { new(): Component }[] | any[]
     {
         return [MCollider, ScreenWrap];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity, collider: MCollider) => {
             Matter.Body.setPosition(
                 collider.body,
                 Matter.Vector.create(
-                    (collider.body.position.x + world.renderer.screen.width) % world.renderer.screen.width,
-                    (collider.body.position.y + world.renderer.screen.height) % world.renderer.screen.height))
+                    (collider.body.position.x + this.renderer.screen.width) % this.renderer.screen.width,
+                    (collider.body.position.y + this.renderer.screen.height) % this.renderer.screen.height))
         })
     }
 }
 
 class SpriteWrapper extends System
 {
+    private renderer!: PIXI.Renderer;
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.renderer = this.getScene().getWorld().renderer;
+    }
+
     types(): { new(): Component }[] | any[]
     {
         return [WrapSprite];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity, sprite: WrapSprite) => {
             const xChild = this.getScene().sceneNode.getChildByName(sprite.xId);
@@ -324,21 +351,21 @@ class SpriteWrapper extends System
             xChild.position.y = entity.transform.y;
             yChild.position.x = entity.transform.x;
 
-            if (entity.transform.position.x > world.renderer.screen.width / 2)
+            if (entity.transform.position.x > this.renderer.screen.width / 2)
             {
-                xChild.position.x = entity.transform.position.x - world.renderer.screen.width;
+                xChild.position.x = entity.transform.position.x - this.renderer.screen.width;
             }
             else
             {
-                xChild.position.x = entity.transform.position.x + world.renderer.screen.width;
+                xChild.position.x = entity.transform.position.x + this.renderer.screen.width;
             }
-            if (entity.transform.position.y > world.renderer.screen.height / 2)
+            if (entity.transform.position.y > this.renderer.screen.height / 2)
             {
-                yChild.position.y = entity.transform.position.y - world.renderer.screen.height;
+                yChild.position.y = entity.transform.position.y - this.renderer.screen.height;
             }
             else
             {
-                yChild.position.y = entity.transform.position.y + world.renderer.screen.height;
+                yChild.position.y = entity.transform.position.y + this.renderer.screen.height;
             }
         })
     }
@@ -362,7 +389,7 @@ class ConstantMover extends System
         return [ConstantMotion, MCollider];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity, motion: ConstantMotion, collider: MCollider) => {
 
@@ -389,7 +416,7 @@ class ShipMover extends System
         return [MCollider, PlayerControlled];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity, collider: MCollider) => {
 

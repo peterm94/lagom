@@ -219,15 +219,22 @@ class ScreenContained extends Component
 
 class DestroyOffScreen extends System
 {
-
     private readonly tolerance: number = 50;
+    private renderer!: PIXI.Renderer;
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.renderer = this.getScene().getWorld().renderer;
+    }
 
     types(): { new(): Component }[] | any[]
     {
         return [ScreenContained];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
             // TODO this function apparently takes null as a first parameter, but the typedef
@@ -235,8 +242,8 @@ class DestroyOffScreen extends System
             const pos = entity.transform.getGlobalPosition(<any>undefined, false);
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
-                || pos.x > world.renderer.screen.width + this.tolerance
-                || pos.y > world.renderer.screen.height + this.tolerance)
+                || pos.x > this.renderer.screen.width + this.tolerance
+                || pos.y > this.renderer.screen.height + this.tolerance)
             {
                 entity.destroy();
             }
@@ -251,7 +258,7 @@ class AsteroidSplitter extends System
         return [Split];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
 
@@ -272,30 +279,48 @@ class AsteroidSplitter extends System
 
 class ScreenWrapper extends System
 {
+    private renderer!: PIXI.Renderer;
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.renderer = this.getScene().getWorld().renderer;
+    }
+
     types(): { new(): Component }[] | any[]
     {
         return [ScreenWrap];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
             entity.transform.x =
-                (entity.transform.x + world.renderer.screen.width) % world.renderer.screen.width;
+                (entity.transform.x + this.renderer.screen.width) % this.renderer.screen.width;
             entity.transform.y =
-                (entity.transform.y + world.renderer.screen.height) % world.renderer.screen.height;
+                (entity.transform.y + this.renderer.screen.height) % this.renderer.screen.height;
         });
     }
 }
 
 class SpriteWrapper extends System
 {
+    private renderer!: PIXI.Renderer;
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.renderer = this.getScene().getWorld().renderer;
+    }
+
     types(): { new(): Component }[] | any[]
     {
         return [WrapSprite];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity, sprite: WrapSprite) => {
 
@@ -308,21 +333,21 @@ class SpriteWrapper extends System
             xChild.position.y = entity.transform.y;
             yChild.position.x = entity.transform.x;
 
-            if (entity.transform.position.x > world.renderer.screen.width / 2)
+            if (entity.transform.position.x > this.renderer.screen.width / 2)
             {
-                xChild.position.x = entity.transform.position.x - world.renderer.screen.width;
+                xChild.position.x = entity.transform.position.x - this.renderer.screen.width;
             }
             else
             {
-                xChild.position.x = entity.transform.position.x + world.renderer.screen.width;
+                xChild.position.x = entity.transform.position.x + this.renderer.screen.width;
             }
-            if (entity.transform.position.y > world.renderer.screen.height / 2)
+            if (entity.transform.position.y > this.renderer.screen.height / 2)
             {
-                yChild.position.y = entity.transform.position.y - world.renderer.screen.height;
+                yChild.position.y = entity.transform.position.y - this.renderer.screen.height;
             }
             else
             {
-                yChild.position.y = entity.transform.position.y + world.renderer.screen.height;
+                yChild.position.y = entity.transform.position.y + this.renderer.screen.height;
             }
         });
     }
@@ -346,7 +371,7 @@ class ConstantMover extends System
         return [ConstantMotion];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity, motion: ConstantMotion) => {
             Util.move(entity, motion.speed * delta)
@@ -369,7 +394,7 @@ class ShipMover extends System
         return [Rigidbody, PlayerControlled];
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnEntities((entity: Entity, body: Rigidbody) => {
 

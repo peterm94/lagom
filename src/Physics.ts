@@ -166,7 +166,7 @@ export class PhysicsSystem extends WorldSystem
         this.gravityDir = gravityDir;
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
     }
 

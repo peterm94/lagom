@@ -226,7 +226,7 @@ export class CollisionSystem extends WorldSystem
         this.collisionMatrix = collisions;
     }
 
-    update(world: World, delta: number): void
+    update(delta: number): void
     {
         this.runOnComponents((colliders: Collider[]) => {
             for (let i = 0; i < colliders.length; i++)
