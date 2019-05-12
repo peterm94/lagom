@@ -12,6 +12,7 @@ import {CollisionMatrix} from "../Collision";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
+import {Scene} from "../ECS/Scene";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -25,37 +26,44 @@ enum Layers
 }
 
 
-export class Downshaft
+export class Downshaft extends Scene
 {
     constructor()
     {
+        super();
+
+        const world = new World(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0xA1B1A1});
+
         loader.add([spr_block, spr_guy]).load(() => {
-
-            let world = new World({width: 512, height: 512, resolution: 1, backgroundColor: 0xA1B1A1});
-
-            world.addEntity(new Diagnostics("white"));
-
-            world.addEntity(new Player(128, 50));
-
-            // Make the vertical walls
-            const height = 250;
-            for (let i = 0; i < height; i++)
-            {
-                world.addEntity(new Block(96, i * 32));
-                world.addEntity(new Block(416, i * 32));
-            }
-
-            world.addSystem(new PlayerMover());
-            world.addSystem(new FollowCamera());
-
-            const matrix = new CollisionMatrix();
-            matrix.addCollision(Layers.Solid, Layers.Player);
-
-            world.addWorldSystem(
-                new MatterEngine(matrix, Vector.create(0, 0.15)));
 
             world.start();
         })
+    }
+
+
+    onAdded()
+    {
+        super.onAdded();
+
+        this.addEntity(new Diagnostics("white"));
+
+        this.addEntity(new Player(128, 50));
+
+        // Make the vertical walls
+        const height = 250;
+        for (let i = 0; i < height; i++)
+        {
+            this.addEntity(new Block(96, i * 32));
+            this.addEntity(new Block(416, i * 32));
+        }
+
+        this.addSystem(new PlayerMover());
+        this.addSystem(new FollowCamera());
+
+        const matrix = new CollisionMatrix();
+        matrix.addCollision(Layers.Solid, Layers.Player);
+
+        this.addWorldSystem(new MatterEngine(matrix, Vector.create(0, 0.15)));
     }
 }
 
@@ -153,7 +161,7 @@ class FollowCamera extends System
     {
         this.runOnEntities((entity: Entity) => {
 
-            const worldPos = world.sceneNode.position;
+            const worldPos = (this.getParent() as Scene).sceneNode.position;
             const midX = world.renderer.view.width / 2 - worldPos.x;
             const midY = world.renderer.view.height / 2 - worldPos.y;
 

@@ -1,9 +1,9 @@
 import {Observable} from "../Observer";
 import * as PIXI from "pixi.js";
 import {Log, Util} from "../Util";
-import {World} from "./World";
 import {Component} from "./Component";
 import {ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
+import {Scene} from "./Scene";
 
 /**
  * Entity base class. Raw entities can be used or subclasses can be defined similarly to prefabs.
@@ -73,9 +73,9 @@ export class Entity extends ContainerLifecycleObject
         super.onAdded();
 
         // Add to the scene
-        const world = this.getParent() as World;
-        world.entities.push(this);
-        world.entityAddedEvent.trigger(world, this);
+        const scene = this.getParent() as Scene;
+        scene.entities.push(this);
+        scene.entityAddedEvent.trigger(scene, this);
 
         // Add this PIXI container
         this.rootNode().addChild(this.transform);
@@ -85,9 +85,9 @@ export class Entity extends ContainerLifecycleObject
     {
         super.onRemoved();
 
-        const world = this.getParent() as World;
-        Util.remove(world.entities, this);
-        world.entityRemovedEvent.trigger(world, this);
+        const scene = this.getParent() as Scene;
+        Util.remove(scene.entities, this);
+        scene.entityRemovedEvent.trigger(scene, this);
 
         // Remove the entire PIXI container
         this.rootNode().removeChild(this.transform);
@@ -98,7 +98,7 @@ export class Entity extends ContainerLifecycleObject
         super.destroy();
 
         Log.trace("Entity destroy() called for:", this);
-        (this.getParent() as World).toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
+        (this.getParent() as Scene).toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
 
         // Take any components with us
         this.components.forEach((val) => val.destroy());
@@ -106,7 +106,7 @@ export class Entity extends ContainerLifecycleObject
 
     rootNode(): PIXI.Container
     {
-        return (this.getParent() as World).sceneNode;
+        return (this.getParent() as Scene).sceneNode;
     }
 }
 
@@ -118,6 +118,6 @@ export class GUIEntity extends Entity
 {
     rootNode(): PIXI.Container
     {
-        return (this.getParent() as World).guiNode;
+        return (this.getParent() as Scene).guiNode;
     }
 }

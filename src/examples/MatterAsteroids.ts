@@ -14,6 +14,8 @@ import {CollisionMatrix} from "../Collision";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
+import {WorldSystem} from "../ECS/WorldSystem";
+import {Scene} from "../ECS/Scene";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -27,44 +29,83 @@ enum CollLayers
 }
 
 
-export class MatterAsteroids
+class Inspector extends WorldSystem
+{
+    private readonly text: Text;
+
+    constructor()
+    {
+        super();
+
+        this.text = new Text("Inspector");
+        document.body.appendChild(this.text);
+    }
+
+    types(): { new(): Component }[] | any[]
+    {
+
+        return [];
+    }
+
+    update(world: World, delta: number): void
+    {
+        this.text.textContent = (this.getParent() as Scene).entities.map(
+            entity => entity.name + ":\n" + entity.components.map(component => component.constructor.name).join("\n"))
+                                                           .join("\n")
+    }
+}
+
+
+export class MatterAsteroids extends Scene
 {
     constructor()
     {
+        super();
+
+        const world = new World(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0x200140});
+
+
         loader.add([spr_asteroid,
                     spr_asteroid2,
                     spr_asteroid3,
                     spr_ship,
                     spr_bullet]).load(() => {
 
-            let world = new World(
-                {width: 512, height: 512, resolution: 1, backgroundColor: 0x200140});
-
-            world.addEntity(new Ship(world.renderer.screen.width / 2,
-                                     world.renderer.screen.height / 2));
-
-            for (let i = 0; i < 10; i++)
-            {
-                world.addEntity(new Asteroid(Math.random() * world.renderer.screen.width,
-                                             Math.random() * world.renderer.screen.height,
-                                             3))
-            }
-
-            world.addEntity(new Diagnostics("white"));
-            world.addSystem(new ShipMover());
-            world.addSystem(new ConstantMover());
-            world.addSystem(new ScreenWrapper());
-            world.addSystem(new SpriteWrapper());
-            world.addSystem(new AsteroidSplitter());
-            world.addSystem(new DestroyOffScreen());
-
-            // Set up collision rules
-            const matrix = new CollisionMatrix();
-            matrix.addCollision(CollLayers.Asteroid, CollLayers.Bullet);
-
-            world.addWorldSystem(new MatterEngine(matrix));
             world.start();
         });
+    }
+
+
+    onAdded()
+    {
+        super.onAdded();
+
+        const world = this.getWorld();
+
+        this.addEntity(new Ship(world.renderer.screen.width / 2,
+                                world.renderer.screen.height / 2));
+
+        for (let i = 0; i < 10; i++)
+        {
+            this.addEntity(new Asteroid(Math.random() * world.renderer.screen.width,
+                                        Math.random() * world.renderer.screen.height,
+                                        3))
+        }
+
+        this.addEntity(new Diagnostics("white"));
+        this.addSystem(new ShipMover());
+        this.addSystem(new ConstantMover());
+        this.addSystem(new ScreenWrapper());
+        this.addSystem(new SpriteWrapper());
+        this.addSystem(new AsteroidSplitter());
+        this.addSystem(new DestroyOffScreen());
+
+        // Set up collision rules
+        const matrix = new CollisionMatrix();
+        matrix.addCollision(CollLayers.Asteroid, CollLayers.Bullet);
+
+        this.addWorldSystem(new MatterEngine(matrix));
+        this.addWorldSystem(new Inspector());
     }
 }
 
@@ -173,7 +214,7 @@ class WrapSprite extends Sprite
         this.yChild.name = this.yId;
         this.yChild.anchor.x = this.pixiObj.anchor.x;
         this.yChild.anchor.y = this.pixiObj.anchor.y;
-        World.instance.sceneNode.addChild(this.xChild, this.yChild);
+        (this.getParent() as Scene).sceneNode.addChild(this.xChild, this.yChild);
     }
 
     onRemoved(): void
@@ -181,8 +222,8 @@ class WrapSprite extends Sprite
         super.onRemoved();
         if (this.xChild != null && this.yChild != null)
         {
-            World.instance.sceneNode.removeChild(this.xChild);
-            World.instance.sceneNode.removeChild(this.yChild);
+            (this.getParent() as Scene).sceneNode.removeChild(this.xChild);
+            (this.getParent() as Scene).sceneNode.removeChild(this.yChild);
         }
     }
 }
@@ -237,8 +278,10 @@ class AsteroidSplitter extends System
 
             if (currSize > 1)
             {
-                world.addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
-                world.addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
+                (this.getParent() as Scene).addEntity(
+                    new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
+                (this.getParent() as Scene).addEntity(
+                    new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
             }
             entity.destroy();
         })
@@ -258,10 +301,8 @@ class ScreenWrapper extends System
             Matter.Body.setPosition(
                 collider.body,
                 Matter.Vector.create(
-                    (collider.body.position.x + world.renderer.screen.width) %
-                    world.renderer.screen.width,
-                    (collider.body.position.y + world.renderer.screen.height) %
-                        world.renderer.screen.height))
+                    (collider.body.position.x + world.renderer.screen.width) % world.renderer.screen.width,
+                    (collider.body.position.y + world.renderer.screen.height) % world.renderer.screen.height))
         })
     }
 }
@@ -276,8 +317,8 @@ class SpriteWrapper extends System
     update(world: World, delta: number): void
     {
         this.runOnEntities((entity: Entity, sprite: WrapSprite) => {
-            const xChild = world.sceneNode.getChildByName(sprite.xId);
-            const yChild = world.sceneNode.getChildByName(sprite.yId);
+            const xChild = (this.getParent() as Scene).sceneNode.getChildByName(sprite.xId);
+            const yChild = (this.getParent() as Scene).sceneNode.getChildByName(sprite.yId);
 
             xChild.rotation = entity.transform.rotation;
             yChild.rotation = entity.transform.rotation;
@@ -374,8 +415,9 @@ class ShipMover extends System
 
             if (Keyboard.isKeyPressed('Space'))
             {
-                world.addEntity(
-                    new Bullet(entity.transform.x, entity.transform.y, entity.transform.rotation))
+                (this.getParent() as Scene).addEntity(new Bullet(entity.transform.x,
+                                                                 entity.transform.y,
+                                                                 entity.transform.rotation))
             }
         });
     }

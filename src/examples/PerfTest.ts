@@ -10,29 +10,32 @@ import {Sprite} from "../Components";
 import * as Matter from "matter-js";
 import {CollisionMatrix} from "../Collision";
 import {Entity} from "../ECS/Entity";
+import {Scene} from "../ECS/Scene";
 
 const loader = new PIXI.Loader();
 
-export class PerfTest
+export class PerfTest extends Scene
 {
 
     constructor()
     {
+        super();
+
+        const world = new World(this, {width: 1024, height: 700, resolution: 1, backgroundColor: 0xA1B1A1});
+
         loader.add([spr_block]).load(() => {
 
-            let world = new World({width: 1024, height: 700, resolution: 1, backgroundColor: 0xA1B1A1});
-
-            world.addEntity(new Diagnostics("white"));
+            this.addEntity(new Diagnostics("white"));
 
             for (let i = 0; i < 50; i++)
             {
                 for (let j = 0; j < 10; j++)
                 {
-                    world.addEntity(new Block(i * 32, j * 32));
+                    this.addEntity(new Block(i * 32, j * 32));
                 }
             }
 
-            world.addWorldSystem(new MatterEngine(new CollisionMatrix(), Vector.create(0, 0.15)));
+            this.addWorldSystem(new MatterEngine(new CollisionMatrix(), Vector.create(0, 0.15)));
 
             world.start();
         })

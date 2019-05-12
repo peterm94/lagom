@@ -6,6 +6,7 @@ import {Observable} from "./Observer";
 import {CollisionMatrix} from "./Collision";
 import {WorldSystem} from "./ECS/WorldSystem";
 import {Component} from "./ECS/Component";
+import {Scene} from "./ECS/Scene";
 
 export class CollisionEvent
 {
@@ -209,8 +210,8 @@ export class MCollider extends Component
         super.onAdded();
 
         // Add the body to the matter system
-        const world = this.getParent() as World;
-        this.engine = world.getWorldSystem<MatterEngine>(MatterEngine) as MatterEngine;
+        const scene = this.getParent().getParent() as Scene;
+        this.engine = scene.getWorldSystem<MatterEngine>(MatterEngine) as MatterEngine;
 
         if (this.engine != null)
         {

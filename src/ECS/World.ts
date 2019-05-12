@@ -1,16 +1,12 @@
-import {Entity} from "./Entity";
-import {System} from "./System";
-import {WorldSystem} from "./WorldSystem";
 import * as PIXI from "pixi.js";
-import {Observable} from "../Observer";
 import {ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
+import {Scene} from "./Scene";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
 // keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
 const Keyboard = require('pixi.js-keyboard');
 
 // const Mouse = require('pixi.js-mouse');
-
 
 class Diag
 {
@@ -19,7 +15,6 @@ class Diag
     totalFrameTime: number = 0;
 }
 
-
 /**
  * Entire Scene instance Access via World.instance after creation.
  */
@@ -27,26 +22,14 @@ export class World extends ContainerLifecycleObject
 {
     static instance: World;
 
-    // TODO can these be sets? need unique, but update order needs to be defined :/ i need a comparator for each
-    // type that can define it's order.
-    readonly entities: Entity[] = [];
-    readonly systems: System[] = [];
-    readonly worldSystems: WorldSystem[] = [];
-
     // Set this to true to end the game
     gameOver: boolean = false;
 
     // Main PIXI renderer
     readonly renderer: PIXI.Renderer;
 
-    // Top level PIXI Container that will be passed to the renderer.
-    readonly stage: PIXI.Container;
-
-    // Node for scene objects. This can be offset to simulate camera movement.
-    readonly sceneNode: PIXI.Container;
-
-    // GUI top level node. This node should not be offset, allowing for static GUI elements.
-    readonly guiNode: PIXI.Container;
+    // Currently loaded scene.
+    currentScene!: Scene;
 
     // Track total time
     private timeMs = 0;
@@ -63,7 +46,7 @@ export class World extends ContainerLifecycleObject
     // Delta since the last frame update. This is *not* the delta of the ECS update, but the render loop.
     deltaTime = 0;
 
-    updateLoop()
+    private updateLoop()
     {
         if (!this.gameOver)
         {
@@ -84,7 +67,7 @@ export class World extends ContainerLifecycleObject
             }
 
             const renderStart = Date.now();
-            this.renderer.render(this.stage);
+            this.renderer.render(this.currentScene.pixiStage);
             this.diag.renderTime = Date.now() - renderStart;
             this.diag.totalFrameTime = Date.now() - now;
 
@@ -94,14 +77,12 @@ export class World extends ContainerLifecycleObject
 
     readonly diag: Diag = new Diag();
 
-    readonly entityAddedEvent: Observable<World, Entity> = new Observable();
-    readonly entityRemovedEvent: Observable<World, Entity> = new Observable();
-
     /**
      * Create a new World.
+     * @param scene The first scene to load.
      * @param options Options for the PIXI Renderer.
      */
-    constructor(options?: {
+    constructor(scene : Scene, options?: {
         width?: number;
         height?: number;
         view?: HTMLCanvasElement;
@@ -121,18 +102,11 @@ export class World extends ContainerLifecycleObject
 
         World.instance = this;
 
+        this.setScene(scene);
+
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
         document.body.appendChild(this.renderer.view);
-
-        this.stage = new PIXI.Container();
-
-        // set up the nodes for the ECS to interact with and add them to PIXI.
-        this.sceneNode = new PIXI.Container();
-        this.sceneNode.name = "scene";
-        this.guiNode = new PIXI.Container();
-        this.guiNode.name = "gui";
-        this.stage.addChild(this.sceneNode, this.guiNode);
     }
 
     /**
@@ -150,86 +124,17 @@ export class World extends ContainerLifecycleObject
         super.update(delta);
 
         // Mouse.update();
-
-        // Update world systems
-        this.worldSystems.forEach(system => system.update(this, delta));
-
-        // Resolve updates for entities
-        this.entities.forEach(entity => entity.update(delta));
-
-        // Update normal systems
-        this.systems.forEach(system => system.update(this, delta));
+        this.currentScene.update(delta);
 
         Keyboard.update();
     }
 
-    /**
-     * Add a system to the World.
-     * @param system The system to add
-     * @returns The added system.
-     */
-    addSystem<T extends System>(system: T): T
+    setScene(scene: Scene)
     {
-        system.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
-        return system;
-    }
+        scene.setParent(this);
+        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: scene});
+        this.currentScene = scene;
 
-    /**
-     * Add a world system to the World. These are not tied to entity processing.
-     * @param system The system to add.
-     * @returns The added system.
-     */
-    addWorldSystem<T extends WorldSystem>(system: T): T
-    {
-        system.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
-        return system;
-    }
-
-    /**
-     * Add an entity to the World.
-     * @param entity The entity to add.
-     * @returns The added entity.
-     */
-    addEntity<T extends Entity>(entity: T): T
-    {
-        entity.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: entity});
-        return entity;
-    }
-
-    /**
-     * Get a System of the provided type.
-     * @param type The type of system to search for.
-     * @returns The found system or null.
-     */
-    getSystem<T extends System>(type: any | { new(): T }): T | null
-    {
-        const found = this.systems.find(value => value instanceof type);
-        return found != undefined ? found as T : null;
-    }
-
-    /**
-     * Get a WorldSystem of the provided type.
-     * @param type The type of system to search for.
-     * @returns The found system or null.
-     */
-    getWorldSystem<T extends WorldSystem>(type: any | { new(): T }): T | null
-    {
-        const found = this.worldSystems.find(value => value instanceof type);
-        return found != undefined ? found as T : null;
-    }
-
-    /**
-     * Get an Entity with the given name. If multiple instances have the same name, only the first found will be
-     * returned.
-     * @param name The name of the Entity to search for.
-     * @returns The found Entity or null.
-     */
-    getEntityWithName<T extends Entity>(name: string): T | null
-    {
-        const found = this.entities.find(value => value.name === name);
-        return found != undefined ? found as T : null;
+        // TODO what happens to the old scene?
     }
 }

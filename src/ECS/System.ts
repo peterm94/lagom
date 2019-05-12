@@ -3,6 +3,7 @@ import {World} from "./World";
 import {Component} from "./Component";
 import {LifecycleObject} from "./LifecycleObject";
 import {Util} from "../Util";
+import {Scene} from "./Scene";
 
 /**
  * System base class. Systems should be used to run on groups of components.
@@ -81,14 +82,14 @@ export abstract class System extends LifecycleObject
         }
     }
 
-    private onEntityAdded(caller: World, entity: Entity)
+    private onEntityAdded(caller: Scene, entity: Entity)
     {
         // Register for component changes
         entity.componentAddedEvent.register(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.register(this.onComponentRemoved.bind(this));
     }
 
-    private onEntityRemoved(caller: World, entity: Entity)
+    private onEntityRemoved(caller: Scene, entity: Entity)
     {
         entity.componentAddedEvent.deregister(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.deregister(this.onComponentRemoved.bind(this));
@@ -101,16 +102,16 @@ export abstract class System extends LifecycleObject
     {
         super.onAdded();
 
-        const world = this.getParent() as World;
-        world.systems.push(this);
+        const scene = this.getParent() as Scene;
+        scene.systems.push(this);
 
-        world.entityAddedEvent.register(this.onEntityAdded.bind(this));
-        world.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
+        scene.entityAddedEvent.register(this.onEntityAdded.bind(this));
+        scene.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
 
         // We need to scan everything that already exists
-        world.entities.forEach(entity => {
+        scene.entities.forEach(entity => {
             // Register listener for entity
-            this.onEntityAdded(world, entity);
+            this.onEntityAdded(scene, entity);
 
             // Check it, add if ready.
             const ret = this.findComponents(entity);
@@ -125,11 +126,11 @@ export abstract class System extends LifecycleObject
     {
         super.onRemoved();
 
-        const world = this.getParent() as World;
-        Util.remove(world.systems, this);
+        const scene = this.getParent() as Scene;
+        Util.remove(scene.systems, this);
 
-        world.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
-        world.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
+        scene.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
+        scene.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
     }
 
     /**

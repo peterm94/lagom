@@ -6,6 +6,7 @@ import {Entity} from "./ECS/Entity";
 import {System} from "./ECS/System";
 import {Component} from "./ECS/Component";
 import {World} from "./ECS/World";
+import {Scene} from "./ECS/Scene";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -24,8 +25,8 @@ export class Diagnostics extends GUIEntity
         this.addComponent(new TextDisp("", new PIXI.TextStyle({fontSize: 10, fill: this.textCol})));
 
         const world = this.getParent() as World;
-        world.addSystem(new FpsUpdater());
-        world.addWorldSystem(new DebugKeys());
+        (this.getParent() as Scene).addSystem(new FpsUpdater());
+        (this.getParent() as Scene).addWorldSystem(new DebugKeys());
     }
 
     constructor(textCol: string)
@@ -41,7 +42,7 @@ class DebugKeys extends WorldSystem
     {
         if (Keyboard.isKeyPressed('KeyT'))
         {
-            console.log(world.entities.map((e) => e.name));
+            console.log((this.getParent() as Scene).entities.map((e) => e.name));
         }
         if (Keyboard.isKeyPressed('KeyY'))
         {

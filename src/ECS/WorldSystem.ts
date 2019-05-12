@@ -3,6 +3,7 @@ import {World} from "./World";
 import {Entity} from "./Entity";
 import {Component} from "./Component";
 import {LifecycleObject} from "./LifecycleObject";
+import {Scene} from "./Scene";
 
 /**
  * World system base class. Designed to run on batches of Components.
@@ -73,14 +74,14 @@ export abstract class WorldSystem extends LifecycleObject
         Util.remove(components, component);
     }
 
-    private onEntityAdded(caller: World, entity: Entity)
+    private onEntityAdded(caller: Scene, entity: Entity)
     {
         // Register for component changes
         entity.componentAddedEvent.register(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.register(this.onComponentRemoved.bind(this));
     }
 
-    private onEntityRemoved(caller: World, entity: Entity)
+    private onEntityRemoved(caller: Scene, entity: Entity)
     {
         entity.componentAddedEvent.deregister(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.deregister(this.onComponentRemoved.bind(this));
@@ -90,21 +91,21 @@ export abstract class WorldSystem extends LifecycleObject
     {
         super.onAdded();
 
-        const world = this.getParent() as World;
-        world.worldSystems.push(this);
+        const scene = this.getParent() as Scene;
+        scene.worldSystems.push(this);
 
         // make each component map
         this.types().forEach(type => {
             this.runOn.set(type, []);
         });
 
-        world.entityAddedEvent.register(this.onEntityAdded.bind(this));
-        world.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
+        scene.entityAddedEvent.register(this.onEntityAdded.bind(this));
+        scene.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
 
         // We need to scan everything that already exists
-        world.entities.forEach((entity: Entity) => {
+        scene.entities.forEach((entity: Entity) => {
             // Register listener for entity
-            this.onEntityAdded(world, entity);
+            this.onEntityAdded(scene, entity);
 
             // Add any existing components
             entity.components.forEach((component) => {
@@ -117,10 +118,10 @@ export abstract class WorldSystem extends LifecycleObject
     {
         super.onRemoved();
 
-        const world = this.getParent() as World;
-        Util.remove(world.worldSystems, this);
+        const scene = this.getParent() as Scene;
+        Util.remove(scene.worldSystems, this);
 
-        world.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
-        world.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
+        scene.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
+        scene.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
     }
 }
