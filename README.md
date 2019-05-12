@@ -1,68 +1,39 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Lagom
 
-## Available Scripts
+Lagom is a game framework for Javascript games.
 
-In the project directory, you can run:
 
-### `npm start`
+# Basic Usage
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## Available ECS Interfaces
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+### Component
 
-### `npm test`
+Data container class. `Component`s generally should not contain any logic. Use them to store data which can be
+manipulated or read by `System`s or `WorldSystem`s.
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Entity
 
-### `npm run build`
+Container type for `Components`. Generally should not contain any logic, as they do not have an `update` method.
+The Entity class allows you to add `Components` and retrieve them by type.
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### System
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+`Systems` update every game tick on specific `Component` groupings. A system must declare which `Component`
+combinations it wishes to run on. If an `Entity` is found which holds an instance of each requested `Component`,
+the system will run on it. If any `Component` types are missing from the `Entity`, the `System` will not run.
+If multiple matching Components of the same type are found on an `Entity`, the first found will be returned.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### WorldSystem
 
-### `npm run eject`
+`WorldSystems` are similar to `System`s, but instead of running on `Component` groupings by entities, they run on all
+`Components` of specified types.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Scene
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+A `Scene` is a container object for all of the ECS object types. A `Scene` can be likened to a game level.
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### World
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+The `World` type is the top level Lagom object. All global configuration is done in the `World` object, and it controls
+the update loop and the currently loaded `Scene`.
