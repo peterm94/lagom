@@ -73,7 +73,7 @@ export class Entity extends ContainerLifecycleObject
         super.onAdded();
 
         // Add to the scene
-        const scene = this.getParent() as Scene;
+        const scene = this.getScene();
         scene.entities.push(this);
         scene.entityAddedEvent.trigger(scene, this);
 
@@ -85,7 +85,7 @@ export class Entity extends ContainerLifecycleObject
     {
         super.onRemoved();
 
-        const scene = this.getParent() as Scene;
+        const scene = this.getScene();
         Util.remove(scene.entities, this);
         scene.entityRemovedEvent.trigger(scene, this);
 
@@ -98,7 +98,7 @@ export class Entity extends ContainerLifecycleObject
         super.destroy();
 
         Log.trace("Entity destroy() called for:", this);
-        (this.getParent() as Scene).toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
+        this.getScene().toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
 
         // Take any components with us
         this.components.forEach((val) => val.destroy());
@@ -106,7 +106,13 @@ export class Entity extends ContainerLifecycleObject
 
     rootNode(): PIXI.Container
     {
-        return (this.getParent() as Scene).sceneNode;
+        return this.getScene().sceneNode;
+    }
+
+    getScene() : Scene
+    {
+        // TODO this needs to change if we have nested entities.
+        return this.getParent() as Scene;
     }
 }
 
@@ -118,6 +124,6 @@ export class GUIEntity extends Entity
 {
     rootNode(): PIXI.Container
     {
-        return (this.getParent() as Scene).guiNode;
+        return this.getScene().guiNode;
     }
 }

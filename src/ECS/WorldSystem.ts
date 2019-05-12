@@ -91,7 +91,7 @@ export abstract class WorldSystem extends LifecycleObject
     {
         super.onAdded();
 
-        const scene = this.getParent() as Scene;
+        const scene = this.getScene();
         scene.worldSystems.push(this);
 
         // make each component map
@@ -118,10 +118,15 @@ export abstract class WorldSystem extends LifecycleObject
     {
         super.onRemoved();
 
-        const scene = this.getParent() as Scene;
+        const scene = this.getScene();
         Util.remove(scene.worldSystems, this);
 
         scene.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
         scene.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
+    }
+
+    getScene() : Scene
+    {
+        return this.getParent() as Scene;
     }
 }

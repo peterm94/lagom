@@ -49,9 +49,9 @@ class Inspector extends WorldSystem
 
     update(world: World, delta: number): void
     {
-        this.text.textContent = (this.getParent() as Scene).entities.map(
+        this.text.textContent = this.getScene().entities.map(
             entity => entity.name + ":\n" + entity.components.map(component => component.constructor.name).join("\n"))
-                                                           .join("\n")
+                                    .join("\n")
     }
 }
 
@@ -214,7 +214,7 @@ class WrapSprite extends Sprite
         this.yChild.name = this.yId;
         this.yChild.anchor.x = this.pixiObj.anchor.x;
         this.yChild.anchor.y = this.pixiObj.anchor.y;
-        (this.getParent() as Scene).sceneNode.addChild(this.xChild, this.yChild);
+        this.getEntity().getScene().sceneNode.addChild(this.xChild, this.yChild);
     }
 
     onRemoved(): void
@@ -222,8 +222,8 @@ class WrapSprite extends Sprite
         super.onRemoved();
         if (this.xChild != null && this.yChild != null)
         {
-            (this.getParent() as Scene).sceneNode.removeChild(this.xChild);
-            (this.getParent() as Scene).sceneNode.removeChild(this.yChild);
+            this.getEntity().getScene().sceneNode.removeChild(this.xChild);
+            this.getEntity().getScene().sceneNode.removeChild(this.yChild);
         }
     }
 }
@@ -278,10 +278,8 @@ class AsteroidSplitter extends System
 
             if (currSize > 1)
             {
-                (this.getParent() as Scene).addEntity(
-                    new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
-                (this.getParent() as Scene).addEntity(
-                    new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
+                this.getScene().addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
+                this.getScene().addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
             }
             entity.destroy();
         })
@@ -317,8 +315,8 @@ class SpriteWrapper extends System
     update(world: World, delta: number): void
     {
         this.runOnEntities((entity: Entity, sprite: WrapSprite) => {
-            const xChild = (this.getParent() as Scene).sceneNode.getChildByName(sprite.xId);
-            const yChild = (this.getParent() as Scene).sceneNode.getChildByName(sprite.yId);
+            const xChild = this.getScene().sceneNode.getChildByName(sprite.xId);
+            const yChild = this.getScene().sceneNode.getChildByName(sprite.yId);
 
             xChild.rotation = entity.transform.rotation;
             yChild.rotation = entity.transform.rotation;
@@ -415,9 +413,9 @@ class ShipMover extends System
 
             if (Keyboard.isKeyPressed('Space'))
             {
-                (this.getParent() as Scene).addEntity(new Bullet(entity.transform.x,
-                                                                 entity.transform.y,
-                                                                 entity.transform.rotation))
+                this.getScene().addEntity(new Bullet(entity.transform.x,
+                                                     entity.transform.y,
+                                                     entity.transform.rotation))
             }
         });
     }

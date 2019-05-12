@@ -102,7 +102,7 @@ export abstract class System extends LifecycleObject
     {
         super.onAdded();
 
-        const scene = this.getParent() as Scene;
+        const scene = this.getScene();
         scene.systems.push(this);
 
         scene.entityAddedEvent.register(this.onEntityAdded.bind(this));
@@ -126,7 +126,7 @@ export abstract class System extends LifecycleObject
     {
         super.onRemoved();
 
-        const scene = this.getParent() as Scene;
+        const scene = this.getScene();
         Util.remove(scene.systems, this);
 
         scene.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
@@ -158,5 +158,10 @@ export abstract class System extends LifecycleObject
         this.runOn.forEach((value: Component[], key: Entity) => {
             f(key, ...value);
         })
+    }
+
+    getScene() : Scene
+    {
+        return this.getParent() as Scene;
     }
 }

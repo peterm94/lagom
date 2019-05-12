@@ -24,9 +24,9 @@ export class Diagnostics extends GUIEntity
         this.addComponent(new FpsTracker());
         this.addComponent(new TextDisp("", new PIXI.TextStyle({fontSize: 10, fill: this.textCol})));
 
-        const world = this.getParent() as World;
-        (this.getParent() as Scene).addSystem(new FpsUpdater());
-        (this.getParent() as Scene).addWorldSystem(new DebugKeys());
+        const scene = this.getScene();
+        scene.addSystem(new FpsUpdater());
+        scene.addWorldSystem(new DebugKeys());
     }
 
     constructor(textCol: string)
@@ -42,7 +42,7 @@ class DebugKeys extends WorldSystem
     {
         if (Keyboard.isKeyPressed('KeyT'))
         {
-            console.log((this.getParent() as Scene).entities.map((e) => e.name));
+            console.log(this.getScene().entities.map((e) => e.name));
         }
         if (Keyboard.isKeyPressed('KeyY'))
         {

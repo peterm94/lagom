@@ -161,7 +161,7 @@ class FollowCamera extends System
     {
         this.runOnEntities((entity: Entity) => {
 
-            const worldPos = (this.getParent() as Scene).sceneNode.position;
+            const worldPos = this.getScene().sceneNode.position;
             const midX = world.renderer.view.width / 2 - worldPos.x;
             const midY = world.renderer.view.height / 2 - worldPos.y;
 

@@ -191,7 +191,7 @@ class WrapSprite extends Sprite
         this.yChild.name = this.yId;
         this.yChild.anchor.x = this.pixiObj.anchor.x;
         this.yChild.anchor.y = this.pixiObj.anchor.y;
-        (this.getParent().getParent() as Scene).sceneNode.addChild(this.xChild, this.yChild);
+        this.getEntity().getScene().sceneNode.addChild(this.xChild, this.yChild);
     }
 
     onRemoved(): void
@@ -199,8 +199,8 @@ class WrapSprite extends Sprite
         super.onRemoved();
         if (this.xChild != null && this.yChild != null)
         {
-            (this.getParent() as Scene).sceneNode.removeChild(this.xChild);
-            (this.getParent() as Scene).sceneNode.removeChild(this.yChild);
+            this.getEntity().getScene().sceneNode.removeChild(this.xChild);
+            this.getEntity().getScene().sceneNode.removeChild(this.yChild);
         }
     }
 }
@@ -259,9 +259,9 @@ class AsteroidSplitter extends System
 
             if (currSize > 1)
             {
-                (this.getParent() as Scene).addEntity(
+                this.getScene().addEntity(
                     new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
-                (this.getParent() as Scene).addEntity(
+                this.getScene().addEntity(
                     new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
             }
             entity.destroy();
@@ -389,7 +389,7 @@ class ShipMover extends System
 
             if (Keyboard.isKeyPressed('Space'))
             {
-                (this.getParent() as Scene).addEntity(
+                this.getScene().addEntity(
                     new Bullet(entity.transform.x, entity.transform.y, entity.transform.rotation))
             }
         });
