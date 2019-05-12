@@ -9,8 +9,8 @@ Lagom is a game framework for Javascript games.
 
 ### Component
 
-Data container class. `Component`s generally should not contain any logic. Use them to store data which can be
-manipulated or read by `System`s or `WorldSystem`s.
+Data container class. `Components` generally should not contain any logic. Use them to store data which can be
+manipulated or read by `Systems` or `WorldSystems`.
 
 ### Entity
 
@@ -26,7 +26,7 @@ If multiple matching Components of the same type are found on an `Entity`, the f
 
 ### WorldSystem
 
-`WorldSystems` are similar to `System`s, but instead of running on `Component` groupings by entities, they run on all
+`WorldSystems` are similar to `Systems`, but instead of running on `Component` groupings by entities, they run on all
 `Components` of specified types.
 
 ### Scene
