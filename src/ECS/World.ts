@@ -16,7 +16,7 @@ class Diag
 }
 
 /**
- * Entire Scene instance Access via World.instance after creation.
+ * World class, containing all high level framework references. Sets up the render window and controls updating the ECS.
  */
 export class World extends ContainerLifecycleObject
 {
@@ -125,6 +125,10 @@ export class World extends ContainerLifecycleObject
         Keyboard.update();
     }
 
+    /**
+     * Set a scene to load. Will be started instantly.
+     * @param scene The Scene to load.
+     */
     setScene(scene: Scene)
     {
         scene.setParent(this);

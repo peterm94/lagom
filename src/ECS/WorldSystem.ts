@@ -124,6 +124,10 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
         scene.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));
     }
 
+    /**
+     * Return the Scene object that this system belongs to.
+     * @returns The parent Scene.
+     */
     getScene(): Scene
     {
         return this.getParent() as Scene;

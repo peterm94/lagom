@@ -32,7 +32,6 @@ export abstract class Component extends LifecycleObject
         parent.componentRemovedEvent.trigger(parent, this);
     }
 
-
     destroy()
     {
         super.destroy();

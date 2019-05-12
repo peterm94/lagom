@@ -159,6 +159,10 @@ export abstract class System extends LifecycleObject implements Updatable
         })
     }
 
+    /**
+     * Return the Scene object that this system belongs to.
+     * @returns The parent Scene.
+     */
     getScene(): Scene
     {
         return this.getParent() as Scene;

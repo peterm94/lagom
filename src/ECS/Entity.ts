@@ -13,11 +13,11 @@ export class Entity extends ContainerLifecycleObject
     readonly componentAddedEvent: Observable<Entity, Component> = new Observable();
     readonly componentRemovedEvent: Observable<Entity, Component> = new Observable();
 
-    transform: PIXI.Container;
-    layer: number = 0;
-
     readonly name: string;
     readonly components: Component[] = [];
+
+    transform: PIXI.Container;
+    layer: number = 0;
 
     /**
      * Create a new entity. It must be added to a World to actually do anything.
@@ -104,7 +104,7 @@ export class Entity extends ContainerLifecycleObject
         this.components.forEach((val) => val.destroy());
     }
 
-    rootNode(): PIXI.Container
+    protected rootNode(): PIXI.Container
     {
         return this.getScene().sceneNode;
     }
@@ -122,7 +122,7 @@ export class Entity extends ContainerLifecycleObject
  */
 export class GUIEntity extends Entity
 {
-    rootNode(): PIXI.Container
+    protected rootNode(): PIXI.Container
     {
         return this.getScene().guiNode;
     }

@@ -17,17 +17,26 @@ export abstract class LifecycleObject
 {
     parent: LifecycleObject | null = null;
 
+    /**
+     * Set the parent for this object.
+     * @param parent The parent.
+     */
     setParent(parent: LifecycleObject)
     {
         this.parent = parent;
     }
 
+    /**
+     * Retrieve the parent. If this object is not part of the ECS, it will throw an exception.
+     *
+     * @returns The parent of this object.
+     */
     getParent(): LifecycleObject
     {
         if (this.parent == null)
         {
             // TODO throw or something
-            Log.error("Object has no parent :(");
+            Log.error("Object has no parent :( Use onAdded() for any initialization logic instead of the contructor.");
             return <any>null;
         }
 
@@ -56,14 +65,20 @@ export abstract class LifecycleObject
     }
 }
 
+/**
+ * Type for internal ECS updates.
+ */
 export type PendingUpdate = { state: ObjectState, object: LifecycleObject }
 
 
+/**
+ * Lifecycle object that can contain other objects. Used to keep the ECS hierarchy updated correctly.
+ */
 export abstract class ContainerLifecycleObject extends LifecycleObject implements Updatable
 {
     toUpdate: PendingUpdate[] = [];
 
-    private resolveUpdates()
+    update(delta: number): void
     {
         // Copy the pending map make a new one, allowing it to be used for the next frame.
         const pending = this.toUpdate;
@@ -88,19 +103,28 @@ export abstract class ContainerLifecycleObject extends LifecycleObject implement
             }
         }
     }
-
-    update(delta: number): void
-    {
-        this.resolveUpdates();
-    }
 }
 
+/**
+ * Interface for updatable objects. Update will be called once per logic frame.
+ */
 export interface Updatable
 {
+    /**
+     * The update method.
+     * @param delta Elapsed time since the last update call.
+     */
     update(delta: number): void;
 }
 
+/**
+ * Interface for renderable objects. Render will be called once per render frame.
+ */
 export interface Renderable
 {
-    update(delta: number): void;
+    /**
+     * The render method.
+     * @param delta Elapsed time since the last render call.
+     */
+    render(delta: number): void;
 }

@@ -6,10 +6,12 @@ import {WorldSystem} from "./WorldSystem";
 import {Observable} from "../Observer";
 import {World} from "./World";
 
-
+/**
+ * Scene object type. Should be the main interface used for games using the framework.
+ */
 export class Scene extends ContainerLifecycleObject implements Updatable
 {
-    // Some fancy events
+    // Some fancy entity events for anything that cares.
     readonly entityAddedEvent: Observable<Scene, Entity> = new Observable();
     readonly entityRemovedEvent: Observable<Scene, Entity> = new Observable();
 
@@ -69,7 +71,7 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     }
 
     /**
-     * Add a world system to the World. These are not tied to entity processing.
+     * Add a world system to the Scene. These are not tied to entity processing.
      * @param system The system to add.
      * @returns The added system.
      */
@@ -81,7 +83,7 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     }
 
     /**
-     * Add an entity to the World.
+     * Add an entity to the Scene.
      * @param entity The entity to add.
      * @returns The added entity.
      */
@@ -126,6 +128,10 @@ export class Scene extends ContainerLifecycleObject implements Updatable
         return found != undefined ? found as T : null;
     }
 
+    /**
+     * Return the World object that this Scene belongs to.
+     * @returns The parent World.
+     */
     getWorld(): World
     {
         return this.getParent() as World;
