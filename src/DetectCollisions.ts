@@ -5,15 +5,17 @@ import {Log} from "./Util";
 import {Observable} from "./Observer";
 import {CollisionMatrix} from "./Collision";
 
-class DetectCollisionsSystem extends WorldSystem
+export class DetectCollisionsSystem extends WorldSystem
 {
     readonly detectSystem: Collisions;
     readonly collisionMatrix: CollisionMatrix;
+    private readonly continuous: boolean;
 
-    constructor(collisionMatrix: CollisionMatrix)
+    constructor(collisionMatrix: CollisionMatrix, continuous: boolean = true)
     {
         super();
         this.collisionMatrix = collisionMatrix;
+        this.continuous = continuous;
         this.detectSystem = new Collisions();
     }
 
@@ -43,61 +45,34 @@ class DetectCollisionsSystem extends WorldSystem
         // We don't need a delta, this is a pure collision checking system. No physics.
         // Allow the system to process the changes.
         this.detectSystem.update();
-    }
-}
 
-class DetectContinuousCollisions extends WorldSystem
-{
-    private engine: DetectCollisionsSystem | null = null;
-    private collisionMatrix!: CollisionMatrix;
-
-
-    types(): { new(): Component }[] | any[]
-    {
-        return [DetectCollider];
-    }
-
-    onAdded(): void
-    {
-        super.onAdded();
-
-        this.engine = this.getScene().getWorldSystem(DetectCollisionsSystem);
-
-        if (this.engine == null)
+        // If we have enabled continous checks, do the collision checking.
+        if (this.continuous)
         {
-            Log.warn("A DetectCollisionsSystem must be added to the Scene before a " +
-                         "DetectContinuousCollisions is added.");
-            return;
-        }
-
-        this.collisionMatrix = this.engine.collisionMatrix
-    }
-
-    update(delta: number): void
-    {
-        this.runOnComponents((colliders: DetectCollider[]) => {
-            for (let collider of colliders)
-            {
-                const potentials = collider.body.potentials();
-                for (let potential of potentials)
+            this.runOnComponents((colliders: DetectCollider[]) => {
+                for (let collider of colliders)
                 {
-                    const otherComp = (<any>potential).lagom_comonent;
-
-                    // Check layers, then do actual collision check
-                    if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
-                        && collider.body.collides(potential))
+                    const potentials = collider.body.potentials();
+                    for (let potential of potentials)
                     {
-                        // Trigger collision for each
-                        collider.collisionEvent.trigger(collider, otherComp);
-                        otherComp.collisionEvent.trigger(otherComp, collider);
+                        const otherComp = (<any>potential).lagom_comonent;
+
+                        // Check layers, then do actual collision check
+                        if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                            && collider.body.collides(potential))
+                        {
+                            // Trigger collision for each
+                            collider.collisionEvent.trigger(collider, otherComp);
+                            otherComp.collisionEvent.trigger(otherComp, collider);
+                        }
                     }
                 }
-            }
-        });
+            });
+        }
     }
 }
 
-class DetectCollider extends Component
+export class DetectCollider extends Component
 {
     private engine: DetectCollisionsSystem | null = null;
     readonly collisionEvent: Observable<DetectCollider, DetectCollider> = new Observable();
