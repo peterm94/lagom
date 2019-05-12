@@ -4,6 +4,7 @@ import {Asteroids} from "./examples/Asteroids";
 import {Downshaft} from "./examples/Downshaft";
 import {MatterAsteroids} from "./examples/MatterAsteroids";
 import {PerfTest} from "./examples/PerfTest";
+import {DetectDemo} from "./examples/DetectDemo";
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
@@ -20,6 +21,9 @@ switch (window.location.search.substr(1).toLowerCase()) {
     case "perf":
         new PerfTest();
         break;
-    default:
+    case "asteroids":
         new Asteroids();
+        break;
+    default:
+        new DetectDemo();
 }

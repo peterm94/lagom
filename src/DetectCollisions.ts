@@ -1,9 +1,10 @@
 import {WorldSystem} from "./ECS/WorldSystem";
 import {Component} from "./ECS/Component";
-import {Body, Collisions, Polygon} from "detect-collisions/collisions";
 import {Log} from "./Util";
 import {Observable} from "./Observer";
 import {CollisionMatrix} from "./Collision";
+import {Collisions, Polygon, Body} from "detect-collisions";
+
 
 export class DetectCollisionsSystem extends WorldSystem
 {
@@ -46,7 +47,7 @@ export class DetectCollisionsSystem extends WorldSystem
         // Allow the system to process the changes.
         this.detectSystem.update();
 
-        // If we have enabled continous checks, do the collision checking.
+        // If we have enabled continuous checks, do the collision checking.
         if (this.continuous)
         {
             this.runOnComponents((colliders: DetectCollider[]) => {
