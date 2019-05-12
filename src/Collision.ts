@@ -4,9 +4,7 @@ import {Observable} from "./Observer";
 import {Sprite} from "./Components";
 import {MathUtil} from "./Util";
 import {WorldSystem} from "./ECS/WorldSystem";
-import {Entity} from "./ECS/Entity";
 import {Component} from "./ECS/Component";
-import {World} from "./ECS/World";
 
 /**
  * Collection of collision detection functions and utilities.
@@ -273,7 +271,6 @@ export class CollisionMatrix
      */
     addCollision(l1: number, l2: number)
     {
-
         if (!this.validLayer(l1) || !this.validLayer(l2))
         {
             throw Error(`Layer must be between 1 and ${this.maxLayer}`);

@@ -6,7 +6,6 @@ import {Entity} from "./ECS/Entity";
 import {System} from "./ECS/System";
 import {Component} from "./ECS/Component";
 import {World} from "./ECS/World";
-import {Scene} from "./ECS/Scene";
 
 const Keyboard = require('pixi.js-keyboard');
 

@@ -35,5 +35,5 @@ A `Scene` is a container object for all of the ECS object types. A `Scene` can b
 
 ### World
 
-The `World` type is the top level Lagom object. All global configuration is done in the `World` object, and it controls
-the update loop and the currently loaded `Scene`.
+The `World` type is the top level Lagom object type. All global configuration is done in the `World` instance and it
+controls the update loop and the currently loaded `Scene`.
