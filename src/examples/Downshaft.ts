@@ -11,7 +11,7 @@ import {Vector} from "matter-js";
 import {CollisionMatrix} from "../Collision";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
-import {Component} from "../ECS/Component";
+import {Component, ComponentType} from "../ECS/Component";
 import {Scene} from "../ECS/Scene";
 
 const Keyboard = require('pixi.js-keyboard');
@@ -76,7 +76,7 @@ class PlayerMover extends System
     private readonly moveForce = 3;
     private readonly jumpForce = -0.01;
 
-    types(): { new(): Component }[] | any[]
+    types(): ComponentType<Component>[]
     {
         return [MCollider, PlayerControlled];
     }
@@ -161,7 +161,7 @@ class FollowCamera extends System
         this.renderer = this.getScene().getWorld().renderer;
     }
 
-    types(): { new(): Component }[] | any[]
+    types(): ComponentType<Component>[]
     {
         return [FollowMe];
     }

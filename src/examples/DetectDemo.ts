@@ -3,7 +3,7 @@ import {World} from "../ECS/World";
 import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../Collision";
 import {CircleCollider, DetectCollider, DetectCollisionsSystem, RectCollider} from "../DetectCollisions";
-import {Component} from "../ECS/Component";
+import {Component, ComponentType} from "../ECS/Component";
 import {System} from "../ECS/System";
 import {Result} from "detect-collisions";
 import * as PIXI from "pixi.js";
@@ -143,7 +143,7 @@ class Solid extends Component
  */
 class SolidSystem extends System
 {
-    types(): { new(): Component }[] | any[]
+    types(): ComponentType<Component>[]
     {
         return [DetectCollider, Solid];
     }
@@ -173,7 +173,7 @@ class PlayerMover extends System
 {
     readonly speed = 0.1;
 
-    types(): { new(): Component }[] | any[]
+    types(): ComponentType<Component>[]
     {
         return [PlayerControlled];
     }

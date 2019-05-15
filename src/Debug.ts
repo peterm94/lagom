@@ -1,10 +1,10 @@
 import * as PIXI from "pixi.js";
 import {GUIEntity} from "./ECS/Entity";
 import {TextDisp} from "./Components";
-import {ComponentType, WorldSystem} from "./ECS/WorldSystem";
+import {WorldSystem} from "./ECS/WorldSystem";
 import {Entity} from "./ECS/Entity";
 import {System} from "./ECS/System";
-import {Component} from "./ECS/Component";
+import {Component, ComponentType} from "./ECS/Component";
 import {World} from "./ECS/World";
 
 const Keyboard = require('pixi.js-keyboard');
@@ -90,7 +90,7 @@ class FpsUpdater extends System
         }
     }
 
-    types(): { new(): Component }[] | any[]
+    types(): ComponentType<Component>[]
     {
         return [TextDisp, FpsTracker];
     }

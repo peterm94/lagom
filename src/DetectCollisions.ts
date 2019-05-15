@@ -1,5 +1,5 @@
-import {ComponentType, WorldSystem} from "./ECS/WorldSystem";
-import {Component} from "./ECS/Component";
+import {WorldSystem} from "./ECS/WorldSystem";
+import {Component, ComponentType} from "./ECS/Component";
 import {Log} from "./Util";
 import {Observable} from "./Observer";
 import {CollisionMatrix} from "./Collision";

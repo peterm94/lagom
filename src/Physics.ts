@@ -1,6 +1,6 @@
 import {Collider} from "./Collision";
-import {ComponentType, WorldSystem} from "./ECS/WorldSystem";
-import {Component} from "./ECS/Component";
+import {WorldSystem} from "./ECS/WorldSystem";
+import {Component, ComponentType} from "./ECS/Component";
 
 export enum BodyType
 {

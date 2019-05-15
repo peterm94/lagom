@@ -3,8 +3,8 @@ import * as Matter from "matter-js";
 import {Log} from "./Util";
 import {Observable} from "./Observer";
 import {CollisionMatrix} from "./Collision";
-import {ComponentType, WorldSystem} from "./ECS/WorldSystem";
-import {Component} from "./ECS/Component";
+import {WorldSystem} from "./ECS/WorldSystem";
+import {Component, ComponentType} from "./ECS/Component";
 
 export class CollisionEvent
 {

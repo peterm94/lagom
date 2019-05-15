@@ -1,9 +1,9 @@
 import * as PIXI from "pixi.js";
-import {PIXIComponent} from "./ECS/Component";
+import {ComponentType, PIXIComponent} from "./ECS/Component";
 import {Observable} from "./Observer";
 import {Sprite} from "./Components";
 import {MathUtil} from "./Util";
-import {ComponentType, WorldSystem} from "./ECS/WorldSystem";
+import {WorldSystem} from "./ECS/WorldSystem";
 import {Component} from "./ECS/Component";
 
 /**

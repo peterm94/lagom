@@ -1,20 +1,15 @@
 import {Log, Util} from "../Util";
 import {Entity} from "./Entity";
-import {Component} from "./Component";
+import {Component, ComponentType} from "./Component";
 import {LifecycleObject, Updatable} from "./LifecycleObject";
 import {Scene} from "./Scene";
-
-/**
- * Type for Components. Allows for abstract constructor types.
- * https://stackoverflow.com/questions/52349758/how-does-type-constructort-function-prototype-t-apply-to-abstract-c
- */
-export type ComponentType<T> = Function & { prototype: T }
 
 /**
  * World system base class. Designed to run on batches of Components.
  */
 export abstract class WorldSystem extends LifecycleObject implements Updatable
 {
+    // TODO the key type is technically wrong, but it works because types aren't real
     private readonly runOn: Map<{ new(): Component }, Component[]> = new Map();
 
     /**

@@ -1,6 +1,5 @@
 import {Entity} from "./Entity";
-import {World} from "./World";
-import {Component} from "./Component";
+import {Component, ComponentType} from "./Component";
 import {LifecycleObject, Updatable} from "./LifecycleObject";
 import {Util} from "../Util";
 import {Scene} from "./Scene";
@@ -15,7 +14,6 @@ export abstract class System extends LifecycleObject implements Updatable
 
     private onComponentAdded(entity: Entity, component: Component)
     {
-
         // Check if we care about this type at all
         if (this.types().find((val) => {
             return component instanceof val;
@@ -40,9 +38,9 @@ export abstract class System extends LifecycleObject implements Updatable
 
     private findComponents(entity: Entity): Component[] | null
     {
-        // It's dumb, I can't constrain `types` because of the way imports work, but this works as desired.
-        const inTypes: { new(): Component }[] = this.types();
+        const inTypes = this.types();
         const ret: Component[] = [];
+
         for (let type of inTypes)
         {
             const comp = entity.getComponent(type);
@@ -143,7 +141,7 @@ export abstract class System extends LifecycleObject implements Updatable
      * Component types that this System runs on.
      * @returns A list of Component types.
      */
-    abstract types(): { new(): Component }[] | any[]
+    abstract types(): ComponentType<Component>[]
 
     /**
      * Call this from update() to run on the requested component instances.
