@@ -1,9 +1,14 @@
 import {Log, Util} from "../Util";
-import {World} from "./World";
 import {Entity} from "./Entity";
 import {Component} from "./Component";
 import {LifecycleObject, Updatable} from "./LifecycleObject";
 import {Scene} from "./Scene";
+
+/**
+ * Type for Components. Allows for abstract constructor types.
+ * https://stackoverflow.com/questions/52349758/how-does-type-constructort-function-prototype-t-apply-to-abstract-c
+ */
+export type ComponentType<T> = Function & { prototype: T }
 
 /**
  * World system base class. Designed to run on batches of Components.
@@ -22,7 +27,7 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
      * An array of types that this WorldSystem will run on. This should remain static.
      * @returns An array of component types to run on during update().
      */
-    abstract types(): { new(): Component }[] | any[]
+    abstract types(): ComponentType<Component>[]
 
     /**
      * Call this in update() to retrieve the collection of components to run on.
@@ -44,13 +49,13 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
 
         if (type === undefined) return;
 
-        let compMap = this.runOn.get(type);
+        let compMap = this.runOn.get(type.prototype);
 
         if (compMap === undefined)
         {
-            Log.warn("Expected component map does not exist on WorldSystem.", this, type);
+            Log.warn("Expected component map does not exist on WorldSystem.", this, type.prototype);
             compMap = [];
-            this.runOn.set(type, compMap);
+            this.runOn.set(type.prototype, compMap);
         }
         compMap.push(component);
     }
@@ -64,7 +69,7 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
 
         if (type === undefined) return;
 
-        let components = this.runOn.get(type);
+        let components = this.runOn.get(type.prototype);
 
         // Nothing registered, return
         if (components === undefined) return;
@@ -95,7 +100,7 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
 
         // make each component map
         this.types().forEach(type => {
-            this.runOn.set(type, []);
+            this.runOn.set(type.prototype, []);
         });
 
         scene.entityAddedEvent.register(this.onEntityAdded.bind(this));

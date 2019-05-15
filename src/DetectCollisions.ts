@@ -1,4 +1,4 @@
-import {WorldSystem} from "./ECS/WorldSystem";
+import {ComponentType, WorldSystem} from "./ECS/WorldSystem";
 import {Component} from "./ECS/Component";
 import {Log} from "./Util";
 import {Observable} from "./Observer";
@@ -17,11 +17,6 @@ export class DetectCollisionsSystem extends WorldSystem
         this.collisionMatrix = collisionMatrix;
         this.continuous = continuous;
         this.detectSystem = new Collisions();
-    }
-
-    types(): { new(): Component }[] | any[]
-    {
-        return [DetectCollider];
     }
 
     update(delta: number): void
@@ -69,6 +64,11 @@ export class DetectCollisionsSystem extends WorldSystem
                 }
             });
         }
+    }
+
+    types(): ComponentType<Component>[]
+    {
+        return [DetectCollider];
     }
 }
 

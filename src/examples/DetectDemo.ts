@@ -11,6 +11,7 @@ import * as PIXI from "pixi.js";
 import spr_block from './resources/block.png';
 import {RenderCircle, RenderRect} from "../Components";
 import {Log} from "../Util";
+import {Diagnostics} from "../Debug";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -48,6 +49,7 @@ export class DetectDemo extends Scene
         this.addSystem(new PlayerMover());
 
         this.addWorldSystem(new DetectCollisionsSystem(collisions));
+        this.addEntity(new Diagnostics("blueaaw"));
         // this.addSystem(new SolidSystem());
         // this.addWorldSystem(new Inspector());
         this.addEntity(new Square(50, 50));

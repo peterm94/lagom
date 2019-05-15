@@ -14,7 +14,7 @@ import {CollisionMatrix} from "../Collision";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
-import {WorldSystem} from "../ECS/WorldSystem";
+import {ComponentType, WorldSystem} from "../ECS/WorldSystem";
 import {Scene} from "../ECS/Scene";
 
 const Keyboard = require('pixi.js-keyboard');
@@ -41,17 +41,16 @@ class Inspector extends WorldSystem
         document.body.appendChild(this.text);
     }
 
-    types(): { new(): Component }[] | any[]
-    {
-
-        return [];
-    }
-
     update(delta: number): void
     {
         this.text.textContent = this.getScene().entities.map(
             entity => entity.name + ":\n" + entity.components.map(component => component.constructor.name).join("\n"))
                                     .join("\n")
+    }
+
+    types(): ComponentType<Component>[]
+    {
+        return [];
     }
 }
 

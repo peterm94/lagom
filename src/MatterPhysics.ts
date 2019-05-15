@@ -3,7 +3,7 @@ import * as Matter from "matter-js";
 import {Log} from "./Util";
 import {Observable} from "./Observer";
 import {CollisionMatrix} from "./Collision";
-import {WorldSystem} from "./ECS/WorldSystem";
+import {ComponentType, WorldSystem} from "./ECS/WorldSystem";
 import {Component} from "./ECS/Component";
 
 export class CollisionEvent
@@ -108,11 +108,6 @@ export class MatterEngine extends WorldSystem
         }
     }
 
-    types(): { new(): Component }[] | any[]
-    {
-        return [MCollider];
-    }
-
     update(delta: number): void
     {
 
@@ -132,6 +127,11 @@ export class MatterEngine extends WorldSystem
                 entity.transform.rotation = collider.body.angle;
             }
         })
+    }
+
+    types(): ComponentType<Component>[]
+    {
+        return [MCollider];
     }
 }
 

@@ -3,7 +3,7 @@ import {PIXIComponent} from "./ECS/Component";
 import {Observable} from "./Observer";
 import {Sprite} from "./Components";
 import {MathUtil} from "./Util";
-import {WorldSystem} from "./ECS/WorldSystem";
+import {ComponentType, WorldSystem} from "./ECS/WorldSystem";
 import {Component} from "./ECS/Component";
 
 /**
@@ -248,7 +248,7 @@ export class CollisionSystem extends WorldSystem
         });
     }
 
-    types(): { new(): Component }[] | any[]
+    types(): ComponentType<Component>[]
     {
         return [Collider];
     }

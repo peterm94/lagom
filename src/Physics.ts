@@ -1,8 +1,5 @@
-import {World} from "./ECS/World";
-import {Collider, Collision} from "./Collision";
-import {WorldSystem} from "./ECS/WorldSystem";
-import {Entity} from "./ECS/Entity";
-import {System} from "./ECS/System";
+import {Collider} from "./Collision";
+import {ComponentType, WorldSystem} from "./ECS/WorldSystem";
 import {Component} from "./ECS/Component";
 
 export enum BodyType
@@ -224,7 +221,7 @@ export class PhysicsSystem extends WorldSystem
     //     });
     // }
 
-    types(): { new(): Component }[] | any[]
+    types(): ComponentType<Component>[]
     {
         return [Collider];
     }
