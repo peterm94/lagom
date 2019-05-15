@@ -1,10 +1,11 @@
 import * as PIXI from "pixi.js";
-import {ComponentType, PIXIComponent} from "./ECS/Component";
+import {PIXIComponent} from "./ECS/Component";
 import {Observable} from "./Observer";
 import {Sprite} from "./Components";
 import {MathUtil} from "./Util";
 import {WorldSystem} from "./ECS/WorldSystem";
 import {Component} from "./ECS/Component";
+import {LagomType} from "./ECS/LifecycleObject";
 
 /**
  * Collection of collision detection functions and utilities.
@@ -248,7 +249,7 @@ export class CollisionSystem extends WorldSystem
         });
     }
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [Collider];
     }

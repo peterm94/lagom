@@ -4,7 +4,8 @@ import {Log} from "./Util";
 import {Observable} from "./Observer";
 import {CollisionMatrix} from "./Collision";
 import {WorldSystem} from "./ECS/WorldSystem";
-import {Component, ComponentType} from "./ECS/Component";
+import {Component} from "./ECS/Component";
+import {LagomType} from "./ECS/LifecycleObject";
 
 export class CollisionEvent
 {
@@ -129,7 +130,7 @@ export class MatterEngine extends WorldSystem
         })
     }
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [MCollider];
     }

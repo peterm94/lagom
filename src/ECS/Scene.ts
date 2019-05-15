@@ -5,6 +5,7 @@ import {System} from "./System";
 import {WorldSystem} from "./WorldSystem";
 import {Observable} from "../Observer";
 import {World} from "./World";
+import {LagomType} from "./LifecycleObject";
 
 /**
  * Scene object type. Should be the main interface used for games using the framework.
@@ -99,7 +100,7 @@ export class Scene extends ContainerLifecycleObject implements Updatable
      * @param type The type of system to search for.
      * @returns The found system or null.
      */
-    getSystem<T extends System>(type: any | { new(): T }): T | null
+    getSystem<T extends System>(type: LagomType<System>): T | null
     {
         const found = this.systems.find(value => value instanceof type);
         return found != undefined ? found as T : null;
@@ -110,7 +111,7 @@ export class Scene extends ContainerLifecycleObject implements Updatable
      * @param type The type of system to search for.
      * @returns The found system or null.
      */
-    getWorldSystem<T extends WorldSystem>(type: any | { new(): T }): T | null
+    getWorldSystem<T extends WorldSystem>(type: LagomType<WorldSystem>): T | null
     {
         const found = this.worldSystems.find(value => value instanceof type);
         return found != undefined ? found as T : null;

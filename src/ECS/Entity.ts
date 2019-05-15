@@ -2,7 +2,7 @@ import {Observable} from "../Observer";
 import * as PIXI from "pixi.js";
 import {Log, Util} from "../Util";
 import {Component} from "./Component";
-import {ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
+import {LagomType, ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
 import {Scene} from "./Scene";
 
 /**
@@ -52,7 +52,7 @@ export class Entity extends ContainerLifecycleObject
      * @param type The type of component to search for.
      * @returns An array of all matching components.
      */
-    getComponentsOfType<T extends Component>(type: any | { new(): T }): T[]
+    getComponentsOfType<T extends Component>(type: LagomType<Component>): T[]
     {
         return this.components.filter(value => value instanceof type) as T[];
     }
@@ -62,7 +62,7 @@ export class Entity extends ContainerLifecycleObject
      * @param type the type of component to search for.
      * @returns The component if found, otherwise null.
      */
-    getComponent<T extends Component>(type: any | { new(): T }): T | null
+    getComponent<T extends Component>(type: LagomType<Component>): T | null
     {
         const found = this.components.find(value => value instanceof type);
         return found != undefined ? found as T : null;

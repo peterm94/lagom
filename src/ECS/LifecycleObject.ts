@@ -128,3 +128,9 @@ export interface Renderable
      */
     render(delta: number): void;
 }
+
+/**
+ * Type for our object constructors. Allows for abstract constructor types.
+ * https://stackoverflow.com/questions/52349758/how-does-type-constructort-function-prototype-t-apply-to-abstract-c
+ */
+export type LagomType<T> = Function & { prototype: T }

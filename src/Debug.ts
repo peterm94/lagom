@@ -4,8 +4,9 @@ import {TextDisp} from "./Components";
 import {WorldSystem} from "./ECS/WorldSystem";
 import {Entity} from "./ECS/Entity";
 import {System} from "./ECS/System";
-import {Component, ComponentType} from "./ECS/Component";
+import {Component} from "./ECS/Component";
 import {World} from "./ECS/World";
+import {LagomType} from "./ECS/LifecycleObject";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -49,7 +50,7 @@ class DebugKeys extends WorldSystem
         }
     }
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [];
     }
@@ -90,7 +91,7 @@ class FpsUpdater extends System
         }
     }
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [TextDisp, FpsTracker];
     }

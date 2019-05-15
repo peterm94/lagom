@@ -11,8 +11,9 @@ import {Vector} from "matter-js";
 import {CollisionMatrix} from "../Collision";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
-import {Component, ComponentType} from "../ECS/Component";
+import {Component} from "../ECS/Component";
 import {Scene} from "../ECS/Scene";
+import {LagomType} from "../ECS/LifecycleObject";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -76,7 +77,7 @@ class PlayerMover extends System
     private readonly moveForce = 3;
     private readonly jumpForce = -0.01;
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [MCollider, PlayerControlled];
     }
@@ -161,7 +162,7 @@ class FollowCamera extends System
         this.renderer = this.getScene().getWorld().renderer;
     }
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [FollowMe];
     }

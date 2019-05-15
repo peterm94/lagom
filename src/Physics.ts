@@ -1,6 +1,7 @@
 import {Collider} from "./Collision";
 import {WorldSystem} from "./ECS/WorldSystem";
-import {Component, ComponentType} from "./ECS/Component";
+import {Component} from "./ECS/Component";
+import {LagomType} from "./ECS/LifecycleObject";
 
 export enum BodyType
 {
@@ -221,7 +222,7 @@ export class PhysicsSystem extends WorldSystem
     //     });
     // }
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [Collider];
     }

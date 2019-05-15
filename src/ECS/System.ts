@@ -1,6 +1,6 @@
 import {Entity} from "./Entity";
-import {Component, ComponentType} from "./Component";
-import {LifecycleObject, Updatable} from "./LifecycleObject";
+import {Component} from "./Component";
+import {LagomType, LifecycleObject, Updatable} from "./LifecycleObject";
 import {Util} from "../Util";
 import {Scene} from "./Scene";
 
@@ -141,7 +141,7 @@ export abstract class System extends LifecycleObject implements Updatable
      * Component types that this System runs on.
      * @returns A list of Component types.
      */
-    abstract types(): ComponentType<Component>[]
+    abstract types(): LagomType<Component>[]
 
     /**
      * Call this from update() to run on the requested component instances.

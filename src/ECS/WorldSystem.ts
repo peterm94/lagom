@@ -1,7 +1,7 @@
 import {Log, Util} from "../Util";
 import {Entity} from "./Entity";
-import {Component, ComponentType} from "./Component";
-import {LifecycleObject, Updatable} from "./LifecycleObject";
+import {Component} from "./Component";
+import {LagomType, LifecycleObject, Updatable} from "./LifecycleObject";
 import {Scene} from "./Scene";
 
 /**
@@ -22,7 +22,7 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
      * An array of types that this WorldSystem will run on. This should remain static.
      * @returns An array of component types to run on during update().
      */
-    abstract types(): ComponentType<Component>[]
+    abstract types(): LagomType<Component>[]
 
     /**
      * Call this in update() to retrieve the collection of components to run on.

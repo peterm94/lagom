@@ -12,8 +12,9 @@ import {CircleCollider, Collider, CollisionMatrix, CollisionSystem} from "../Col
 import {BodyType, PhysicsSystem, Rigidbody, Vector} from "../Physics";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
-import {Component, ComponentType} from "../ECS/Component";
+import {Component} from "../ECS/Component";
 import {Scene} from "../ECS/Scene";
+import {LagomType} from "../ECS/LifecycleObject";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -229,7 +230,7 @@ class DestroyOffScreen extends System
         this.renderer = this.getScene().getWorld().renderer;
     }
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [ScreenContained];
     }
@@ -253,7 +254,7 @@ class DestroyOffScreen extends System
 
 class AsteroidSplitter extends System
 {
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [Split];
     }
@@ -288,7 +289,7 @@ class ScreenWrapper extends System
         this.renderer = this.getScene().getWorld().renderer;
     }
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [ScreenWrap];
     }
@@ -315,7 +316,7 @@ class SpriteWrapper extends System
         this.renderer = this.getScene().getWorld().renderer;
     }
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [WrapSprite];
     }
@@ -366,7 +367,7 @@ class ConstantMotion extends Component
 
 class ConstantMover extends System
 {
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [ConstantMotion];
     }
@@ -389,7 +390,7 @@ class ShipMover extends System
     private readonly accSpeed = 0.325;
     private readonly rotSpeed = MathUtil.degToRad(0.2);
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [Rigidbody, PlayerControlled];
     }

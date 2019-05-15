@@ -65,8 +65,3 @@ export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Compon
     }
 }
 
-/**
- * Type for Components. Allows for abstract constructor types.
- * https://stackoverflow.com/questions/52349758/how-does-type-constructort-function-prototype-t-apply-to-abstract-c
- */
-export type ComponentType<T> = Function & { prototype: T }

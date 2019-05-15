@@ -3,7 +3,7 @@ import {World} from "../ECS/World";
 import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../Collision";
 import {CircleCollider, DetectCollider, DetectCollisionsSystem, RectCollider} from "../DetectCollisions";
-import {Component, ComponentType} from "../ECS/Component";
+import {Component} from "../ECS/Component";
 import {System} from "../ECS/System";
 import {Result} from "detect-collisions";
 import * as PIXI from "pixi.js";
@@ -12,6 +12,7 @@ import spr_block from './resources/block.png';
 import {RenderCircle, RenderRect} from "../Components";
 import {Log} from "../Util";
 import {Diagnostics} from "../Debug";
+import {LagomType} from "../ECS/LifecycleObject";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -143,7 +144,7 @@ class Solid extends Component
  */
 class SolidSystem extends System
 {
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [DetectCollider, Solid];
     }
@@ -173,7 +174,7 @@ class PlayerMover extends System
 {
     readonly speed = 0.1;
 
-    types(): ComponentType<Component>[]
+    types(): LagomType<Component>[]
     {
         return [PlayerControlled];
     }
