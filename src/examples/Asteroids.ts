@@ -1,20 +1,21 @@
 import * as PIXI from "pixi.js";
 import {World} from "../ECS/World";
-import {Sprite} from "../Components";
-import {Diagnostics} from "../Debug";
+import {Sprite} from "../Common/PIXIComponents";
+import {Diagnostics} from "../Common/Debug";
 import spr_asteroid from './resources/asteroid.png'
 import spr_asteroid2 from './resources/asteroid2.png'
 import spr_asteroid3 from './resources/asteroid3.png'
 import spr_ship from './resources/ship.png'
 import spr_bullet from './resources/bullet.png'
-import {Log, MathUtil, Util} from "../Util";
-import {CircleCollider, Collider, CollisionMatrix, CollisionSystem} from "../Collision";
-import {BodyType, PhysicsSystem, Rigidbody, Vector} from "../Physics";
+import {Log, MathUtil, Util} from "../Common/Util";
+import {CircleCollider, Collider, CollisionSystem} from "../LagomCollisions/Collision";
+import {BodyType, PhysicsSystem, Rigidbody, Vector} from "../LagomPhysics/Physics";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
 import {Scene} from "../ECS/Scene";
 import {LagomType} from "../ECS/LifecycleObject";
+import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 
 const Keyboard = require('pixi.js-keyboard');
 

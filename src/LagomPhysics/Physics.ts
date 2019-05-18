@@ -1,7 +1,7 @@
-import {Collider} from "./Collision";
-import {WorldSystem} from "./ECS/WorldSystem";
-import {Component} from "./ECS/Component";
-import {LagomType} from "./ECS/LifecycleObject";
+import {Collider} from "../LagomCollisions/Collision";
+import {WorldSystem} from "../ECS/WorldSystem";
+import {Component} from "../ECS/Component";
+import {LagomType} from "../ECS/LifecycleObject";
 
 export enum BodyType
 {

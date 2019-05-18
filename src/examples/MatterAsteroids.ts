@@ -1,16 +1,16 @@
 import * as PIXI from "pixi.js";
 import {World} from "../ECS/World";
-import {Sprite} from "../Components";
-import {Diagnostics} from "../Debug";
+import {Sprite} from "../Common/PIXIComponents";
+import {Diagnostics} from "../Common/Debug";
 import spr_asteroid from './resources/asteroid.png'
 import spr_asteroid2 from './resources/asteroid2.png'
 import spr_asteroid3 from './resources/asteroid3.png'
 import spr_ship from './resources/ship.png'
 import spr_bullet from './resources/bullet.png'
-import {MathUtil} from "../Util";
-import {MatterEngine, MCollider} from "../MatterPhysics";
+import {MathUtil} from "../Common/Util";
+import {MatterEngine, MCollider} from "../MatterPhysics/MatterPhysics";
 import * as Matter from "matter-js";
-import {CollisionMatrix} from "../Collision";
+import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";

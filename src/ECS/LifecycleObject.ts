@@ -1,4 +1,4 @@
-import {Log} from "../Util";
+import {Log} from "../Common/Util";
 
 export enum ObjectState
 {

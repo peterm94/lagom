@@ -1,7 +1,7 @@
 import {Entity} from "./Entity";
 import {Component} from "./Component";
 import {LagomType, LifecycleObject, Updatable} from "./LifecycleObject";
-import {Util} from "../Util";
+import {Util} from "../Common/Util";
 import {Scene} from "./Scene";
 
 /**

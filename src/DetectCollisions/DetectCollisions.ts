@@ -1,12 +1,12 @@
-import {WorldSystem} from "./ECS/WorldSystem";
-import {Component} from "./ECS/Component";
-import {Log} from "./Util";
-import {Observable} from "./Observer";
-import {CollisionMatrix} from "./Collision";
+import {WorldSystem} from "../ECS/WorldSystem";
+import {Component} from "../ECS/Component";
+import {Log} from "../Common/Util";
+import {Observable} from "../Common/Observer";
+import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Collisions, Polygon, Body, Result, Circle, Point} from "detect-collisions";
-import {LagomType} from "./ECS/LifecycleObject";
-import {System} from "./ECS/System";
-import {Entity} from "./ECS/Entity";
+import {LagomType} from "../ECS/LifecycleObject";
+import {System} from "../ECS/System";
+import {Entity} from "../ECS/Entity";
 
 export class DetectCollisionsSystem extends WorldSystem
 {

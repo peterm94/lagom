@@ -3,10 +3,10 @@ import {ContainerLifecycleObject, ObjectState, Updatable} from "./LifecycleObjec
 import {Entity} from "./Entity";
 import {System} from "./System";
 import {WorldSystem} from "./WorldSystem";
-import {Observable} from "../Observer";
+import {Observable} from "../Common/Observer";
 import {World} from "./World";
 import {LagomType} from "./LifecycleObject";
-import {Camera} from "../Camera";
+import {Camera} from "../Common/Camera";
 
 /**
  * Scene object type. Should be the main interface used for games using the framework.

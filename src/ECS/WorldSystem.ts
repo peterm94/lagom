@@ -1,4 +1,4 @@
-import {Log, Util} from "../Util";
+import {Log, Util} from "../Common/Util";
 import {Entity} from "./Entity";
 import {Component} from "./Component";
 import {LagomType, LifecycleObject, Updatable} from "./LifecycleObject";

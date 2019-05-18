@@ -1,19 +1,25 @@
 import {Scene} from "../ECS/Scene";
 import {World} from "../ECS/World";
 import {Entity} from "../ECS/Entity";
-import {CollisionMatrix} from "../Collision";
-import {CircleCollider, DetectActive, DetectCollider, DetectCollisionsSystem, RectCollider} from "../DetectCollisions";
+import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
+import {
+    CircleCollider,
+    DetectActive,
+    DetectCollider,
+    DetectCollisionsSystem,
+    RectCollider
+} from "../DetectCollisions/DetectCollisions";
 import {Component} from "../ECS/Component";
 import {System} from "../ECS/System";
 import {Result} from "detect-collisions";
 import * as PIXI from "pixi.js";
 
 import spr_block from './resources/block.png';
-import {RenderCircle, RenderRect} from "../Components";
-import {Log} from "../Util";
-import {Diagnostics} from "../Debug";
+import {RenderCircle, RenderRect} from "../Common/PIXIComponents";
+import {Diagnostics} from "../Common/Debug";
 import {LagomType} from "../ECS/LifecycleObject";
-import {WorldSystem} from "../ECS/WorldSystem";
+import {ScreenShake, ScreenShaker} from "../Common/Screenshake";
+import {FollowCamera, FollowMe} from "../Common/CameraUtil";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -42,59 +48,11 @@ class DrawBounds extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new RenderRect(0, 0, 512, 512));
-        this.addComponent(new RenderRect(0, 0, 256, 256));
+        this.addComponent(new RenderRect(512, 512, 0, 0));
+        this.addComponent(new RenderRect(256, 256, 0, 0));
         this.addComponent(new RenderRect(256, 256, 256, 256));
-        this.addComponent(new RenderRect(0, 256, 256, 256));
-        this.addComponent(new RenderRect(256, 0, 256, 256));
-    }
-}
-
-class ScreenShake extends Component
-{
-    readonly intensity: number;
-    readonly duration: number;
-
-    constructor(intensity: number, durationMS: number)
-    {
-        super();
-        this.intensity = intensity;
-        this.duration = durationMS;
-    }
-}
-
-class ScreenShaker extends WorldSystem
-{
-    intensity: number = 0;
-    duration: number = 0;
-
-    types(): LagomType<Component>[]
-    {
-        return [ScreenShake];
-    }
-
-    update(delta: number): void
-    {
-        this.runOnComponents((shakers: ScreenShake[]) => {
-            for (let shaker of shakers)
-            {
-                // TODO this isn't perfect, if more than 1 are called, the will be combined
-                this.intensity = shaker.intensity > this.intensity ? shaker.intensity : this.intensity;
-                this.duration = shaker.duration > this.duration ? shaker.duration : this.duration;
-                shaker.destroy();
-            }
-        });
-
-        if (this.duration > 0)
-        {
-            this.getScene().camera.rotate(Math.random() * (this.intensity + this.intensity) - this.intensity);
-            this.duration -= delta;
-        }
-        else
-        {
-            this.getScene().camera.rotate(0);
-            this.intensity = 0;
-        }
+        this.addComponent(new RenderRect(256, 256, 0, 256));
+        this.addComponent(new RenderRect(256, 256, 256, 0));
     }
 }
 
@@ -131,48 +89,12 @@ export class CameraDemo extends Scene
         this.addEntity(new CircleBoy(200, 200));
         this.addEntity(new Player("player", 256, 256));
 
-        this.addSystem(new FollowCamera());
+        this.addSystem(new FollowCamera(256, 256));
 
         this.addEntity(new DrawTLC(""));
         this.addEntity(new DrawTLC("", 256, 256));
         this.addEntity(new DrawBounds(""))
 
-    }
-}
-
-class FollowMe extends Component
-{
-}
-
-class FollowCamera extends System
-{
-    private readonly mSpeed = 0.1;
-    private renderer!: PIXI.Renderer;
-    private angle = 0;
-
-    onAdded(): void
-    {
-        super.onAdded();
-
-        this.renderer = this.getScene().getWorld().renderer;
-    }
-
-    types(): LagomType<Component>[]
-    {
-        return [FollowMe];
-    }
-
-    update(delta: number): void
-    {
-        this.angle += delta * 0.01;
-        this.runOnEntities((entity: Entity) => {
-
-            // Hard follow
-            // this.camera.move(entity.transform.x, entity.transform.y, 256, 256);
-
-            // Soft follow
-            this.getScene().camera.moveTowards(entity.transform.x, entity.transform.y, 256, 256, 0.1);
-        });
     }
 }
 
@@ -193,8 +115,7 @@ class Square extends Entity
         const collider = this.addComponent(new RectCollider(0, 0, 32, 32, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new Solid());
-        this.addComponent(new RenderRect(0, 0, 32, 32));
+        this.addComponent(new RenderRect(32, 32, 0, 0));
     }
 }
 
@@ -215,7 +136,6 @@ class CircleBoy extends Entity
         const collider = this.addComponent(new CircleCollider(0, 0, 100, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new Solid());
         this.addComponent(new RenderCircle(100));
     }
 }
@@ -246,47 +166,12 @@ class Player extends Entity
             this.transform.y -= res.result.overlap * res.result.overlap_y;
         });
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new RenderRect(0, 0, 32, 32));
+        this.addComponent(new RenderRect(32, 32, 0, 0));
     }
 }
 
 class PlayerControlled extends Component
 {
-}
-
-class Solid extends Component
-{
-}
-
-/**
- * We can do it like this instead of the continuous way.
- */
-class SolidSystem extends System
-{
-    types(): LagomType<Component>[]
-    {
-        return [DetectCollider, Solid];
-    }
-
-    update(delta: number): void
-    {
-        this.runOnEntities((entity: Entity, collider: DetectCollider) => {
-            Log.warn(entity);
-
-            const potentials = collider.body.potentials();
-
-            for (let potential of potentials)
-            {
-                let result = new Result();
-                if (collider.body.collides(potential, result))
-                {
-                    const other = ((<any>potential).lagom_component) as DetectCollider;
-                    other.getEntity().transform.x += result.overlap_x * result.overlap;
-                    other.getEntity().transform.y += result.overlap_y * result.overlap;
-                }
-            }
-        });
-    }
 }
 
 class PlayerMover extends System

@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import {Scene} from "./ECS/Scene";
+import {Scene} from "../ECS/Scene";
 import {MathUtil} from "./Util";
 
 /**

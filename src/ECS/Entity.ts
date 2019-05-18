@@ -1,6 +1,6 @@
-import {Observable} from "../Observer";
+import {Observable} from "../Common/Observer";
 import * as PIXI from "pixi.js";
-import {Log, Util} from "../Util";
+import {Log, Util} from "../Common/Util";
 import {Component} from "./Component";
 import {LagomType, ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
 import {Scene} from "./Scene";

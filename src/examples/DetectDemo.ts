@@ -1,17 +1,16 @@
 import {Scene} from "../ECS/Scene";
 import {World} from "../ECS/World";
 import {Entity} from "../ECS/Entity";
-import {CollisionMatrix} from "../Collision";
-import {CircleCollider, DetectActive, DetectCollider, DetectCollisionsSystem, RectCollider} from "../DetectCollisions";
+import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
+import {CircleCollider, DetectActive, DetectCollider, DetectCollisionsSystem, RectCollider} from "../DetectCollisions/DetectCollisions";
 import {Component} from "../ECS/Component";
 import {System} from "../ECS/System";
 import {Result} from "detect-collisions";
 import * as PIXI from "pixi.js";
 
 import spr_block from './resources/block.png';
-import {RenderCircle, RenderRect} from "../Components";
-import {Log} from "../Util";
-import {Diagnostics} from "../Debug";
+import {RenderCircle, RenderRect} from "../Common/PIXIComponents";
+import {Diagnostics} from "../Common/Debug";
 import {LagomType} from "../ECS/LifecycleObject";
 
 const Keyboard = require('pixi.js-keyboard');
@@ -77,8 +76,7 @@ class Square extends Entity
         const collider = this.addComponent(new RectCollider(0, 0, 32, 32, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new Solid());
-        this.addComponent(new RenderRect(0, 0, 32, 32));
+        this.addComponent(new RenderRect(32, 32, 0, 0));
     }
 }
 
@@ -99,7 +97,6 @@ class CircleBoy extends Entity
         const collider = this.addComponent(new CircleCollider(0, 0, 100, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new Solid());
         this.addComponent(new RenderCircle(100));
     }
 }
@@ -128,47 +125,12 @@ class Player extends Entity
             this.transform.y -= res.result.overlap * res.result.overlap_y;
         });
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new RenderRect(0, 0, 32, 32));
+        this.addComponent(new RenderRect(32, 32, 0, 0));
     }
 }
 
 class PlayerControlled extends Component
 {
-}
-
-class Solid extends Component
-{
-}
-
-/**
- * We can do it like this instead of the continuous way.
- */
-class SolidSystem extends System
-{
-    types(): LagomType<Component>[]
-    {
-        return [DetectCollider, Solid];
-    }
-
-    update(delta: number): void
-    {
-        this.runOnEntities((entity: Entity, collider: DetectCollider) => {
-            Log.warn(entity);
-
-            const potentials = collider.body.potentials();
-
-            for (let potential of potentials)
-            {
-                let result = new Result();
-                if (collider.body.collides(potential, result))
-                {
-                    const other = ((<any>potential).lagom_component) as DetectCollider;
-                    other.getEntity().transform.x += result.overlap_x * result.overlap;
-                    other.getEntity().transform.y += result.overlap_y * result.overlap;
-                }
-            }
-        });
-    }
 }
 
 class PlayerMover extends System

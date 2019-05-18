@@ -1,5 +1,5 @@
 import {Entity} from "./Entity";
-import {Util} from "../Util";
+import {Util} from "../Common/Util";
 import {LifecycleObject, ObjectState} from "./LifecycleObject";
 
 /**
