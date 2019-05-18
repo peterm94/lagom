@@ -5,6 +5,8 @@ import {Observable} from "./Observer";
 import {CollisionMatrix} from "./Collision";
 import {Collisions, Polygon, Body, Result, Circle, Point} from "detect-collisions";
 import {LagomType} from "./ECS/LifecycleObject";
+import {System} from "./ECS/System";
+import {Entity} from "./ECS/Entity";
 
 export class DetectCollisionsSystem extends WorldSystem
 {
@@ -18,6 +20,17 @@ export class DetectCollisionsSystem extends WorldSystem
         this.collisionMatrix = collisionMatrix;
         this.continuous = continuous;
         this.detectSystem = new Collisions();
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        // Add the continuous system checker if we want it.
+        if (this.continuous)
+        {
+            this.getScene().addSystem(new DetectActiveCollisionSystem());
+        }
     }
 
     update(delta: number): void
@@ -41,36 +54,62 @@ export class DetectCollisionsSystem extends WorldSystem
         // We don't need a delta, this is a pure collision checking system. No physics.
         // Allow the system to process the changes.
         this.detectSystem.update();
-
-        // If we have enabled continuous checks, do the collision checking.
-        if (this.continuous)
-        {
-            this.runOnComponents((colliders: DetectCollider[]) => {
-                for (let collider of colliders)
-                {
-                    const potentials = collider.body.potentials();
-                    for (let potential of potentials)
-                    {
-                        const otherComp = (<any>potential).lagom_component;
-
-                        let result = new Result();
-                        // Check layers, then do actual collision check
-                        if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
-                            && collider.body.collides(potential, result))
-                        {
-                            // Trigger collision event
-                            collider.collisionEvent.trigger(collider, {other: otherComp, result: result});
-                        }
-                    }
-                }
-            });
-        }
     }
 
     types(): LagomType<Component>[]
     {
         return [DetectCollider];
     }
+}
+
+
+export class DetectActiveCollisionSystem extends System
+{
+    private engine!: DetectCollisionsSystem;
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        const engine = this.getScene().getWorldSystem<DetectCollisionsSystem>(DetectCollisionsSystem);
+        if (engine === null)
+        {
+            Log.error("DetectActiveCollisionSystem must be added to a Scene after a DetectCollisionsSystem.")
+        }
+        else
+        {
+            this.engine = engine;
+        }
+    }
+
+    types(): LagomType<Component>[]
+    {
+        return [DetectCollider, DetectActive];
+    }
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, collider: DetectCollider) => {
+            const potentials = collider.body.potentials();
+            for (let potential of potentials)
+            {
+                const otherComp = (<any>potential).lagom_component;
+
+                let result = new Result();
+                // Check layers, then do actual collision check
+                if (this.engine.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                    && collider.body.collides(potential, result))
+                {
+                    // Trigger collision event
+                    collider.collisionEvent.trigger(collider, {other: otherComp, result: result});
+                }
+            }
+        })
+    }
+}
+
+export class DetectActive extends Component
+{
 }
 
 /**
@@ -177,7 +216,7 @@ export class PolyCollider extends DetectCollider
      * @param vertices The polygon verticies.
      * @returns The area of the polygon.
      */
-    private static findArea(vertices: number[][]) : number
+    private static findArea(vertices: number[][]): number
     {
         // find bottom right point
         let brIndex = 0;

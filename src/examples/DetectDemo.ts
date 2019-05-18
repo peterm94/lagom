@@ -2,7 +2,7 @@ import {Scene} from "../ECS/Scene";
 import {World} from "../ECS/World";
 import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../Collision";
-import {CircleCollider, DetectCollider, DetectCollisionsSystem, RectCollider} from "../DetectCollisions";
+import {CircleCollider, DetectActive, DetectCollider, DetectCollisionsSystem, RectCollider} from "../DetectCollisions";
 import {Component} from "../ECS/Component";
 import {System} from "../ECS/System";
 import {Result} from "detect-collisions";
@@ -117,6 +117,7 @@ class Player extends Entity
         super.onAdded();
 
         this.addComponent(new PlayerControlled());
+        this.addComponent(new DetectActive());
 
         const collider = this.addComponent(
             new RectCollider(0, 0, 32, 32, this.layer));
