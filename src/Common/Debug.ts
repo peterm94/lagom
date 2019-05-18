@@ -67,25 +67,48 @@ class FpsUpdater extends System
 
     private world!: World;
 
+    private avgUpdateDt = 0;
+    private avgAnimDt = 0;
+    private avgUpdate = 0;
+    private avgRender = 0;
+    private avgFrame = 0;
+
+    private readonly samples = 100;
+
     onAdded(): void
     {
         super.onAdded();
         this.world = this.getScene().getWorld();
     }
 
+    private rollAverage(prevAvg: number, newVal: number): number
+    {
+        return (prevAvg * (this.samples - 1) + newVal) / this.samples
+    }
+
     update(delta: number): void
     {
         this.frameCount++;
+
+        this.avgUpdateDt = this.rollAverage(this.avgUpdateDt, 1000 / delta);
+        this.avgAnimDt = this.rollAverage(this.avgAnimDt, 1000 / this.world.deltaTime);
+        this.avgUpdate = this.rollAverage(this.avgUpdate, this.world.diag.ecsUpdateTime);
+        this.avgRender = this.rollAverage(this.avgRender, this.world.diag.renderTime);
+        this.avgFrame = this.rollAverage(this.avgFrame, this.world.diag.totalFrameTime);
+
         if ((this.frameCount % this.printFrame) === 0)
         {
             this.runOnEntities((entity: Entity, text: TextDisp) => {
                 {
-                    text.pixiObj.text = `UpdateDelta: ${delta.toFixed(2)}ms // ${(1000 / delta).toFixed(2)}`
+                    text.pixiObj.text = `UpdateDelta: ${delta.toFixed(2)}ms // ${(1000 / delta).toFixed(
+                        2)} // ${this.avgUpdateDt.toFixed(2)}`
                         + `\nAnimationDelta: ${(this.world.deltaTime).toFixed(2)}ms // ${(1000 /
-                            this.world.deltaTime).toFixed(2)}`
-                        + `\nECSUpdateTime: ${this.world.diag.ecsUpdateTime.toFixed(2)}ms`
-                        + `\nRenderTime: ${this.world.diag.renderTime.toFixed(2)}ms`
-                        + `\nTotalFrameTime: ${this.world.diag.totalFrameTime.toFixed(2)}ms`
+                            this.world.deltaTime).toFixed(2)} // ${this.avgAnimDt.toFixed(2)}`
+                        +
+                        `\nECSUpdateTime: ${this.world.diag.ecsUpdateTime.toFixed(2)}ms // ${this.avgUpdate.toFixed(2)}`
+                        + `\nRenderTime: ${this.world.diag.renderTime.toFixed(2)}ms // ${this.avgRender.toFixed(2)}`
+                        + `\nTotalFrameTime: ${this.world.diag.totalFrameTime.toFixed(2)}ms // ${this.avgFrame.toFixed(
+                            2)}`
                 }
             });
         }

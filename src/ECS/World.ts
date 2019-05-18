@@ -39,7 +39,7 @@ export class World extends ContainerLifecycleObject
     private elapsedSinceUpdate = 0;
 
     // Fixed timestep rate for logic updates (60hz)
-    private readonly dtMs = 1000 / 60;
+    private readonly fixedDeltaMS = 1000 / 60;
 
     // Delta since the last frame update. This is *not* the delta of the ECS update, but the render loop.
     deltaTime = 0;
@@ -54,15 +54,17 @@ export class World extends ContainerLifecycleObject
 
             this.elapsedSinceUpdate += this.deltaTime;
 
-            while (this.elapsedSinceUpdate >= this.dtMs)
+            while (this.elapsedSinceUpdate >= this.fixedDeltaMS)
             {
                 // Update the ECS
-                this.update(this.dtMs);
+                this.update(this.fixedDeltaMS);
                 this.diag.ecsUpdateTime = Date.now() - now;
 
-                this.elapsedSinceUpdate -= this.dtMs;
-                this.timeMs += this.dtMs;
+                this.elapsedSinceUpdate -= this.fixedDeltaMS;
+                this.timeMs += this.fixedDeltaMS;
             }
+            // this.update(this.deltaTime);
+
 
             const renderStart = Date.now();
             this.renderer.render(this.currentScene.pixiStage);
