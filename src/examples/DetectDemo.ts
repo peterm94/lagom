@@ -50,7 +50,7 @@ export class DetectDemo extends Scene
         this.addSystem(new PlayerMover());
 
         this.addWorldSystem(new DetectCollisionsSystem(collisions));
-        this.addEntity(new Diagnostics("blueaaw"));
+        this.addEntity(new Diagnostics("blue"));
         // this.addSystem(new SolidSystem());
         // this.addWorldSystem(new Inspector());
         this.addEntity(new Square(50, 50));
