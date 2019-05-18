@@ -39,7 +39,7 @@ export class RenderRect extends PIXIComponent<PIXI.Graphics>
         super(new PIXI.Graphics());
 
         this.pixiObj.lineStyle(1, 0xFF3300, 1);
-        this.pixiObj.drawRect(0, 0, width, height);
+        this.pixiObj.drawRect(xOff, yOff, width, height);
     }
 }
 

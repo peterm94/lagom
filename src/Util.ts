@@ -29,13 +29,36 @@ export class Util
 
 export class MathUtil
 {
+    // Conversion constant for degrees to radians.
     private static conv: number = 0.0174532925;
 
+    /**
+     * Convert a degree to a radian.
+     * @param deg Degree to convert.
+     * @returns The radian.
+     */
     static degToRad(deg: number): number
     {
         return MathUtil.conv * deg;
     }
 
+    /**
+     * Linearly interpolate a number.
+     * @param start The number to start from.
+     * @param end The target number.
+     * @param amount The percentage to interpolate by.
+     * @returns The resulting value.
+     */
+    static lerp(start: number, end: number, amount: number): number
+    {
+        return (1 - amount) * start + amount * end
+    }
+
+    /**
+     * Convert a radian to a degree.
+     * @param rad The radian to convert.
+     * @returns The converted degree.
+     */
     static radToDeg(rad: number): number
     {
         return rad / MathUtil.conv;

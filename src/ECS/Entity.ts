@@ -109,7 +109,7 @@ export class Entity extends ContainerLifecycleObject
         return this.getScene().sceneNode;
     }
 
-    getScene() : Scene
+    getScene(): Scene
     {
         // TODO this needs to change if we have nested entities.
         return this.getParent() as Scene;

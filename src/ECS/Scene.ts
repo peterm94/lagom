@@ -6,6 +6,7 @@ import {WorldSystem} from "./WorldSystem";
 import {Observable} from "../Observer";
 import {World} from "./World";
 import {LagomType} from "./LifecycleObject";
+import {Camera} from "../Camera";
 
 /**
  * Scene object type. Should be the main interface used for games using the framework.
@@ -25,12 +26,13 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     // GUI top level node. This node should not be offset, allowing for static GUI elements.
     readonly guiNode: PIXI.Container;
 
-
     // TODO can these be sets? need unique, but update order needs to be defined :/ i need a comparator for each
     // type that can define it's order.
     readonly entities: Entity[] = [];
     readonly systems: System[] = [];
     readonly worldSystems: WorldSystem[] = [];
+
+    camera!: Camera;
 
     constructor()
     {
@@ -43,6 +45,12 @@ export class Scene extends ContainerLifecycleObject implements Updatable
         this.guiNode = new PIXI.Container();
         this.guiNode.name = "gui";
         this.pixiStage.addChild(this.sceneNode, this.guiNode);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        this.camera = new Camera(this);
     }
 
     update(delta: number): void

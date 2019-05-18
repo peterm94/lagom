@@ -13,6 +13,7 @@ import {RenderCircle, RenderRect} from "../Components";
 import {Log} from "../Util";
 import {Diagnostics} from "../Debug";
 import {LagomType} from "../ECS/LifecycleObject";
+import {WorldSystem} from "../ECS/WorldSystem";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -25,7 +26,79 @@ enum Layers
     Layer3
 }
 
-export class DetectDemo extends Scene
+class DrawTLC extends Entity
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addComponent(new RenderCircle(4));
+    }
+}
+
+class DrawBounds extends Entity
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addComponent(new RenderRect(0, 0, 512, 512));
+        this.addComponent(new RenderRect(0, 0, 256, 256));
+        this.addComponent(new RenderRect(256, 256, 256, 256));
+        this.addComponent(new RenderRect(0, 256, 256, 256));
+        this.addComponent(new RenderRect(256, 0, 256, 256));
+    }
+}
+
+class ScreenShake extends Component
+{
+    readonly intensity: number;
+    readonly duration: number;
+
+    constructor(intensity: number, durationMS: number)
+    {
+        super();
+        this.intensity = intensity;
+        this.duration = durationMS;
+    }
+}
+
+class ScreenShaker extends WorldSystem
+{
+    intensity: number = 0;
+    duration: number = 0;
+
+    types(): LagomType<Component>[]
+    {
+        return [ScreenShake];
+    }
+
+    update(delta: number): void
+    {
+        this.runOnComponents((shakers: ScreenShake[]) => {
+            for (let shaker of shakers)
+            {
+                // TODO this isn't perfect, if more than 1 are called, the will be combined
+                this.intensity = shaker.intensity > this.intensity ? shaker.intensity : this.intensity;
+                this.duration = shaker.duration > this.duration ? shaker.duration : this.duration;
+                shaker.destroy();
+            }
+        });
+
+        if (this.duration > 0)
+        {
+            this.getScene().camera.rotate(Math.random() * (this.intensity + this.intensity) - this.intensity);
+            this.duration -= delta;
+        }
+        else
+        {
+            this.getScene().camera.rotate(0);
+            this.intensity = 0;
+        }
+    }
+}
+
+export class CameraDemo extends Scene
 {
     constructor()
     {
@@ -50,13 +123,56 @@ export class DetectDemo extends Scene
         this.addSystem(new PlayerMover());
 
         this.addWorldSystem(new DetectCollisionsSystem(collisions));
+        this.addWorldSystem(new ScreenShaker());
         this.addEntity(new Diagnostics("blue"));
         // this.addSystem(new SolidSystem());
         // this.addWorldSystem(new Inspector());
         this.addEntity(new Square(50, 50));
         this.addEntity(new CircleBoy(200, 200));
-        this.addEntity(new Player("player", 100, 100));
+        this.addEntity(new Player("player", 256, 256));
 
+        this.addSystem(new FollowCamera());
+
+        this.addEntity(new DrawTLC(""));
+        this.addEntity(new DrawTLC("", 256, 256));
+        this.addEntity(new DrawBounds(""))
+
+    }
+}
+
+class FollowMe extends Component
+{
+}
+
+class FollowCamera extends System
+{
+    private readonly mSpeed = 0.1;
+    private renderer!: PIXI.Renderer;
+    private angle = 0;
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.renderer = this.getScene().getWorld().renderer;
+    }
+
+    types(): LagomType<Component>[]
+    {
+        return [FollowMe];
+    }
+
+    update(delta: number): void
+    {
+        this.angle += delta * 0.01;
+        this.runOnEntities((entity: Entity) => {
+
+            // Hard follow
+            // this.camera.move(entity.transform.x, entity.transform.y, 256, 256);
+
+            // Soft follow
+            this.getScene().camera.moveTowards(entity.transform.x, entity.transform.y, 256, 256, 0.1);
+        });
     }
 }
 
@@ -118,6 +234,8 @@ class Player extends Entity
 
         this.addComponent(new PlayerControlled());
         this.addComponent(new DetectActive());
+        this.addComponent(new FollowMe());
+        this.addComponent(new ScreenShake(5, 1));
 
         const collider = this.addComponent(
             new RectCollider(0, 0, 32, 32, this.layer));
@@ -183,25 +301,26 @@ class PlayerMover extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
-            if
-            (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
+            if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
             {
                 entity.transform.x -= this.speed * delta;
             }
-            if
-            (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
+            if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
             {
                 entity.transform.x += this.speed * delta;
             }
-            if
-            (Keyboard.isKeyDown('ArrowUp', 'KeyW'))
+            if (Keyboard.isKeyDown('ArrowUp', 'KeyW'))
             {
                 entity.transform.y -= this.speed * delta;
             }
-            if
-            (Keyboard.isKeyDown('ArrowDown', 'KeyS'))
+            if (Keyboard.isKeyDown('ArrowDown', 'KeyS'))
             {
                 entity.transform.y += this.speed * delta;
+            }
+
+            if (Keyboard.isKeyDown('Space'))
+            {
+                entity.addComponent(new ScreenShake(2, 800));
             }
         });
     }
