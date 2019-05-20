@@ -1,7 +1,7 @@
-import {Collider} from "../LagomCollisions/Collision";
-import {WorldSystem} from "../ECS/WorldSystem";
 import {Component} from "../ECS/Component";
 import {LagomType} from "../ECS/LifecycleObject";
+import {System} from "../ECS/System";
+import {Entity} from "../ECS/Entity";
 
 export enum BodyType
 {
@@ -64,7 +64,7 @@ export class Vector
         return Math.sqrt((this.x * this.x) + (this.y * this.y));
     }
 
-    normalized(): Vector
+    asNormalized(): Vector
     {
         const len = this.length();
         return new Vector(this.x / len, this.y / len);
@@ -108,7 +108,7 @@ export class Rigidbody extends Component
     gravityScale: number = 1;
 
 
-    constructor(type: BodyType)
+    constructor(type: BodyType = BodyType.Dynamic)
     {
         super();
         this.type = type;
@@ -154,11 +154,11 @@ export class Rigidbody extends Component
     }
 }
 
-export class PhysicsSystem extends WorldSystem
+export class PhysicsSystem extends System
 {
     gravityDir: Vector;
 
-    constructor(gravityDir: Vector = new Vector(0, 9.8))
+    constructor(gravityDir: Vector = new Vector(0, 0.07))
     {
         super();
         this.gravityDir = gravityDir;
@@ -166,64 +166,27 @@ export class PhysicsSystem extends WorldSystem
 
     update(delta: number): void
     {
-    }
+        this.runOnEntities((entity: Entity, body: Rigidbody) => {
+            // Add gravity force if the object is dynamic
+            if (body.type === BodyType.Dynamic)
+            {
+                const gravForce = new Vector(this.gravityDir.x, this.gravityDir.y);
+                gravForce.multiply(body.gravityScale * delta);
+                body.addForce(gravForce);
 
-    // TODO this is very broken
-    //
-    //     /* We need to do 3 things here.
-    //      - Calculate new positions
-    //      - Check for collisions
-    //      - Resolve collisions, bumping things if necessary
-    //      */
-    //         World.runOnEntity((body: Rigidbody) => {
-    //
-    //             // Add gravity force if the object is dynamic
-    //             if (body.type === BodyType.Dynamic) {
-    //                 const gravForce = new Vector(this.gravityDir.x, this.gravityDir.y);
-    //                 gravForce.multiply(body.gravityScale * delta);
-    //                 body.addForce(gravForce);
-    //             }
-    //
-    //             let myColliders = entity.getComponentsOfType<Collider>(Collider);
-    //             myColliders = myColliders.filter((v) => {
-    //                 return !v.isTrigger
-    //             });
-    //
-    //             // Apply movement
-    //             entity.transform.x += body.velocity.x * delta;
-    //             entity.transform.y += body.velocity.y * delta;
-    //
-    //             // TODO instead of this, push out. We still want to slide along surfaces....
-    //             this.checkIfWeNeedToGoBack(entity, myColliders, body, delta, entities);
-    //
-    //             // Reduce velocity by xDrag amount for the next frame
-    //             body.velocity.x -= body.velocity.x * body.xDrag;
-    //             body.velocity.y -= body.velocity.y * body.yDrag;
-    //
-    //         }, entity, Rigidbody);
-    //
-    // }
-    //
-    // private checkIfWeNeedToGoBack(entity: Entity, myColliders: Collider[],
-    //                               body: Rigidbody, delta: number) {
-    //     this.runOnComponents((colliders: Collider[]) => {
-    //         for (let myCol of myColliders) {
-    //             for (let collider of colliders) {
-    //                 if (collider.entity !== entity && !collider.isTrigger) {
-    //                     if (Collision.checkCollision(collider, myCol)) {
-    //                         // We hit something, go back!
-    //                         entity.transform.x -= body.velocity.x * delta;
-    //                         entity.transform.y -= body.velocity.y * delta;
-    //                         return;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     });
-    // }
+                // Reduce velocity by drag amount
+                body.velocity.x -= body.velocity.x * body.xDrag;
+                body.velocity.y -= body.velocity.y * body.yDrag;
+
+                // Apply movement
+                entity.transform.x += body.velocity.x * delta;
+                entity.transform.y += body.velocity.y * delta;
+            }
+        });
+    }
 
     types(): LagomType<Component>[]
     {
-        return [Collider];
+        return [Rigidbody];
     }
 }

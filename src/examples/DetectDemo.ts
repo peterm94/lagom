@@ -2,7 +2,14 @@ import {Scene} from "../ECS/Scene";
 import {World} from "../ECS/World";
 import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
-import {CircleCollider, DetectActive, DetectCollider, DetectCollisionsSystem, RectCollider} from "../DetectCollisions/DetectCollisions";
+import {
+    CircleCollider,
+    DetectActive,
+    DetectActiveCollisionSystem,
+    DetectCollider,
+    DetectCollisionsSystem,
+    RectCollider
+} from "../DetectCollisions/DetectCollisions";
 import {Component} from "../ECS/Component";
 import {System} from "../ECS/System";
 import {Result} from "detect-collisions";
@@ -48,7 +55,8 @@ export class DetectDemo extends Scene
 
         this.addSystem(new PlayerMover());
 
-        this.addWorldSystem(new DetectCollisionsSystem(collisions));
+        this.addSystem(new DetectCollisionsSystem(collisions));
+        this.addSystem(new DetectActiveCollisionSystem());
         this.addEntity(new Diagnostics("blue"));
         // this.addSystem(new SolidSystem());
         // this.addWorldSystem(new Inspector());
@@ -119,8 +127,8 @@ class Player extends Entity
         const collider = this.addComponent(
             new RectCollider(0, 0, 32, 32, this.layer));
 
-        collider.collisionEvent.register((caller: DetectCollider,
-                                          res: { other: DetectCollider, result: Result }) => {
+        collider.onCollision.register((caller: DetectCollider,
+                                       res: { other: DetectCollider, result: Result }) => {
             this.transform.x -= res.result.overlap * res.result.overlap_x;
             this.transform.y -= res.result.overlap * res.result.overlap_y;
         });

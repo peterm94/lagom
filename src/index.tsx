@@ -6,6 +6,7 @@ import {MatterAsteroids} from "./examples/MatterAsteroids";
 import {PerfTest} from "./examples/PerfTest";
 import {DetectDemo} from "./examples/DetectDemo";
 import {CameraDemo} from "./examples/CameraDemo";
+import {Platformer} from "./examples/Platformer/Platformer";
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
@@ -29,6 +30,9 @@ switch (window.location.search.substr(1).toLowerCase())
     case "detect":
         new DetectDemo();
         break;
-    default:
+    case "camera":
         new CameraDemo();
+        break;
+    default:
+        new Platformer();
 }

@@ -1,6 +1,5 @@
-import {WorldSystem} from "../ECS/WorldSystem";
 import {Component} from "../ECS/Component";
-import {Log} from "../Common/Util";
+import {Log, Util} from "../Common/Util";
 import {Observable} from "../Common/Observer";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Collisions, Polygon, Body, Result, Circle, Point} from "detect-collisions";
@@ -8,46 +7,35 @@ import {LagomType} from "../ECS/LifecycleObject";
 import {System} from "../ECS/System";
 import {Entity} from "../ECS/Entity";
 
-export class DetectCollisionsSystem extends WorldSystem
+export class DetectCollisionsSystem extends System
 {
     readonly detectSystem: Collisions;
     readonly collisionMatrix: CollisionMatrix;
-    private readonly continuous: boolean;
 
-    constructor(collisionMatrix: CollisionMatrix, continuous: boolean = true)
+    constructor(collisionMatrix: CollisionMatrix)
     {
         super();
         this.collisionMatrix = collisionMatrix;
-        this.continuous = continuous;
         this.detectSystem = new Collisions();
     }
 
     onAdded(): void
     {
         super.onAdded();
-
-        // Add the continuous system checker if we want it.
-        if (this.continuous)
-        {
-            this.getScene().addSystem(new DetectActiveCollisionSystem());
-        }
     }
 
     update(delta: number): void
     {
         // Move all entities to their new positions
-        this.runOnComponents((colliders: DetectCollider[]) => {
-            for (let collider of colliders)
-            {
-                const entity = collider.getEntity();
-                collider.body.x = entity.transform.x;
-                collider.body.y = entity.transform.y;
+        this.runOnEntities((entity: Entity, collider: DetectCollider) => {
 
-                // Polygons can rotate
-                if (collider.body instanceof Polygon)
-                {
-                    collider.body.angle = entity.transform.angle;
-                }
+            collider.body.x = entity.transform.x;
+            collider.body.y = entity.transform.y;
+
+            // Polygons can rotate
+            if (collider.body instanceof Polygon)
+            {
+                collider.body.angle = entity.transform.angle;
             }
         });
 
@@ -71,7 +59,7 @@ export class DetectActiveCollisionSystem extends System
     {
         super.onAdded();
 
-        const engine = this.getScene().getWorldSystem<DetectCollisionsSystem>(DetectCollisionsSystem);
+        const engine = this.getScene().getSystem<DetectCollisionsSystem>(DetectCollisionsSystem);
         if (engine === null)
         {
             Log.error("DetectActiveCollisionSystem must be added to a Scene after a DetectCollisionsSystem.")
@@ -90,21 +78,38 @@ export class DetectActiveCollisionSystem extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity, collider: DetectCollider) => {
+
+            const collidersLastFrame = collider.collidersLastFrame;
+            collider.collidersLastFrame = [];
+
             const potentials = collider.body.potentials();
             for (let potential of potentials)
             {
                 const otherComp = (<any>potential).lagom_component;
+                const result = new Result();
 
-                let result = new Result();
                 // Check layers, then do actual collision check
                 if (this.engine.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                     && collider.body.collides(potential, result))
                 {
-                    // Trigger collision event
-                    collider.collisionEvent.trigger(collider, {other: otherComp, result: result});
+                    // Continuous collision
+                    if (collidersLastFrame.includes(otherComp))
+                    {
+                        collider.onCollision.trigger(collider, {other: otherComp, result: result});
+                    }
+                    else
+                    {
+                        // New collision
+                        collider.onCollisionEnter.trigger(collider, {other: otherComp, result: result});
+                    }
+                    Util.remove(collidersLastFrame, otherComp);
+                    collider.collidersLastFrame.push(otherComp);
                 }
             }
-        })
+
+            // Trigger the exist event for anything that is no longer colliding
+            collidersLastFrame.forEach(val => collider.onCollisionExit.trigger(collider, val));
+        });
     }
 }
 
@@ -118,17 +123,15 @@ export class DetectActive extends Component
 export abstract class DetectCollider extends Component
 {
     private engine: DetectCollisionsSystem | null = null;
-    readonly collisionEvent: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
-    readonly body: Body;
-    readonly layer: number;
+    readonly onCollision: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
+    readonly onCollisionEnter: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
+    readonly onCollisionExit: Observable<DetectCollider, DetectCollider> = new Observable();
 
-    protected constructor(body: Body, layer: number)
+    collidersLastFrame: DetectCollider[] = [];
+
+    protected constructor(readonly body: Body, readonly layer: number)
     {
         super();
-
-        this.body = body;
-        this.layer = layer;
-
         // Add a backref
         (<any>this.body).lagom_component = this;
     }
@@ -137,11 +140,11 @@ export abstract class DetectCollider extends Component
     {
         super.onAdded();
 
-        this.engine = this.getEntity().getScene().getWorldSystem(DetectCollisionsSystem);
+        this.engine = this.getEntity().getScene().getSystem(DetectCollisionsSystem);
 
         if (this.engine == null)
         {
-            Log.warn("A DetectCollisionsSystem must be added to the Scene before a Collider is added.");
+            Log.warn("A DetectCollisionsSystem must be added to the Scene before a DetectCollider is added.");
             return;
         }
 
@@ -213,7 +216,7 @@ export class PolyCollider extends DetectCollider
      * Calculate the area of a polygon. The area will be negative if the points are not given in counter-clockwise
      * order.
      *
-     * @param vertices The polygon verticies.
+     * @param vertices The polygon vertices.
      * @returns The area of the polygon.
      */
     private static findArea(vertices: number[][]): number

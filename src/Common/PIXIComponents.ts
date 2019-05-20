@@ -3,12 +3,12 @@ import * as PIXI from "pixi.js";
 
 export class Sprite extends PIXIComponent<PIXI.Sprite>
 {
-    constructor(texture: PIXI.Texture)
+    constructor(texture: PIXI.Texture, offsetX: number = 0, offsetY: number = 0)
     {
-        // Centrepoint anchor unless overwritten
-        // TODO this is dumb, probably dont want to do it. only Matter cares
         super(new PIXI.Sprite(texture));
-        this.pixiObj.anchor.set(0.5, 0.5);
+
+        // Centrepoint anchor unless overwritten
+        this.pixiObj.anchor.set(offsetX, offsetY);
     }
 }
 

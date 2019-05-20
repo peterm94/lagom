@@ -139,7 +139,7 @@ enum LogLevel
 
 export class Log
 {
-    static logLevel: LogLevel = LogLevel.DEBUG;
+    static logLevel: LogLevel = LogLevel.ALL;
 
     static error(...x: any[])
     {
@@ -179,5 +179,47 @@ export class Log
         {
             console.log("%cTRACE", 'color: #65c4ff', ...x);
         }
+    }
+}
+
+export class MultiMap<K, V>
+{
+    private entries: MapEntry<K, V>[] = [];
+
+    public clear(): void
+    {
+        this.entries = [];
+    }
+
+    public containsKey(key: K): boolean
+    {
+        return this.entries.find(entry => entry.key == key) !== undefined;
+    }
+
+    public containsValue(value: V): boolean
+    {
+        return this.entries.find(entry => entry.value == value) !== undefined;
+    }
+
+    public containsEntry(key: K, value: V): boolean
+    {
+        return this.entries.find(entry => entry.key == key && entry.value == value) != undefined;
+    }
+
+    public remove(key: K, value: V)
+    {
+        Util.remove(this.entries, new MapEntry<K, V>(key, value));
+    }
+
+    public put(key: K, value: V)
+    {
+        this.entries.push(new MapEntry<K, V>(key, value));
+    }
+}
+
+class MapEntry<K, V>
+{
+    constructor(readonly key: K, readonly value: V)
+    {
     }
 }

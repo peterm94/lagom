@@ -34,7 +34,7 @@ export class CollisionMatrix
     }
 
     /**
-     * Check if two layers can collider.
+     * Check if two layers can collide.
      * @param layer1 The first layer to check.
      * @param layer2 The second layer to check.
      * @returns True if the layers can collide.

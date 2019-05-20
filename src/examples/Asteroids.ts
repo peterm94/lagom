@@ -63,7 +63,7 @@ export class Asteroids extends Scene
         this.addSystem(new SpriteWrapper());
         this.addSystem(new AsteroidSplitter());
         this.addSystem(new DestroyOffScreen());
-        this.addWorldSystem(new PhysicsSystem(Vector.zero()));
+        this.addSystem(new PhysicsSystem(Vector.zero()));
 
         const collisions = new CollisionMatrix();
         collisions.addCollision(Layers.Bullet, Layers.Asteroid);

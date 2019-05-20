@@ -4,7 +4,7 @@ import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {
     CircleCollider,
-    DetectActive,
+    DetectActive, DetectActiveCollisionSystem,
     DetectCollider,
     DetectCollisionsSystem,
     RectCollider
@@ -80,7 +80,8 @@ export class CameraDemo extends Scene
 
         this.addSystem(new PlayerMover());
 
-        this.addWorldSystem(new DetectCollisionsSystem(collisions));
+        this.addSystem(new DetectCollisionsSystem(collisions));
+        this.addSystem(new DetectActiveCollisionSystem());
         this.addWorldSystem(new ScreenShaker());
         this.addEntity(new Diagnostics("blue"));
         // this.addSystem(new SolidSystem());
@@ -160,8 +161,8 @@ class Player extends Entity
         const collider = this.addComponent(
             new RectCollider(0, 0, 32, 32, this.layer));
 
-        collider.collisionEvent.register((caller: DetectCollider,
-                                          res: { other: DetectCollider, result: Result }) => {
+        collider.onCollision.register((caller: DetectCollider,
+                                       res: { other: DetectCollider, result: Result }) => {
             this.transform.x -= res.result.overlap * res.result.overlap_x;
             this.transform.y -= res.result.overlap * res.result.overlap_y;
         });
