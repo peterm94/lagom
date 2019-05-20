@@ -56,6 +56,7 @@ class Block extends Entity
 
         const sprite = this.addComponent(new Sprite(loader.resources[spr_block].texture));
         this.addComponent(new MCollider(Matter.Bodies.rectangle(0, 0, sprite.pixiObj.width,
-                                                                sprite.pixiObj.height), {layer: 0, isStatic: true}));
+                                                                sprite.pixiObj.height), 0, 0,
+                                        {layer: 0, isStatic: true}));
     }
 }

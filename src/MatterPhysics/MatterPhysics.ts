@@ -52,7 +52,6 @@ export class MatterEngine extends WorldSystem
         Matter.Events.on(this.matterEngine, "collisionStart", ((event) => {
             for (let i = 0; i < event.pairs.length; i++)
             {
-
                 const pair = event.pairs[i];
                 const compA = (<any>pair.bodyA).lagom_component as MCollider;
                 const compB = (<any>pair.bodyB).lagom_component as MCollider;
@@ -71,7 +70,6 @@ export class MatterEngine extends WorldSystem
         Matter.Events.on(this.matterEngine, "collisionActive", ((event) => {
             for (let i = 0; i < event.pairs.length; i++)
             {
-
                 const pair = event.pairs[i];
                 const compA = (<any>pair.bodyA).lagom_component as MCollider;
                 const compB = (<any>pair.bodyB).lagom_component as MCollider;
@@ -84,7 +82,6 @@ export class MatterEngine extends WorldSystem
         Matter.Events.on(this.matterEngine, "collisionEnd", ((event) => {
             for (let i = 0; i < event.pairs.length; i++)
             {
-
                 const pair = event.pairs[i];
                 const compA = (<any>pair.bodyA).lagom_component as MCollider;
                 const compB = (<any>pair.bodyB).lagom_component as MCollider;
@@ -121,10 +118,9 @@ export class MatterEngine extends WorldSystem
             // Update Pixi positions to the matter positions
             for (let collider of colliders)
             {
-
                 const entity = collider.getEntity();
-                entity.transform.y = collider.body.position.y;
-                entity.transform.x = collider.body.position.x;
+                entity.transform.x = collider.body.position.x - collider.xOffset;
+                entity.transform.y = collider.body.position.y - collider.yOffset;
                 entity.transform.rotation = collider.body.angle;
             }
         })
@@ -135,30 +131,6 @@ export class MatterEngine extends WorldSystem
         return [MCollider];
     }
 }
-
-// TODO handle multiple colliders on an entity... use a composite and be smart?
-// class MComposite extends Component {
-//     private readonly composite: Matter.Composite;
-//
-//     constructor(composite: Matter.Composite) {
-//         super();
-//         this.composite = composite;
-//     }
-//
-//     onAdded() {
-//         super.onAdded();
-//         Matter.World.addComposite(World.instance.matterEngine.world, this.composite);
-//         Matter.Composite.allBodies(this.composite).forEach((body) => {
-//             Matter.Body.setPosition(body, Matter.Vector.create(this.getEntity().transform.x,
-//                                                                this.entity.transform.y));
-//         })
-//     }
-//
-//     onRemoved() {
-//         super.onRemoved();
-//         Matter.World.remove(World.instance.matterEngine.world, this.composite);
-//     }
-// }
 
 /**
  * Collider component for matter-js physics.
@@ -181,7 +153,6 @@ export class MCollider extends Component
      */
     readonly collisionActiveEvent: Observable<MCollider, MCollider> = new Observable();
 
-    readonly body: Matter.Body;
     readonly debugDraw: boolean = true;
     private engine: MatterEngine | null = null;
     private readonly layer: number;
@@ -193,10 +164,10 @@ export class MCollider extends Component
      * @param options Options for the body. Includes the layer that this collider is on, if the body is a sensor or
      * a real object, and if the body is static or not.
      */
-    constructor(body: Matter.Body, options: { layer: number, isSensor?: boolean, isStatic?: boolean })
+    constructor(readonly body: Matter.Body, readonly xOffset: number, readonly yOffset: number,
+                options: { layer: number, isSensor?: boolean, isStatic?: boolean })
     {
         super();
-        this.body = body;
         this.body.isSensor = options.isSensor || false;
         this.body.isStatic = options.isStatic || false;
 
@@ -231,14 +202,17 @@ export class MCollider extends Component
 
             // Sync the body to the current position of the entity
             Matter.Body.setStatic(this.body, this.body.isStatic);
-            Matter.Body.setPosition(this.body, {x: entity.transform.x, y: entity.transform.y});
+            Matter.Body.setPosition(this.body,
+                                    {x: entity.transform.x + this.xOffset, y: entity.transform.y + this.yOffset});
             Matter.Body.setAngle(this.body, entity.transform.rotation);
             Matter.World.addBody(this.engine.matterEngine.world, this.body);
 
-            if (this.debugDraw)
+            // TODO this is broken
+            if (this.debugDraw && false)
             {
-                const xoff = entity.transform.getGlobalPosition(<any>undefined, false).x;
-                const yoff = entity.transform.getGlobalPosition(<any>undefined, false).y;
+                const xoff = entity.transform.getGlobalPosition(<any>undefined, false).x + this.xOffset;
+                const yoff = entity.transform.getGlobalPosition(<any>undefined, false).y + this.yOffset;
+
                 const poly = new PIXI.Graphics();
                 poly.lineStyle(1, 0xFF3300, 1);
                 poly.drawPolygon(this.body.vertices.flatMap((val) => {
@@ -271,5 +245,23 @@ export class MCollider extends Component
         {
             Matter.World.remove(this.engine.matterEngine.world, this.body);
         }
+    }
+}
+
+export class MCircleCollider extends MCollider
+{
+    constructor(radius: number, xOff: number, yOff: number,
+                options: { layer: number; isSensor?: boolean; isStatic?: boolean })
+    {
+        super(Matter.Bodies.circle(0, 0, radius), xOff, yOff, options);
+    }
+}
+
+export class MRectCollider extends MCollider
+{
+    constructor(xOff: number, yOff: number, width: number, height: number,
+                options: { layer: number; isSensor?: boolean; isStatic?: boolean })
+    {
+        super(Matter.Bodies.rectangle(0, 0, width, height), xOff, yOff, options);
     }
 }

@@ -122,7 +122,7 @@ class Ship extends Entity
         this.addComponent(new WrapSprite(loader.resources[spr_ship].texture));
         this.addComponent(new PlayerControlled());
         this.addComponent(new ScreenWrap());
-        this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 8),
+        this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 8), 0, 0,
                                         {layer: CollLayers.Ship, isSensor: true}));
     }
 }
@@ -146,17 +146,17 @@ class Asteroid extends Entity
         {
             case 3:
                 this.addComponent(new WrapSprite(loader.resources[spr_asteroid].texture));
-                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 32),
+                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 32), 0, 0,
                                                 {layer: CollLayers.Asteroid, isSensor: true}));
                 break;
             case 2:
                 this.addComponent(new WrapSprite(loader.resources[spr_asteroid2].texture));
-                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 16),
+                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 16), 0, 0,
                                                 {layer: CollLayers.Asteroid, isSensor: true}));
                 break;
             default:
                 this.addComponent(new WrapSprite(loader.resources[spr_asteroid3].texture));
-                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 8),
+                this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 8), 0, 0,
                                                 {layer: CollLayers.Asteroid, isSensor: true}));
                 break;
         }
@@ -179,7 +179,7 @@ class Bullet extends Entity
         super.onAdded();
         this.addComponent(new Sprite(loader.resources[spr_bullet].texture));
         this.addComponent(new ConstantMotion(0.5));
-        const collider = this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 2),
+        const collider = this.addComponent(new MCollider(Matter.Bodies.circle(0, 0, 2), 0, 0,
                                                          {layer: CollLayers.Bullet, isSensor: true}));
         this.addComponent(new ScreenContained());
 
