@@ -16,23 +16,25 @@ const Keyboard = require('pixi.js-keyboard');
 export class Diagnostics extends GUIEntity
 {
     private readonly textCol: string;
+    private readonly textSize: number;
 
     onAdded()
     {
         super.onAdded();
 
         this.addComponent(new FpsTracker());
-        this.addComponent(new TextDisp("", new PIXI.TextStyle({fontSize: 10, fill: this.textCol})));
+        this.addComponent(new TextDisp("", new PIXI.TextStyle({fontSize: this.textSize, fill: this.textCol})));
 
         const scene = this.getScene();
         scene.addSystem(new FpsUpdater());
         scene.addWorldSystem(new DebugKeys());
     }
 
-    constructor(textCol: string)
+    constructor(textCol: string, textSize: number = 10)
     {
         super("diagnostics");
         this.textCol = textCol;
+        this.textSize = textSize;
     }
 }
 
@@ -103,12 +105,12 @@ class FpsUpdater extends System
                     text.pixiObj.text = `UpdateDelta: ${delta.toFixed(2)}ms // ${(1000 / delta).toFixed(
                         2)} // ${this.avgUpdateDt.toFixed(2)}`
                         + `\nAnimationDelta: ${(this.world.deltaTime).toFixed(2)}ms // ${(1000 /
-                            this.world.deltaTime).toFixed(2)} // ${this.avgAnimDt.toFixed(2)}`
+                            this.world.deltaTime).toFixed(2)} // ${this.avgAnimDt.toFixed(2)}ms`
                         +
-                        `\nECSUpdateTime: ${this.world.diag.ecsUpdateTime.toFixed(2)}ms // ${this.avgUpdate.toFixed(2)}`
-                        + `\nRenderTime: ${this.world.diag.renderTime.toFixed(2)}ms // ${this.avgRender.toFixed(2)}`
+                        `\nECSUpdateTime: ${this.world.diag.ecsUpdateTime.toFixed(2)}ms // ${this.avgUpdate.toFixed(2)}ms`
+                        + `\nRenderTime: ${this.world.diag.renderTime.toFixed(2)}ms // ${this.avgRender.toFixed(2)}ms`
                         + `\nTotalFrameTime: ${this.world.diag.totalFrameTime.toFixed(2)}ms // ${this.avgFrame.toFixed(
-                            2)}`
+                            2)}ms`
                 }
             });
         }

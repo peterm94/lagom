@@ -170,11 +170,14 @@ export class PhysicsSystem extends System
             // Add gravity force if the object is dynamic
             if (body.type === BodyType.Dynamic)
             {
+                // TODO this doesn't handle sitting on top of a solid thing. Will max out gravity velocity. Should
+                // not be active if grounded.
                 const gravForce = new Vector(this.gravityDir.x, this.gravityDir.y);
                 gravForce.multiply(body.gravityScale * delta);
                 body.addForce(gravForce);
 
                 // Reduce velocity by drag amount
+                // TODO this needs delta calculations
                 body.velocity.x -= body.velocity.x * body.xDrag;
                 body.velocity.y -= body.velocity.y * body.yDrag;
 

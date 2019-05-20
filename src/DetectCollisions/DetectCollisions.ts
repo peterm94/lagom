@@ -48,6 +48,28 @@ export class DetectCollisionsSystem extends System
     {
         return [DetectCollider];
     }
+
+    instanceAt(x: number, y: number, ...layers: number[]): boolean
+    {
+        // TODO this is dumb, please let there be a better way
+        const point = new Point(x, y);
+        this.detectSystem.insert(point);
+        for (let potential of this.detectSystem.potentials(point))
+        {
+            const otherComp = (<any>potential).lagom_component;
+            if (!layers.includes(otherComp.layer)) continue;
+
+            if (point.collides(potential))
+            {
+                this.detectSystem.remove(point);
+                Log.debug(x, y, true);
+                return true;
+            }
+        }
+        this.detectSystem.remove(point);
+        Log.debug(x, y, false);
+        return false;
+    }
 }
 
 
@@ -104,11 +126,13 @@ export class DetectActiveCollisionSystem extends System
                     }
                     Util.remove(collidersLastFrame, otherComp);
                     collider.collidersLastFrame.push(otherComp);
+                    this.engine.detectSystem.update();
                 }
             }
 
             // Trigger the exist event for anything that is no longer colliding
             collidersLastFrame.forEach(val => collider.onCollisionExit.trigger(collider, val));
+            this.engine.detectSystem.update();
         });
     }
 }
