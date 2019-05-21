@@ -186,23 +186,21 @@ class PlatformerPhysicsPost extends System
     {
         this.runOnEntities((entity: Entity, vars: PhysicsVars) => {
 
-            // Move our entity by the max pushed amount
-            entity.transform.x += vars.pushX;
-            entity.transform.y += vars.pushY;
-
+            // Move our entity by the max pushed amount.
             // If we have velocity in the wrong direction, zero it.
-            if (vars.pushX !== 0 && Math.sign(vars.xVelocity) !== Math.sign(vars.pushX))
+            if (vars.pushX !== 0 && vars.xVelocity !== 0 && Math.sign(vars.xVelocity) !== Math.sign(vars.pushX))
             {
                 vars.xVelocity = 0;
+                entity.transform.x += vars.pushX;
             }
-            if (vars.pushY !== 0 && Math.sign(vars.yVelocity) !== Math.sign(vars.pushY))
+            if (vars.pushY !== 0 && vars.yVelocity !== 0 && Math.sign(vars.yVelocity) !== Math.sign(vars.pushY))
             {
                 vars.yVelocity = 0;
+                entity.transform.y += vars.pushY;
             }
 
             // Reset push amount for next frame
             vars.pushX = 0;
-
             vars.pushY = 0;
         });
     }
