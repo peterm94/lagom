@@ -29,8 +29,8 @@ export class DetectCollisionsSystem extends System
         // Move all entities to their new positions
         this.runOnEntities((entity: Entity, collider: DetectCollider) => {
 
-            collider.body.x = entity.transform.x;
-            collider.body.y = entity.transform.y;
+            collider.body.x = entity.transform.x + collider.xOff;
+            collider.body.y = entity.transform.y + collider.yoff;
 
             // Polygons can rotate
             if (collider.body instanceof Polygon)
@@ -75,21 +75,12 @@ export class DetectCollisionsSystem extends System
 
 export class DetectActiveCollisionSystem extends System
 {
+    private frame = 0;
     private engine!: DetectCollisionsSystem;
 
     onAdded(): void
     {
         super.onAdded();
-
-        const engine = this.getScene().getSystem<DetectCollisionsSystem>(DetectCollisionsSystem);
-        if (engine === null)
-        {
-            Log.error("DetectActiveCollisionSystem must be added to a Scene after a DetectCollisionsSystem.")
-        }
-        else
-        {
-            this.engine = engine;
-        }
     }
 
     types(): LagomType<Component>[]
@@ -99,6 +90,20 @@ export class DetectActiveCollisionSystem extends System
 
     update(delta: number): void
     {
+        this.frame++;
+        if (this.frame < 2) return;
+        if (this.frame == 2)
+        {
+            const engine = this.getScene().getSystem<DetectCollisionsSystem>(DetectCollisionsSystem);
+            if (engine === null)
+            {
+                Log.error("DetectActiveCollisionSystem must be added to a Scene after a DetectCollisionsSystem.")
+            }
+            else
+            {
+                this.engine = engine;
+            }
+        }
         this.runOnEntities((entity: Entity, collider: DetectCollider) => {
 
             const collidersLastFrame = collider.collidersLastFrame;
@@ -126,14 +131,15 @@ export class DetectActiveCollisionSystem extends System
                     }
                     Util.remove(collidersLastFrame, otherComp);
                     collider.collidersLastFrame.push(otherComp);
-                    this.engine.detectSystem.update();
                 }
             }
 
             // Trigger the exist event for anything that is no longer colliding
             collidersLastFrame.forEach(val => collider.onCollisionExit.trigger(collider, val));
-            this.engine.detectSystem.update();
         });
+
+        // TODO will this work? who knows
+        this.engine.update(delta);
     }
 }
 
@@ -153,7 +159,7 @@ export abstract class DetectCollider extends Component
 
     collidersLastFrame: DetectCollider[] = [];
 
-    protected constructor(readonly body: Body, readonly layer: number)
+    protected constructor(readonly body: Body, readonly xOff: number, readonly  yoff: number, readonly layer: number)
     {
         super();
         // Add a backref
@@ -193,7 +199,7 @@ export class CircleCollider extends DetectCollider
 {
     constructor(xOff: number, yOff: number, radius: number, layer: number)
     {
-        super(new Circle(xOff, yOff, radius), layer);
+        super(new Circle(0, 0, radius), xOff, yOff, layer);
     }
 
 }
@@ -205,7 +211,7 @@ export class PointCollider extends DetectCollider
 {
     constructor(xOff: number, yOff: number, layer: number)
     {
-        super(new Point(xOff, yOff), layer);
+        super(new Point(0, 0), xOff, yOff, layer);
     }
 }
 
@@ -217,7 +223,7 @@ export class PolyCollider extends DetectCollider
     constructor(xOff: number, yOff: number, points: number[][], layer: number, rotation: number = 0)
     {
         // NOTE: The order of the points matters, the library is bugged, this function ensures they are anticlockwise.
-        super(new Polygon(xOff, yOff, PolyCollider.reorderVertices(points), rotation), layer);
+        super(new Polygon(xOff, yOff, PolyCollider.reorderVertices(points), rotation), xOff, yOff, layer);
     }
 
     /**
