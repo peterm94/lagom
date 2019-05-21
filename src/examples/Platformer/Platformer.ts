@@ -3,13 +3,11 @@ import {World} from "../../ECS/World";
 import spriteSheet from './resources/spritesheet.png';
 
 import * as PIXI from "pixi.js";
-import * as Matter from "matter-js";
 
 import {RenderCircle} from "../../Common/PIXIComponents";
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/SpriteSheet";
 import {
-    CircleCollider,
     DetectActive, DetectActiveCollisionSystem,
     DetectCollider,
     DetectCollisionsSystem,
@@ -24,9 +22,7 @@ import {TiledMapLoader} from "../../Common/TiledMapLoader";
 import world1 from "./resources/World1.json";
 import {Log} from "../../Common/Util";
 import {Diagnostics} from "../../Common/Debug";
-import {MatterEngine, MCollider, MRectCollider} from "../../MatterPhysics/MatterPhysics";
 import {Vector} from "matter-js";
-import {PhysicsSystem} from "../../LagomPhysics/Physics";
 
 const Keyboard = require('pixi.js-keyboard');
 const loader = new PIXI.Loader();
@@ -119,7 +115,6 @@ class Block extends Entity
         super.onAdded();
         this.addComponent(sprites.sprite(this.tileId, 0));
         this.addComponent(new RectCollider(0, 0, 16, 16, Layers.SOLIDS));
-        this.addComponent(new MRectCollider(8, 8, 16, 16, {layer: Layers.SOLIDS, isStatic: true}));
     }
 }
 
@@ -134,7 +129,6 @@ class Player extends Entity
     {
         super.onAdded();
         this.addComponent(new PlayerControlled());
-        this.addComponent(new MRectCollider(8, 8, 16, 16, {layer: Layers.PLAYER}));
         this.addComponent(new PhysicsVars());
         this.addComponent(sprites.sprite(0, 16));
         this.addComponent(new RenderCircle(1));
@@ -186,16 +180,24 @@ class PlatformerPhysicsPost extends System
     {
         this.runOnEntities((entity: Entity, vars: PhysicsVars) => {
 
-            // Move our entity by the max pushed amount.
-            // If we have velocity in the wrong direction, zero it.
-            if (vars.pushX !== 0 && vars.xVelocity !== 0 && Math.sign(vars.xVelocity) !== Math.sign(vars.pushX))
+            // Resolve the new position for our entity. There is quite a bit going on here.
+            // First, check if we are getting pushed out and if we are moving on that axis.
+            // If our velocity is in the wrong direction, we want to zero it out (we hit a wall/floor)
+            // Finally, move the entity the push amount to unstick it.
+            if (vars.pushX !== 0 && vars.xVelocity !== 0)
             {
-                vars.xVelocity = 0;
+                if (Math.sign(vars.xVelocity) !== Math.sign(vars.pushX))
+                {
+                    vars.xVelocity = 0;
+                }
                 entity.transform.x += vars.pushX;
             }
-            if (vars.pushY !== 0 && vars.yVelocity !== 0 && Math.sign(vars.yVelocity) !== Math.sign(vars.pushY))
+            if (vars.pushY !== 0 && vars.yVelocity !== 0)
             {
-                vars.yVelocity = 0;
+                if (Math.sign(vars.yVelocity) !== Math.sign(vars.pushY))
+                {
+                    vars.yVelocity = 0;
+                }
                 entity.transform.y += vars.pushY;
             }
 
@@ -254,22 +256,21 @@ class PlayerMover extends System
     {
         this.runOnEntities((entity: Entity, body: PhysicsVars) => {
 
+            body.xVelocity = 0;
+
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
             {
-                // Matter.Body.translate(body.body, Vector.create(-this.mSpeed * delta, 0));
-                entity.transform.x -= delta * this.mSpeed;
+                body.xVelocity = -this.mSpeed;
             }
             if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
             {
-                // Matter.Body.translate(body.body, Vector.create(this.mSpeed * delta, 0));
-                entity.transform.x += delta * this.mSpeed;
+                body.xVelocity = this.mSpeed;
 
             }
             if (Keyboard.isKeyPressed('ArrowUp', 'KeyW'))
             {
-                body.yVelocity = -0.15;
                 // TODO if grounded
-                // Matter.Body.applyForce(body.body, body.body.position, this.jumpPower);
+                body.yVelocity = -0.15;
             }
         });
     }
