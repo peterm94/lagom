@@ -6,7 +6,11 @@ import {Collisions, Polygon, Body, Result, Circle, Point} from "detect-collision
 import {LagomType} from "../ECS/LifecycleObject";
 import {System} from "../ECS/System";
 import {Entity} from "../ECS/Entity";
-
+// TODO -- one system for PlatformerPhysics(), DetectCollisionsSystem and DetectActiveCollisionSystem.
+// TODO -- make DetectActive the new PhysicsVars
+// TODO -- add trigger types, use the events
+// TODO -- add a static property to optimise checks? might not need this.
+// TODO -- add a system for gravity, should probably be external
 export class DetectCollisionsSystem extends System
 {
     readonly detectSystem: Collisions;
@@ -156,10 +160,14 @@ export abstract class DetectCollider extends Component
     readonly onCollision: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
     readonly onCollisionEnter: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
     readonly onCollisionExit: Observable<DetectCollider, DetectCollider> = new Observable();
+    readonly onTrigger: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
+    readonly onTriggerEnter: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
+    readonly onTriggerExit: Observable<DetectCollider, DetectCollider> = new Observable();
 
     collidersLastFrame: DetectCollider[] = [];
 
-    protected constructor(readonly body: Body, readonly xOff: number, readonly  yoff: number, readonly layer: number)
+    protected constructor(readonly body: Body, readonly xOff: number, readonly  yoff: number, readonly layer: number,
+                          readonly isTrigger: boolean)
     {
         super();
         // Add a backref
@@ -197,9 +205,9 @@ export abstract class DetectCollider extends Component
  */
 export class CircleCollider extends DetectCollider
 {
-    constructor(xOff: number, yOff: number, radius: number, layer: number)
+    constructor(xOff: number, yOff: number, radius: number, layer: number, isTrigger: boolean = false)
     {
-        super(new Circle(0, 0, radius), xOff, yOff, layer);
+        super(new Circle(0, 0, radius), xOff, yOff, layer, isTrigger);
     }
 
 }
@@ -209,9 +217,9 @@ export class CircleCollider extends DetectCollider
  */
 export class PointCollider extends DetectCollider
 {
-    constructor(xOff: number, yOff: number, layer: number)
+    constructor(xOff: number, yOff: number, layer: number, isTrigger: boolean = false)
     {
-        super(new Point(0, 0), xOff, yOff, layer);
+        super(new Point(0, 0), xOff, yOff, layer, isTrigger);
     }
 }
 
@@ -220,10 +228,11 @@ export class PointCollider extends DetectCollider
  */
 export class PolyCollider extends DetectCollider
 {
-    constructor(xOff: number, yOff: number, points: number[][], layer: number, rotation: number = 0)
+    constructor(xOff: number, yOff: number, points: number[][], layer: number,
+                rotation: number = 0, isTrigger: boolean = false)
     {
         // NOTE: The order of the points matters, the library is bugged, this function ensures they are anticlockwise.
-        super(new Polygon(xOff, yOff, PolyCollider.reorderVertices(points), rotation), xOff, yOff, layer);
+        super(new Polygon(xOff, yOff, PolyCollider.reorderVertices(points), rotation), xOff, yOff, layer, isTrigger);
     }
 
     /**
@@ -282,8 +291,9 @@ export class PolyCollider extends DetectCollider
  */
 export class RectCollider extends PolyCollider
 {
-    constructor(xOff: number, yOff: number, width: number, height: number, layer: number, rotation: number = 0)
+    constructor(xOff: number, yOff: number, width: number, height: number,
+                layer: number, rotation: number = 0, isTrigger: boolean = false)
     {
-        super(xOff, yOff, [[0, 0], [width, 0], [width, height], [0, height]], layer, rotation);
+        super(xOff, yOff, [[0, 0], [width, 0], [width, height], [0, height]], layer, rotation, isTrigger);
     }
 }

@@ -139,13 +139,13 @@ enum LogLevel
 
 export class Log
 {
-    static logLevel: LogLevel = LogLevel.ALL;
+    static logLevel: LogLevel = LogLevel.DEBUG;
 
     static error(...x: any[])
     {
         if (this.logLevel >= LogLevel.ERROR)
         {
-            console.log("%cERROR", 'color: red', ...x);
+            console.error("%cERROR", 'color: red', ...x);
         }
     }
 
@@ -153,7 +153,7 @@ export class Log
     {
         if (this.logLevel >= LogLevel.WARN)
         {
-            console.log("%cWARN ", 'color: orange', ...x);
+            console.warn("%cWARN ", 'color: orange', ...x);
         }
     }
 
@@ -161,7 +161,7 @@ export class Log
     {
         if (this.logLevel >= LogLevel.INFO)
         {
-            console.log("%cINFO ", 'color: blue', ...x);
+            console.info("%cINFO ", 'color: blue', ...x);
         }
     }
 
@@ -169,7 +169,7 @@ export class Log
     {
         if (this.logLevel >= LogLevel.DEBUG)
         {
-            console.log("%cDEBUG", 'color: #6797c2', ...x);
+            console.debug("%cDEBUG", 'color: #6797c2', ...x);
         }
     }
 
@@ -177,7 +177,7 @@ export class Log
     {
         if (this.logLevel >= LogLevel.ALL)
         {
-            console.log("%cTRACE", 'color: #65c4ff', ...x);
+            console.trace("%cTRACE", 'color: #65c4ff', ...x);
         }
     }
 }
