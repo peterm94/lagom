@@ -4,7 +4,7 @@ import spriteSheet from './resources/spritesheet.png';
 
 import * as PIXI from "pixi.js";
 
-import {RenderCircle} from "../../Common/PIXIComponents";
+import {RenderCircle, RenderRect} from "../../Common/PIXIComponents";
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/SpriteSheet";
 import {
@@ -23,6 +23,8 @@ import world1 from "./resources/World1.json";
 import {Log} from "../../Common/Util";
 import {Diagnostics} from "../../Common/Debug";
 import {Vector} from "matter-js";
+import {MatterEngine, MCircleCollider, MCollider, MRectCollider} from "../../MatterPhysics/MatterPhysics";
+import * as Matter from "matter-js";
 
 const Keyboard = require('pixi.js-keyboard');
 const loader = new PIXI.Loader();
@@ -35,6 +37,26 @@ enum Layers
     PLAYER,
     ENEMY,
     SOLIDS
+}
+
+class MatterPlatformerSystem extends System
+{
+    constructor(private readonly matterEngine: MatterEngine)
+    {
+        super();
+    }
+
+    types(): LagomType<Component>[]
+    {
+        return [MCollider];
+    }
+
+    update(delta: number): void
+    {
+        // this.runOnEntities((entity: Entity, collider: MCollider) => {
+        //     collider.body.
+        // })
+    }
 }
 
 export class Platformer extends Scene
@@ -69,11 +91,13 @@ export class Platformer extends Scene
         // this.addWorldSystem(new MatterEngine(collisionMatrix, Vector.create(0, 1), true));
 
         this.addSystem(new PlayerMover());
+        const matterEngine = this.addWorldSystem(new MatterEngine(collisionMatrix, Vector.create(0, 0.5), true));
+        this.addSystem(new MatterPlatformerSystem(matterEngine));
         // this.addSystem(new PhysicsSystem());
-        this.addSystem(new PlatformerPhysics());
-        this.addSystem(new DetectCollisionsSystem(collisionMatrix));
-        this.addSystem(new DetectActiveCollisionSystem());
-        this.addSystem(new PlatformerPhysicsPost());
+        // this.addSystem(new PlatformerPhysics());
+        // this.addSystem(new DetectCollisionsSystem(collisionMatrix));
+        // this.addSystem(new DetectActiveCollisionSystem());
+        // this.addSystem(new PlatformerPhysicsPost());
 
         const world1Map = new TiledMapLoader(world1);
         const mapLoader: Map<number, (x: number, y: number) => void> = new Map();
@@ -113,8 +137,12 @@ class Block extends Entity
     onAdded(): void
     {
         super.onAdded();
-        this.addComponent(sprites.sprite(this.tileId, 0));
-        this.addComponent(new RectCollider(0, 0, 16, 16, Layers.SOLIDS));
+        this.addComponent(sprites.sprite(this.tileId, 0)).setOffset(0.5, 0.5);
+        this.addComponent(new MRectCollider(0, 0, 16, 16, {
+            isStatic: true, isSensor: false,
+            layer: this.layer
+        }, {chamfer: {radius:1}}));
+        // this.addComponent(new RectCollider(0, 0, 16, 16, Layers.SOLIDS));
     }
 }
 
@@ -130,31 +158,11 @@ class Player extends Entity
         super.onAdded();
         this.addComponent(new PlayerControlled());
         this.addComponent(new PhysicsVars());
-        this.addComponent(sprites.sprite(0, 16));
+        this.addComponent(sprites.sprite(0, 16)).setOffset(0.5, 0.5);
         this.addComponent(new RenderCircle(1));
-        const collider = this.addComponent(new RectCollider(0, 0, 16, 16, Layers.PLAYER));
-
-        collider.onCollision.register((caller: DetectCollider,
-                                       data: { other: DetectCollider, result: Result }) => {
-
-            const xMove = -data.result.overlap_x * data.result.overlap;
-            const yMove = -data.result.overlap_y * data.result.overlap;
-
-            const vars = (this.getComponent(PhysicsVars) as PhysicsVars);
-
-            if (Math.abs(vars.pushX) < Math.abs(xMove))
-            {
-                vars.pushX = xMove;
-            }
-            if (Math.abs(vars.pushY) < Math.abs(yMove))
-            {
-                vars.pushY = yMove;
-            }
-
-            Log.debug(vars.pushX, vars.pushY);
-
-
-        });
+        // this.addComponent(new RenderCircle(8));
+        this.addComponent(new RenderRect(16, 16, -8, -8));
+        this.addComponent(new MRectCollider(0, 0, 16, 16, {layer: Layers.PLAYER}));
 
         this.addComponent(new DetectActive());
     }
@@ -245,32 +253,31 @@ class PlayerControlled extends Component
 class PlayerMover extends System
 {
     readonly mSpeed = 0.07;
-    readonly jumpPower = Vector.create(0, -0.004);
+    readonly jumpPower = -2.4;
 
     types(): LagomType<Component>[]
     {
-        return [PhysicsVars, PlayerControlled];
+        return [MCollider, PlayerControlled];
     }
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: PhysicsVars) => {
+        this.runOnEntities((entity: Entity, body: MCollider) => {
 
-            body.xVelocity = 0;
+            const input = Keyboard.isKeyDown('ArrowRight', 'KeyD') - Keyboard.isKeyDown('ArrowLeft', 'KeyA');
 
-            if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
-            {
-                body.xVelocity = -this.mSpeed;
-            }
-            if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
-            {
-                body.xVelocity = this.mSpeed;
+            Matter.Body.translate(body.body, Vector.create(input * this.mSpeed * delta, 0));
 
-            }
+            // This stops sticking to walls
+            body.body.friction = 0;
+            Matter.Body.setInertia(body.body, Infinity);
+
+            Matter.Body.setVelocity(body.body, Vector.create(0, body.body.velocity.y));
+
             if (Keyboard.isKeyPressed('ArrowUp', 'KeyW'))
             {
                 // TODO if grounded
-                body.yVelocity = -0.15;
+                Matter.Body.setVelocity(body.body, Vector.create(body.body.velocity.x, this.jumpPower));
             }
         });
     }

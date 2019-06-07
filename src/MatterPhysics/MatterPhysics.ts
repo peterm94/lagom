@@ -6,6 +6,7 @@ import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {WorldSystem} from "../ECS/WorldSystem";
 import {Component} from "../ECS/Component";
 import {LagomType} from "../ECS/LifecycleObject";
+import {IChamferableBodyDefinition} from "matter-js";
 
 export class CollisionEvent
 {
@@ -260,8 +261,9 @@ export class MCircleCollider extends MCollider
 export class MRectCollider extends MCollider
 {
     constructor(xOff: number, yOff: number, width: number, height: number,
-                options: { layer: number; isSensor?: boolean; isStatic?: boolean })
+                options: { layer: number; isSensor?: boolean; isStatic?: boolean },
+                bodyOptions?: IChamferableBodyDefinition)
     {
-        super(Matter.Bodies.rectangle(0, 0, width, height), xOff, yOff, options);
+        super(Matter.Bodies.rectangle(0, 0, width, height, bodyOptions), xOff, yOff, options);
     }
 }

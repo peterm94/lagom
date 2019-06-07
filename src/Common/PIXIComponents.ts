@@ -10,6 +10,12 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
         // Centrepoint anchor unless overwritten
         this.pixiObj.anchor.set(offsetX, offsetY);
     }
+
+    setOffset(x: number, y: number): Sprite
+    {
+        this.pixiObj.anchor.set(x, y);
+        return this;
+    }
 }
 
 export class TextDisp extends PIXIComponent<PIXI.Text>
