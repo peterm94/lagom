@@ -4,7 +4,7 @@ import spriteSheet from './resources/spritesheet.png';
 
 import * as PIXI from "pixi.js";
 
-import {AnimatedSpriteSystem, RenderCircle} from "../../Common/PIXIComponents";
+import {RenderCircle} from "../../Common/PIXIComponents";
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/SpriteSheet";
 import {
@@ -23,6 +23,7 @@ import world1 from "./resources/World1.json";
 import {Log} from "../../Common/Util";
 import {Diagnostics} from "../../Common/Debug";
 import {Vector} from "matter-js";
+import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 
 const Keyboard = require('pixi.js-keyboard');
 const loader = new PIXI.Loader();
@@ -74,7 +75,7 @@ export class Platformer extends Scene
         this.addSystem(new DetectCollisionsSystem(collisionMatrix));
         this.addSystem(new DetectActiveCollisionSystem());
         this.addSystem(new PlatformerPhysicsPost());
-        this.addWorldSystem(new AnimatedSpriteSystem());
+        this.addWorldSystem(new FrameTriggerSystem());
 
         const world1Map = new TiledMapLoader(world1);
         const mapLoader: Map<number, (x: number, y: number) => void> = new Map();
@@ -131,7 +132,6 @@ class Player extends Entity
         super.onAdded();
         this.addComponent(new PlayerControlled());
         this.addComponent(new PhysicsVars());
-        // this.addComponent(sprites.sprite(0, 16));
         this.addComponent(sprites.animated([[0, 16], [1, 16], [2, 16]], 200));
         this.addComponent(new RenderCircle(1));
         const collider = this.addComponent(new RectCollider(0, 0, 16, 16, Layers.PLAYER));

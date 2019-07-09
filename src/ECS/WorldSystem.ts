@@ -35,6 +35,11 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
         f(...Array.from(this.runOn.values()));
     }
 
+    protected runOnComponentsWithSystem(f: Function)
+    {
+        f(this, ...Array.from(this.runOn.values()));
+    }
+
     private onComponentAdded(entity: Entity, component: Component)
     {
         // Check if we care about this type at all

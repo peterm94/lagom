@@ -1,7 +1,6 @@
-import {Component, PIXIComponent} from "../ECS/Component";
+import {PIXIComponent} from "../ECS/Component";
 import * as PIXI from "pixi.js";
-import {WorldSystem} from "../ECS/WorldSystem";
-import {LagomType} from "../ECS/LifecycleObject";
+import {FrameTrigger} from "./FrameTrigger";
 
 export class Sprite extends PIXIComponent<PIXI.Sprite>
 {
@@ -14,56 +13,43 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
     }
 }
 
-export class AnimatedSprite extends PIXIComponent<PIXI.Sprite>
+export class AnimatedSprite extends FrameTrigger
 {
-    animationSpeed: number;
-    textures: PIXI.Texture[];
-    frameIndex: number = 0;
-    nextTriggerTime: number = -1;
+    private frameIndex: number = 0;
+    private sprite: Sprite | null = null;
 
-    constructor(textures: PIXI.Texture[], offsetX: number = 0, offsetY: number = 0, animationSpeed: number = 0)
+    constructor(private readonly textures: PIXI.Texture[],
+                private offsetX: number = 0,
+                private offsetY: number = 0,
+                private animationSpeed: number = 0)
     {
-        super(new PIXI.Sprite(textures[0]));
+        super(animationSpeed);
 
-        this.textures = textures;
-
-        // centre anchor unless overwritten
-        this.pixiObj.anchor.set(offsetX, offsetY);
-        this.animationSpeed = animationSpeed;
+        this.onTrigger.register((caller: FrameTrigger, data: null) => {
+            if (this.sprite != null)
+            {
+                this.sprite.pixiObj.texture = this.textures[++this.frameIndex % this.textures.length];
+            }
+        });
     }
+
+
+    onAdded(): void
+    {
+        super.onAdded();
+        this.sprite = this.getEntity().addComponent(new Sprite(this.textures[0], this.offsetX, this.offsetY))
+    }
+
+    onRemoved(): void
+    {
+        super.onRemoved();
+        if (this.sprite != null)
+        {
+            this.sprite.destroy();
+        }
+    }
+
 }
-
-export class AnimatedSpriteSystem extends WorldSystem
-{
-    private elapsed: number = 0;
-
-    types(): LagomType<Component>[]
-    {
-        return [AnimatedSprite];
-    }
-
-    update(delta: number): void
-    {
-        this.elapsed += delta;
-
-        this.runOnComponents((sprites: AnimatedSprite[]) => {
-            sprites.forEach(sprite => {
-
-                // First frame init
-                if (sprite.nextTriggerTime == -1)
-                {
-                    sprite.nextTriggerTime = this.elapsed + sprite.animationSpeed;
-                }
-                else if (this.elapsed > sprite.nextTriggerTime)
-                {
-                    sprite.pixiObj.texture = sprite.textures[++sprite.frameIndex % sprite.textures.length];
-                    sprite.nextTriggerTime += sprite.animationSpeed;
-                }
-            });
-        })
-    }
-}
-
 
 export class TextDisp extends PIXIComponent<PIXI.Text>
 {
