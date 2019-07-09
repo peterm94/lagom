@@ -11,12 +11,14 @@ export class Timer<T> extends Component
     onTrigger: Observable<Timer<T>, T> = new Observable();
     remainingMS: number;
     payload: T;
+    repeat: boolean;
 
-    constructor(lengthMS: number, payload: T)
+    constructor(lengthMS: number, payload: T, repeat: boolean = false)
     {
         super();
         this.remainingMS = lengthMS;
         this.payload = payload;
+        this.repeat = repeat;
     }
 }
 
@@ -38,7 +40,10 @@ export class TimerSystem extends WorldSystem
                 if (timer.remainingMS <= 0)
                 {
                     timer.onTrigger.trigger(timer, timer.payload);
-                    timer.destroy();
+                    if (!timer.repeat)
+                    {
+                        timer.destroy();
+                    }
                 }
             }
         });
@@ -68,7 +73,8 @@ export class AsyncTimer
         if (this.remainingMS <= 0)
         {
             this.callback();
-        } else
+        }
+        else
         {
             requestAnimationFrame(this.update.bind(this));
         }

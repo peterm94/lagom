@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import {Sprite} from "./PIXIComponents";
+import {AnimatedSprite, Sprite} from "./PIXIComponents";
 
 /**
  * Convenient way to load multiple sprites from a single spritesheet.
@@ -43,6 +43,23 @@ export class SpriteSheet
                                                                                row * this.tileHeight,
                                                                                width, height));
         return new Sprite(texture);
+    }
+
+    animated(frames: [number, number][], animationSpeed: number, w?: number, h?: number): AnimatedSprite
+    {
+        const width = w || this.tileWidth;
+        const height = h || this.tileHeight;
+
+        const textures = [];
+
+        for (let frame of frames)
+        {
+            textures.push(new PIXI.Texture(this.sheetTexture, new PIXI.Rectangle(frame[0] * this.tileWidth,
+                                                                                 frame[1] * this.tileHeight,
+                                                                                 width, height)));
+        }
+
+        return new AnimatedSprite(textures, 0, 0, animationSpeed);
     }
 
     /**

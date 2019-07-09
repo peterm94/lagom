@@ -4,7 +4,7 @@ import spriteSheet from './resources/spritesheet.png';
 
 import * as PIXI from "pixi.js";
 
-import {RenderCircle} from "../../Common/PIXIComponents";
+import {AnimatedSpriteSystem, RenderCircle} from "../../Common/PIXIComponents";
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/SpriteSheet";
 import {
@@ -74,6 +74,7 @@ export class Platformer extends Scene
         this.addSystem(new DetectCollisionsSystem(collisionMatrix));
         this.addSystem(new DetectActiveCollisionSystem());
         this.addSystem(new PlatformerPhysicsPost());
+        this.addWorldSystem(new AnimatedSpriteSystem());
 
         const world1Map = new TiledMapLoader(world1);
         const mapLoader: Map<number, (x: number, y: number) => void> = new Map();
@@ -130,7 +131,8 @@ class Player extends Entity
         super.onAdded();
         this.addComponent(new PlayerControlled());
         this.addComponent(new PhysicsVars());
-        this.addComponent(sprites.sprite(0, 16));
+        // this.addComponent(sprites.sprite(0, 16));
+        this.addComponent(sprites.animated([[0, 16], [1, 16], [2, 16]], 200));
         this.addComponent(new RenderCircle(1));
         const collider = this.addComponent(new RectCollider(0, 0, 16, 16, Layers.PLAYER));
 
