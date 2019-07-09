@@ -1,6 +1,8 @@
 import {PIXIComponent} from "../ECS/Component";
 import * as PIXI from "pixi.js";
 import {FrameTrigger} from "./FrameTrigger";
+import Texture = PIXI.Texture;
+import {Log} from "./Util";
 
 export class Sprite extends PIXIComponent<PIXI.Sprite>
 {
@@ -51,6 +53,52 @@ export class AnimatedSprite extends FrameTrigger
 
 }
 
+export class VeryAnimatedSprite extends FrameTrigger
+{
+    animations: Map<number, () => AnimatedSprite> = new Map();
+    events: Map<number, Map<number, () => void>> = new Map();
+
+    constructor()
+    {
+        super(0);
+
+        this.onTrigger.register(this.triggerEvent);
+    }
+
+    private triggerEvent(caller: FrameTrigger, data: null)
+    {
+        // Create the sprite using the factory.
+
+        // Update the interval for the new sprite.
+        //this.triggerInterval =
+
+        // trigger event if it exists for this frame
+
+        // figure out what to set for the next trigger.
+
+        // TODO we might need animation stuff/events on AnimatedSprite for end of animation etc. so we can do things.
+    }
+
+    addAnimation(id: number, spriteFactory: () => AnimatedSprite)
+    {
+        this.animations.set(id, spriteFactory);
+        this.events.set(id, new Map());
+    }
+
+    addEvent(animationId: number, frame: number, event: () => void)
+    {
+        const animation = this.events.get(animationId);
+        if (animation === undefined)
+        {
+            Log.warn("Expected animation does not exist on VeryAnimatedSprite.", this, animationId);
+        }
+        else
+        {
+            animation.set(frame, event);
+        }
+    }
+}
+
 export class TextDisp extends PIXIComponent<PIXI.Text>
 {
     constructor(text: string, options?: PIXI.TextStyle)
@@ -58,7 +106,6 @@ export class TextDisp extends PIXIComponent<PIXI.Text>
         super(new PIXI.Text(text, options));
     }
 }
-
 
 export class RenderCircle extends PIXIComponent<PIXI.Graphics>
 {
