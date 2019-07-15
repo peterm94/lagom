@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import {AnimatedSprite, Sprite} from "./PIXIComponents";
+import {AnimatedSprite, AnimatedSpriteConfig, AnimationEnd, Sprite} from "./PIXIComponents";
 
 /**
  * Convenient way to load multiple sprites from a single spritesheet.
@@ -34,7 +34,7 @@ export class SpriteSheet
      * @param h The height of the sprite. If not set, will default to the initialized height.
      * @returns The created sprite.
      */
-    sprite(column: number, row: number, w?: number, h?: number): Sprite
+    sprite(column: number, row: number, offX?: number, offY?: number, w?: number, h?: number): Sprite
     {
         const width = w || this.tileWidth;
         const height = h || this.tileHeight;
@@ -42,10 +42,12 @@ export class SpriteSheet
         const texture = new PIXI.Texture(this.sheetTexture, new PIXI.Rectangle(column * this.tileWidth,
                                                                                row * this.tileHeight,
                                                                                width, height));
-        return new Sprite(texture);
+        return new Sprite(texture, offX, offY);
     }
 
-    animated(frames: [number, number][], animationSpeed: number, w?: number, h?: number): AnimatedSprite
+    animatedConfig(frames: [number, number][], animationSpeed: number, offX?: number, offY?: number, w?: number,
+                   h?: number)
+        : AnimatedSpriteConfig
     {
         const width = w || this.tileWidth;
         const height = h || this.tileHeight;
@@ -59,7 +61,12 @@ export class SpriteSheet
                                                                                  width, height)));
         }
 
-        return new AnimatedSprite(textures, 0, 0, animationSpeed);
+        return {
+            textures: textures,
+            offsetX: offX, offsetY: offY,
+            animationSpeed: animationSpeed,
+            animationEndAction: AnimationEnd.LOOP
+        };
     }
 
     /**

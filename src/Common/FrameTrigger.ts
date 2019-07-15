@@ -3,13 +3,14 @@ import {LagomType} from "../ECS/LifecycleObject";
 import {WorldSystem} from "../ECS/WorldSystem";
 import {Observable} from "./Observer";
 
-export abstract class FrameTrigger extends Component
+export abstract class FrameTrigger<T> extends Component
 {
-    onTrigger: Observable<FrameTrigger, null> = new Observable();
+    onTrigger: Observable<FrameTrigger<T>, T> = new Observable();
 
     nextTriggerTime: number = -1;
     triggerInterval: number = 0;
 
+    abstract payload(): T;
 
     protected constructor(triggerInterval: number)
     {
@@ -32,7 +33,7 @@ export class FrameTriggerSystem extends WorldSystem
     {
         this.elapsed += delta;
 
-        this.runOnComponentsWithSystem((system: FrameTriggerSystem, triggers: FrameTrigger[]) => {
+        this.runOnComponentsWithSystem((system: FrameTriggerSystem, triggers: FrameTrigger<any>[]) => {
             for (let trigger of triggers)
             {
                 if (trigger.nextTriggerTime == -1)
@@ -44,7 +45,7 @@ export class FrameTriggerSystem extends WorldSystem
                 else if (system.elapsed > trigger.nextTriggerTime)
                 {
                     // FRAME. TRIGGERED. EVENT.
-                    trigger.onTrigger.trigger(trigger, null);
+                    trigger.onTrigger.trigger(trigger, trigger.payload());
                     trigger.nextTriggerTime += trigger.triggerInterval;
                 }
             }

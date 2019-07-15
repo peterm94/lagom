@@ -70,6 +70,7 @@ export class Platformer extends Scene
         // this.addWorldSystem(new MatterEngine(collisionMatrix, Vector.create(0, 1), true));
 
         this.addSystem(new PlayerMover());
+        this.addSystem(new PlayerAnimationSystem());
         // this.addSystem(new PhysicsSystem());
         this.addSystem(new PlatformerPhysics());
         this.addSystem(new DetectCollisionsSystem(collisionMatrix));
@@ -140,17 +141,15 @@ class Player extends Entity
         this.addComponent(new PlayerControlled());
         this.addComponent(new PhysicsVars());
         const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
-        sprite.addAnimation(PlayerAnimationStates.IDLE, () => {
-            return sprites.animated([[0, 16], [1, 16]], 400)
-        });
-        sprite.addAnimation(PlayerAnimationStates.WALK, () =>
-        {
-            return sprites.animated([[0, 16], [1, 16], [2, 16]], 200);
-        });
-
+        sprite.addAnimation(PlayerAnimationStates.IDLE,
+                            sprites.animatedConfig([[0, 16], [1, 16]], 400, 8, 8));
+        sprite.addAnimation(PlayerAnimationStates.WALK,
+                            sprites.animatedConfig(
+                                [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
+                                100, 8, 8));
 
         this.addComponent(new RenderCircle(1));
-        const collider = this.addComponent(new RectCollider(0, 0, 16, 16, Layers.PLAYER));
+        const collider = this.addComponent(new RectCollider(-8, -8, 16, 16, Layers.PLAYER));
 
         collider.onCollision.register((caller: DetectCollider,
                                        data: { other: DetectCollider, result: Result }) => {
@@ -259,6 +258,48 @@ class PlatformerPhysics extends System
 class PlayerControlled extends Component
 {
 }
+
+class PlayerAnimationSystem extends System
+{
+    types(): LagomType<Component>[]
+    {
+        return [PhysicsVars, VeryAnimatedSprite];
+    }
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, body: PhysicsVars, sprite: VeryAnimatedSprite) => {
+            if (body.xVelocity > 0)
+            {
+                // Moving right
+                sprite.setAnimation(PlayerAnimationStates.WALK);
+                if (sprite.currentSprite && sprite.currentSprite.sprite)
+                {
+                    sprite.currentSprite.sprite.xScale = 1;
+                }
+            }
+            else if (body.xVelocity < 0)
+            {
+                // Moving left
+                sprite.setAnimation(PlayerAnimationStates.WALK);
+                if (sprite.currentSprite && sprite.currentSprite.sprite)
+                {
+                    sprite.currentSprite.sprite.xScale = -1;
+                }
+            }
+            else
+            {
+                // Idle
+                if (sprite.currentSprite && sprite.currentSprite.sprite)
+                {
+                    sprite.setAnimation(PlayerAnimationStates.IDLE);
+                }
+            }
+        });
+    }
+
+}
+
 
 class PlayerMover extends System
 {
