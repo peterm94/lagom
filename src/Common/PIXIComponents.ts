@@ -1,7 +1,6 @@
 import {PIXIComponent} from "../ECS/Component";
 import * as PIXI from "pixi.js";
 import {FrameTrigger} from "./FrameTrigger";
-import Texture = PIXI.Texture;
 import {Log} from "./Util";
 
 export class Sprite extends PIXIComponent<PIXI.Sprite>
@@ -15,22 +14,55 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
     }
 }
 
+export enum AnimationEnd
+{
+    STOP,
+    REVERSE,
+    LOOP
+}
+
 export class AnimatedSprite extends FrameTrigger
 {
     private frameIndex: number = 0;
+    private frameAdvancer: number = 1;
     private sprite: Sprite | null = null;
 
     constructor(private readonly textures: PIXI.Texture[],
                 private offsetX: number = 0,
                 private offsetY: number = 0,
-                private animationSpeed: number = 0)
+                private animationSpeed: number = 0,
+                private animationEndAction: AnimationEnd = AnimationEnd.LOOP)
     {
         super(animationSpeed);
 
         this.onTrigger.register((caller: FrameTrigger, data: null) => {
             if (this.sprite != null)
             {
-                this.sprite.pixiObj.texture = this.textures[++this.frameIndex % this.textures.length];
+                let nextFrame = this.frameIndex + this.frameAdvancer;
+
+                // Check for after last or first frame to trigger the end action.
+                if (nextFrame == -1 || nextFrame == this.textures.length)
+                {
+                    switch (this.animationEndAction)
+                    {
+                        // Loop back to the start
+                        case AnimationEnd.LOOP:
+                            nextFrame %= this.textures.length;
+                            break;
+                        // Go back the other way
+                        case AnimationEnd.REVERSE:
+                            this.frameAdvancer *= -1;
+                            nextFrame += this.frameAdvancer * 2;
+                            break;
+                        // Stop the advancer and lock the frame to the current one.
+                        case AnimationEnd.STOP:
+                            nextFrame -= this.frameAdvancer;
+                            this.frameAdvancer = 0;
+                            break;
+                    }
+                }
+
+                this.sprite.pixiObj.texture = this.textures[nextFrame];
             }
         });
     }
@@ -55,28 +87,37 @@ export class AnimatedSprite extends FrameTrigger
 
 export class VeryAnimatedSprite extends FrameTrigger
 {
-    animations: Map<number, () => AnimatedSprite> = new Map();
-    events: Map<number, Map<number, () => void>> = new Map();
+    private readonly animations: Map<number, () => AnimatedSprite> = new Map();
+    private readonly events: Map<number, Map<number, () => void>> = new Map();
+    private currentAnimation: number;
+    private currentSprite: AnimatedSprite | null = null;
 
-    constructor()
+    constructor(initialState: number)
     {
         super(0);
 
+        this.currentAnimation = initialState;
         this.onTrigger.register(this.triggerEvent);
     }
 
     private triggerEvent(caller: FrameTrigger, data: null)
     {
-        // Create the sprite using the factory.
+        const spriteFactory  = this.animations.get(this.currentAnimation);
+        if (spriteFactory !== undefined)
+        {
+            // Create the sprite using the factory.
+            this.currentSprite = this.getEntity().addComponent(spriteFactory());
 
-        // Update the interval for the new sprite.
-        //this.triggerInterval =
+            // Update the interval for the new sprite.
+            //this.triggerInterval =
+        }
+
+
 
         // trigger event if it exists for this frame
 
         // figure out what to set for the next trigger.
 
-        // TODO we might need animation stuff/events on AnimatedSprite for end of animation etc. so we can do things.
     }
 
     addAnimation(id: number, spriteFactory: () => AnimatedSprite)

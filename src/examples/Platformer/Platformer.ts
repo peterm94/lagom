@@ -4,7 +4,7 @@ import spriteSheet from './resources/spritesheet.png';
 
 import * as PIXI from "pixi.js";
 
-import {RenderCircle} from "../../Common/PIXIComponents";
+import {RenderCircle, VeryAnimatedSprite} from "../../Common/PIXIComponents";
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/SpriteSheet";
 import {
@@ -120,6 +120,13 @@ class Block extends Entity
     }
 }
 
+enum PlayerAnimationStates
+{
+    IDLE,
+    WALK,
+    JUMP
+}
+
 class Player extends Entity
 {
     constructor(x: number, y: number)
@@ -132,7 +139,16 @@ class Player extends Entity
         super.onAdded();
         this.addComponent(new PlayerControlled());
         this.addComponent(new PhysicsVars());
-        this.addComponent(sprites.animated([[0, 16], [1, 16], [2, 16]], 200));
+        const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
+        sprite.addAnimation(PlayerAnimationStates.IDLE, () => {
+            return sprites.animated([[0, 16], [1, 16]], 400)
+        });
+        sprite.addAnimation(PlayerAnimationStates.WALK, () =>
+        {
+            return sprites.animated([[0, 16], [1, 16], [2, 16]], 200);
+        });
+
+
         this.addComponent(new RenderCircle(1));
         const collider = this.addComponent(new RectCollider(0, 0, 16, 16, Layers.PLAYER));
 
