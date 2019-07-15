@@ -17,6 +17,11 @@ export abstract class FrameTrigger<T> extends Component
         super();
         this.triggerInterval = triggerInterval;
     }
+
+    reset()
+    {
+        this.nextTriggerTime = -1;
+    }
 }
 
 
@@ -38,8 +43,8 @@ export class FrameTriggerSystem extends WorldSystem
             {
                 if (trigger.nextTriggerTime == -1)
                 {
-                    // First trigger, do nothing, but synchronise the component to the system.
-                    // TODO do we want to do something?
+                    // First trigger. Synchronise the component to the system.
+                    trigger.onTrigger.trigger(trigger, trigger.payload());
                     trigger.nextTriggerTime = system.elapsed + trigger.triggerInterval;
                 }
                 else if (system.elapsed > trigger.nextTriggerTime)

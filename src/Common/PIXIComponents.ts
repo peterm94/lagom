@@ -73,7 +73,7 @@ export class AnimatedSprite extends FrameTrigger<number>
         this.frameAdvancer = 1;
 
         this.triggerInterval = config.animationSpeed;
-        this.onTrigger.trigger(this, this.frameIndex);
+        this.reset();
     }
 
     constructor(private config: AnimatedSpriteConfig)
@@ -196,7 +196,6 @@ export class VeryAnimatedSprite extends Component
     {
         // Check if we are already in the desired state.
         if (this._currentState === animation && !reset) return;
-        Log.warn("set animation " + animation);
 
         // Create the new sprite using the factory.
         const loadedConfig = this.animations.get(animation) || null;
