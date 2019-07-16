@@ -125,7 +125,8 @@ enum PlayerAnimationStates
 {
     IDLE,
     WALK,
-    JUMP
+    FALLING,
+    JUMP,
 }
 
 class Player extends Entity
@@ -146,8 +147,11 @@ class Player extends Entity
         sprite.addAnimation(PlayerAnimationStates.WALK,
                             sprites.animatedConfig(
                                 [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
-                                100, 8, 8));
-
+                                70, 8, 8));
+        sprite.addAnimation(PlayerAnimationStates.FALLING,
+                            sprites.animatedConfig([[6, 17]], 0, 8, 8));
+        sprite.addAnimation(PlayerAnimationStates.JUMP,
+                            sprites.animatedConfig([[5, 17]], 0, 8, 8));
         this.addComponent(new RenderCircle(1));
         const collider = this.addComponent(new RectCollider(-8, -8, 16, 16, Layers.PLAYER));
 
@@ -269,30 +273,34 @@ class PlayerAnimationSystem extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity, body: PhysicsVars, sprite: VeryAnimatedSprite) => {
-            if (body.xVelocity > 0)
+            if (sprite.currentSprite && sprite.currentSprite.sprite)
             {
-                // Moving right
-                sprite.setAnimation(PlayerAnimationStates.WALK);
-                if (sprite.currentSprite && sprite.currentSprite.sprite)
+                // We are on the ground.
+                if (body.xVelocity > 0)
                 {
+                    // Moving right
+                    sprite.setAnimation(PlayerAnimationStates.WALK);
                     sprite.currentSprite.sprite.xScale = 1;
                 }
-            }
-            else if (body.xVelocity < 0)
-            {
-                // Moving left
-                sprite.setAnimation(PlayerAnimationStates.WALK);
-                if (sprite.currentSprite && sprite.currentSprite.sprite)
+                else if (body.xVelocity < 0)
                 {
+                    // Moving left
+                    sprite.setAnimation(PlayerAnimationStates.WALK);
                     sprite.currentSprite.sprite.xScale = -1;
                 }
-            }
-            else
-            {
-                // Idle
-                if (sprite.currentSprite && sprite.currentSprite.sprite)
+                else
                 {
+                    // Idle
                     sprite.setAnimation(PlayerAnimationStates.IDLE);
+                }
+                // We are in the air.
+                if (body.yVelocity > 0)
+                {
+                    sprite.setAnimation(PlayerAnimationStates.FALLING);
+                }
+                else if (body.yVelocity < 0)
+                {
+                    sprite.setAnimation(PlayerAnimationStates.JUMP);
                 }
             }
         });
