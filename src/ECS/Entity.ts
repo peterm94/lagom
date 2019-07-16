@@ -20,7 +20,7 @@ export class Entity extends ContainerLifecycleObject
     layer: number = 0;
 
     /**
-     * Create a new entity. It must be added to a World to actually do anything.
+     * Create a new entity. It must be added to a Game to actually do anything.
      * @param name The name of the entity. Used for lookups.
      * @param x The starting x position.
      * @param y The starting y position.
@@ -117,7 +117,7 @@ export class Entity extends ContainerLifecycleObject
 }
 
 /**
- * Entity type that is not tied to a 'world' object. Positions etc. will remain fixed and not move with the viewport
+ * Entity type that is not tied to a 'Game' object. Positions etc. will remain fixed and not move with the viewport
  * position. Use this to render to absolute positions on the canvas (e.g. GUI text).
  */
 export class GUIEntity extends Entity

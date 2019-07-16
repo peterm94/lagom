@@ -3,7 +3,7 @@ import * as Matter from "matter-js";
 import {Log} from "../Common/Util";
 import {Observable} from "../Common/Observer";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
-import {WorldSystem} from "../ECS/WorldSystem";
+import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Component} from "../ECS/Component";
 import {LagomType} from "../ECS/LifecycleObject";
 
@@ -24,7 +24,7 @@ export class CollisionEvent
  * This engine MUST be added to a scene before any components are created. Same frame is fine, as WorldSystems are
  * processed before Entities.
  */
-export class MatterEngine extends WorldSystem
+export class MatterEngine extends GlobalSystem
 {
     readonly matterEngine: Matter.Engine;
     readonly collisionMatrix: CollisionMatrix;
@@ -181,7 +181,7 @@ export class MCollider extends Component
 
         // Add the body to the matter system
         const scene = this.getEntity().getScene();
-        this.engine = scene.getWorldSystem<MatterEngine>(MatterEngine) as MatterEngine;
+        this.engine = scene.getGlobalSystem<MatterEngine>(MatterEngine) as MatterEngine;
 
         if (this.engine != null)
         {

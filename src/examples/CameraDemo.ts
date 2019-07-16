@@ -1,5 +1,5 @@
 import {Scene} from "../ECS/Scene";
-import {World} from "../ECS/World";
+import {Game} from "../ECS/Game";
 import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {
@@ -62,10 +62,10 @@ export class CameraDemo extends Scene
     {
         super();
 
-        const world = new World(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0xe0c723});
+        const game = new Game(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0xe0c723});
 
         loader.add([spr_block]).load(() => {
-            world.start();
+            game.start();
         })
     }
 
@@ -82,10 +82,10 @@ export class CameraDemo extends Scene
 
         this.addSystem(new DetectCollisionsSystem(collisions));
         this.addSystem(new DetectActiveCollisionSystem());
-        this.addWorldSystem(new ScreenShaker());
+        this.addGlobalSystem(new ScreenShaker());
         this.addEntity(new Diagnostics("blue"));
         // this.addSystem(new SolidSystem());
-        // this.addWorldSystem(new Inspector());
+        // this.addGlobalSystem(new Inspector());
         this.addEntity(new Square(50, 50));
         this.addEntity(new CircleBoy(200, 200));
         this.addEntity(new Player("player", 256, 256));

@@ -28,7 +28,7 @@ export class FollowCamera extends System
     {
         super.onAdded();
 
-        this.renderer = this.getScene().getWorld().renderer;
+        this.renderer = this.getScene().getGame().renderer;
     }
 
     types(): LagomType<Component>[]

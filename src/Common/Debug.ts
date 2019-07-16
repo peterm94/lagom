@@ -1,11 +1,11 @@
 import * as PIXI from "pixi.js";
 import {GUIEntity} from "../ECS/Entity";
 import {TextDisp} from "./PIXIComponents";
-import {WorldSystem} from "../ECS/WorldSystem";
+import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
-import {World} from "../ECS/World";
+import {Game} from "../ECS/Game";
 import {LagomType} from "../ECS/LifecycleObject";
 import {Log} from "./Util";
 
@@ -25,7 +25,7 @@ export class Diagnostics extends GUIEntity
 
         const scene = this.getScene();
         scene.addSystem(new FpsUpdater());
-        scene.addWorldSystem(new DebugKeys());
+        scene.addGlobalSystem(new DebugKeys());
     }
 
     constructor(private readonly textCol: string,
@@ -36,7 +36,7 @@ export class Diagnostics extends GUIEntity
     }
 }
 
-class DebugKeys extends WorldSystem
+class DebugKeys extends GlobalSystem
 {
     update(delta: number): void
     {
@@ -46,7 +46,7 @@ class DebugKeys extends WorldSystem
         }
         if (Keyboard.isKeyPressed('KeyY'))
         {
-            console.log(this.getScene().getWorld());
+            console.log(this.getScene().getGame());
         }
     }
 
@@ -69,7 +69,7 @@ class FpsUpdater extends System
     printFrame: number = 10;
     frameCount: number = 0;
 
-    private world!: World;
+    private game!: Game;
 
     private avgFixedUpdateDt = 0;
     private fixedDt = 0;
@@ -84,7 +84,7 @@ class FpsUpdater extends System
     onAdded(): void
     {
         super.onAdded();
-        this.world = this.getScene().getWorld();
+        this.game = this.getScene().getGame();
     }
 
     private rollAverage(prevAvg: number, newVal: number): number
@@ -103,10 +103,10 @@ class FpsUpdater extends System
         this.frameCount++;
 
         this.avgUpdateDt = this.rollAverage(this.avgUpdateDt, 1000 / delta);
-        this.avgUpdate = this.rollAverage(this.avgUpdate, this.world.diag.updateTime);
-        this.avgFixedUpdate = this.rollAverage(this.avgFixedUpdate, this.world.diag.fixedUpdateTime);
-        this.avgRender = this.rollAverage(this.avgRender, this.world.diag.renderTime);
-        this.avgFrame = this.rollAverage(this.avgFrame, this.world.diag.totalFrameTime);
+        this.avgUpdate = this.rollAverage(this.avgUpdate, this.game.diag.updateTime);
+        this.avgFixedUpdate = this.rollAverage(this.avgFixedUpdate, this.game.diag.fixedUpdateTime);
+        this.avgRender = this.rollAverage(this.avgRender, this.game.diag.renderTime);
+        this.avgFrame = this.rollAverage(this.avgFrame, this.game.diag.totalFrameTime);
 
         if ((this.frameCount % this.printFrame) === 0)
         {
@@ -123,13 +123,13 @@ class FpsUpdater extends System
                             + `\nFixedU: ${this.fixedDt.toFixed(2)}ms `
                             + `// ${(1000 / this.fixedDt).toFixed(2)}hz `
                             + `// ${this.avgFixedUpdateDt.toFixed(2)}hz`
-                            + `\nUpdateTime: ${this.world.diag.updateTime.toFixed(2)}ms `
+                            + `\nUpdateTime: ${this.game.diag.updateTime.toFixed(2)}ms `
                             + `// ${this.avgUpdate.toFixed(2)}ms`
-                            + `\nFixedUpdateTime: ${this.world.diag.fixedUpdateTime.toFixed(2)}ms `
+                            + `\nFixedUpdateTime: ${this.game.diag.fixedUpdateTime.toFixed(2)}ms `
                             + `// ${this.avgFixedUpdate.toFixed(2)}ms`
-                            + `\nRenderTime: ${this.world.diag.renderTime.toFixed(2)}ms `
+                            + `\nRenderTime: ${this.game.diag.renderTime.toFixed(2)}ms `
                             + `// ${this.avgRender.toFixed(2)}ms`
-                            + `\nTotalFrameTime: ${this.world.diag.totalFrameTime.toFixed(2)}ms `
+                            + `\nTotalFrameTime: ${this.game.diag.totalFrameTime.toFixed(2)}ms `
                             + `// ${this.avgFrame.toFixed(2)}ms`
                     }
                 }

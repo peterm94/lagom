@@ -17,9 +17,9 @@ class Diag
 }
 
 /**
- * World class, containing all high level framework references. Sets up the render window and controls updating the ECS.
+ * Game class, containing all high level framework references. Sets up the render window and controls updating the ECS.
  */
-export class World extends ContainerLifecycleObject
+export class Game extends ContainerLifecycleObject
 {
     // Set this to true to end the game
     gameOver: boolean = false;
@@ -82,7 +82,7 @@ export class World extends ContainerLifecycleObject
     readonly diag: Diag = new Diag();
 
     /**
-     * Create a new World.
+     * Create a new Game.
      * @param scene The first scene to load.
      * @param options Options for the PIXI Renderer.
      */

@@ -2,7 +2,7 @@ import * as PIXI from "pixi.js";
 
 import spr_block from './resources/block.png';
 import spr_guy from './resources/guy.png';
-import {World} from "../ECS/World";
+import {Game} from "../ECS/Game";
 import {Diagnostics} from "../Common/Debug";
 import {Sprite} from "../Common/PIXIComponents";
 import {MatterEngine, MCollider} from "../MatterPhysics/MatterPhysics";
@@ -33,11 +33,11 @@ export class Downshaft extends Scene
     {
         super();
 
-        const world = new World(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0xA1B1A1});
+        const game = new Game(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0xA1B1A1});
 
         loader.add([spr_block, spr_guy]).load(() => {
 
-            world.start();
+            game.start();
         })
     }
 
@@ -64,7 +64,7 @@ export class Downshaft extends Scene
         const matrix = new CollisionMatrix();
         matrix.addCollision(Layers.Solid, Layers.Player);
 
-        this.addWorldSystem(new MatterEngine(matrix, Vector.create(0, 0.15)));
+        this.addGlobalSystem(new MatterEngine(matrix, Vector.create(0, 0.15)));
     }
 }
 
@@ -159,7 +159,7 @@ class FollowCamera extends System
     {
         super.onAdded();
 
-        this.renderer = this.getScene().getWorld().renderer;
+        this.renderer = this.getScene().getGame().renderer;
     }
 
     types(): LagomType<Component>[]

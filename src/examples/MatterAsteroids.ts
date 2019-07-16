@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import {World} from "../ECS/World";
+import {Game} from "../ECS/Game";
 import {Sprite} from "../Common/PIXIComponents";
 import {Diagnostics} from "../Common/Debug";
 import spr_asteroid from './resources/asteroid.png'
@@ -14,7 +14,7 @@ import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
-import {WorldSystem} from "../ECS/WorldSystem";
+import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Scene} from "../ECS/Scene";
 import {LagomType} from "../ECS/LifecycleObject";
 
@@ -30,7 +30,7 @@ enum CollLayers
 }
 
 
-class Inspector extends WorldSystem
+class Inspector extends GlobalSystem
 {
     private readonly text: Text;
 
@@ -62,7 +62,7 @@ export class MatterAsteroids extends Scene
     {
         super();
 
-        const world = new World(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0x200140});
+        const game = new Game(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0x200140});
 
 
         loader.add([spr_asteroid,
@@ -71,7 +71,7 @@ export class MatterAsteroids extends Scene
                     spr_ship,
                     spr_bullet]).load(() => {
 
-            world.start();
+            game.start();
         });
     }
 
@@ -80,15 +80,15 @@ export class MatterAsteroids extends Scene
     {
         super.onAdded();
 
-        const world = this.getWorld();
+        const game = this.getGame();
 
-        this.addEntity(new Ship(world.renderer.screen.width / 2,
-                                world.renderer.screen.height / 2));
+        this.addEntity(new Ship(game.renderer.screen.width / 2,
+                                game.renderer.screen.height / 2));
 
         for (let i = 0; i < 10; i++)
         {
-            this.addEntity(new Asteroid(Math.random() * world.renderer.screen.width,
-                                        Math.random() * world.renderer.screen.height,
+            this.addEntity(new Asteroid(Math.random() * game.renderer.screen.width,
+                                        Math.random() * game.renderer.screen.height,
                                         3))
         }
 
@@ -104,8 +104,8 @@ export class MatterAsteroids extends Scene
         const matrix = new CollisionMatrix();
         matrix.addCollision(CollLayers.Asteroid, CollLayers.Bullet);
 
-        this.addWorldSystem(new MatterEngine(matrix));
-        this.addWorldSystem(new Inspector());
+        this.addGlobalSystem(new MatterEngine(matrix));
+        this.addGlobalSystem(new Inspector());
     }
 }
 
@@ -250,7 +250,7 @@ class DestroyOffScreen extends System
     {
         super.onAdded();
 
-        this.renderer = this.getScene().getWorld().renderer;
+        this.renderer = this.getScene().getGame().renderer;
     }
 
     types(): LagomType<Component>[]
@@ -303,7 +303,7 @@ class ScreenWrapper extends System
     {
         super.onAdded();
 
-        this.renderer = this.getScene().getWorld().renderer;
+        this.renderer = this.getScene().getGame().renderer;
     }
 
     types(): LagomType<Component>[]
@@ -331,7 +331,7 @@ class SpriteWrapper extends System
     {
         super.onAdded();
 
-        this.renderer = this.getScene().getWorld().renderer;
+        this.renderer = this.getScene().getGame().renderer;
     }
 
     types(): LagomType<Component>[]

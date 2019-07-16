@@ -1,5 +1,5 @@
 import {Component} from "../ECS/Component";
-import {WorldSystem} from "../ECS/WorldSystem";
+import {GlobalSystem} from "../ECS/GlobalSystem";
 import {LagomType} from "../ECS/LifecycleObject";
 import {Observable} from "./Observer";
 
@@ -23,7 +23,7 @@ export class Timer<T> extends Component
 }
 
 // This is frame synced. Could be an async call instead? Not sure if I want to do that though
-export class TimerSystem extends WorldSystem
+export class TimerSystem extends GlobalSystem
 {
     types(): LagomType<Component>[]
     {

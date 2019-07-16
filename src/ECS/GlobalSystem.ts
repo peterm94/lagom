@@ -5,9 +5,9 @@ import {LagomType, LifecycleObject, Updatable} from "./LifecycleObject";
 import {Scene} from "./Scene";
 
 /**
- * World system base class. Designed to run on batches of Components.
+ * Global system base class. Designed to run on batches of Components.
  */
-export abstract class WorldSystem extends LifecycleObject implements Updatable
+export abstract class GlobalSystem extends LifecycleObject implements Updatable
 {
     // TODO the key type is technically wrong, but it works because types aren't real
     private readonly runOn: Map<{ new(): Component }, Component[]> = new Map();
@@ -23,7 +23,7 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
     }
 
     /**
-     * An array of types that this WorldSystem will run on. This should remain static.
+     * An array of types that this GlobalSystem will run on. This should remain static.
      * @returns An array of component types to run on during update().
      */
     abstract types(): LagomType<Component>[]
@@ -57,7 +57,7 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
 
         if (compMap === undefined)
         {
-            Log.warn("Expected component map does not exist on WorldSystem.", this, type.prototype);
+            Log.warn("Expected component map does not exist on GlobalSystem.", this, type.prototype);
             compMap = [];
             this.runOn.set(type.prototype, compMap);
         }
@@ -100,7 +100,7 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
         super.onAdded();
 
         const scene = this.getScene();
-        scene.worldSystems.push(this);
+        scene.globalSystems.push(this);
 
         // make each component map
         this.types().forEach(type => {
@@ -127,7 +127,7 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
         super.onRemoved();
 
         const scene = this.getScene();
-        Util.remove(scene.worldSystems, this);
+        Util.remove(scene.globalSystems, this);
 
         scene.entityAddedEvent.deregister(this.onEntityAdded.bind(this));
         scene.entityRemovedEvent.deregister(this.onEntityRemoved.bind(this));

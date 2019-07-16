@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
 
-import {World} from "../ECS/World";
+import {Game} from "../ECS/Game";
 import {Diagnostics} from "../Common/Debug";
 import {MatterEngine, MCollider} from "../MatterPhysics/MatterPhysics";
 import {Vector} from "matter-js";
@@ -21,7 +21,7 @@ export class PerfTest extends Scene
     {
         super();
 
-        const world = new World(this, {width: 1024, height: 700, resolution: 1, backgroundColor: 0xA1B1A1});
+        const game = new Game(this, {width: 1024, height: 700, resolution: 1, backgroundColor: 0xA1B1A1});
 
         loader.add([spr_block]).load(() => {
 
@@ -35,9 +35,9 @@ export class PerfTest extends Scene
                 }
             }
 
-            this.addWorldSystem(new MatterEngine(new CollisionMatrix(), Vector.create(0, 0.15)));
+            this.addGlobalSystem(new MatterEngine(new CollisionMatrix(), Vector.create(0, 0.15)));
 
-            world.start();
+            game.start();
         })
     }
 }

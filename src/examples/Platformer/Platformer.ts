@@ -1,5 +1,5 @@
 import {Scene} from "../../ECS/Scene";
-import {World} from "../../ECS/World";
+import {Game} from "../../ECS/Game";
 import spriteSheet from './resources/spritesheet.png';
 
 import * as PIXI from "pixi.js";
@@ -44,7 +44,7 @@ export class Platformer extends Scene
     {
         super();
 
-        const world = new World(this, {
+        const game = new Game(this, {
             width: 256,
             height: 128,
             resolution: 3,
@@ -53,7 +53,7 @@ export class Platformer extends Scene
         });
 
         loader.load(() => {
-            world.start();
+            game.start();
         });
 
         collisionMatrix.addCollision(Layers.PLAYER, Layers.SOLIDS);
@@ -67,7 +67,7 @@ export class Platformer extends Scene
 
         this.addEntity(new Diagnostics("white", 2));
 
-        // this.addWorldSystem(new MatterEngine(collisionMatrix, Vector.create(0, 1), true));
+        // this.addGlobalSystem(new MatterEngine(collisionMatrix, Vector.create(0, 1), true));
 
         this.addSystem(new PlayerMover());
         this.addSystem(new PlayerAnimationSystem());
@@ -76,7 +76,7 @@ export class Platformer extends Scene
         this.addSystem(new DetectCollisionsSystem(collisionMatrix));
         this.addSystem(new DetectActiveCollisionSystem());
         this.addSystem(new PlatformerPhysicsPost());
-        this.addWorldSystem(new FrameTriggerSystem());
+        this.addGlobalSystem(new FrameTriggerSystem());
 
         const world1Map = new TiledMapLoader(world1);
         const mapLoader: Map<number, (x: number, y: number) => void> = new Map();

@@ -44,14 +44,14 @@ export abstract class LifecycleObject
     }
 
     /**
-     * Will be called when added to the World.
+     * Will be called when added to the Game.
      */
     onAdded()
     {
     }
 
     /**
-     * Will be called when removed from the World.
+     * Will be called when removed from the Game.
      */
     onRemoved()
     {

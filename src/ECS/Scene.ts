@@ -2,9 +2,9 @@ import * as PIXI from "pixi.js";
 import {ContainerLifecycleObject, ObjectState, Updatable} from "./LifecycleObject";
 import {Entity} from "./Entity";
 import {System} from "./System";
-import {WorldSystem} from "./WorldSystem";
+import {GlobalSystem} from "./GlobalSystem";
 import {Observable} from "../Common/Observer";
-import {World} from "./World";
+import {Game} from "./Game";
 import {LagomType} from "./LifecycleObject";
 import {Camera} from "../Common/Camera";
 
@@ -30,7 +30,7 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     // type that can define it's order.
     readonly entities: Entity[] = [];
     readonly systems: System[] = [];
-    readonly worldSystems: WorldSystem[] = [];
+    readonly globalSystems: GlobalSystem[] = [];
 
     camera!: Camera;
 
@@ -57,8 +57,8 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     {
         super.update(delta);
 
-        // Update world systems
-        this.worldSystems.forEach(system => system.update(delta));
+        // Update global systems
+        this.globalSystems.forEach(system => system.update(delta));
 
         // Resolve updates for entities
         this.entities.forEach(entity => entity.update(delta));
@@ -71,8 +71,8 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     {
         super.fixedUpdate(delta);
 
-        // Update world systems
-        this.worldSystems.forEach(system => system.fixedUpdate(delta));
+        // Update global systems
+        this.globalSystems.forEach(system => system.fixedUpdate(delta));
 
         // Resolve updates for entities
         this.entities.forEach(entity => entity.fixedUpdate(delta));
@@ -82,8 +82,8 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     }
 
     /**
-     * Add a system to the World.
-     * @param system The system to add
+     * Add a system to the Game.
+     * @param system The system to add.
      * @returns The added system.
      */
     addSystem<T extends System>(system: T): T
@@ -94,11 +94,11 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     }
 
     /**
-     * Add a world system to the Scene. These are not tied to entity processing.
+     * Add a global system to the Scene. These are not tied to entity processing.
      * @param system The system to add.
      * @returns The added system.
      */
-    addWorldSystem<T extends WorldSystem>(system: T): T
+    addGlobalSystem<T extends GlobalSystem>(system: T): T
     {
         system.setParent(this);
         this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
@@ -129,13 +129,13 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     }
 
     /**
-     * Get a WorldSystem of the provided type.
+     * Get a GlobalSystem of the provided type.
      * @param type The type of system to search for.
      * @returns The found system or null.
      */
-    getWorldSystem<T extends WorldSystem>(type: LagomType<WorldSystem>): T | null
+    getGlobalSystem<T extends GlobalSystem>(type: LagomType<GlobalSystem>): T | null
     {
-        const found = this.worldSystems.find(value => value instanceof type);
+        const found = this.globalSystems.find(value => value instanceof type);
         return found != undefined ? found as T : null;
     }
 
@@ -152,11 +152,11 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     }
 
     /**
-     * Return the World object that this Scene belongs to.
-     * @returns The parent World.
+     * Return the Game object that this Scene belongs to.
+     * @returns The parent Game.
      */
-    getWorld(): World
+    getGame(): Game
     {
-        return this.getParent() as World;
+        return this.getParent() as Game;
     }
 }

@@ -1,6 +1,6 @@
 import {Component} from "../ECS/Component";
 import {LagomType} from "../ECS/LifecycleObject";
-import {WorldSystem} from "../ECS/WorldSystem";
+import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Observable} from "./Observer";
 
 export abstract class FrameTrigger<T> extends Component
@@ -25,7 +25,7 @@ export abstract class FrameTrigger<T> extends Component
 }
 
 
-export class FrameTriggerSystem extends WorldSystem
+export class FrameTriggerSystem extends GlobalSystem
 {
     private elapsed: number = 0;
 

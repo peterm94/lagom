@@ -1,5 +1,5 @@
 import {Component} from "../ECS/Component";
-import {WorldSystem} from "../ECS/WorldSystem";
+import {GlobalSystem} from "../ECS/GlobalSystem";
 import {LagomType} from "../ECS/LifecycleObject";
 
 export class ScreenShake extends Component
@@ -15,7 +15,7 @@ export class ScreenShake extends Component
     }
 }
 
-export class ScreenShaker extends WorldSystem
+export class ScreenShaker extends GlobalSystem
 {
     intensity: number = 0;
     duration: number = 0;
