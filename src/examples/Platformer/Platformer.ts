@@ -38,13 +38,11 @@ enum Layers
     SOLIDS
 }
 
-export class Platformer extends Scene
+export class Platformer extends Game
 {
     constructor()
     {
-        super();
-
-        const game = new Game(this, {
+        super(new MainScene(), {
             width: 256,
             height: 128,
             resolution: 3,
@@ -52,15 +50,14 @@ export class Platformer extends Scene
             antialias: false
         });
 
-        loader.load(() => {
-            game.start();
-        });
-
         collisionMatrix.addCollision(Layers.PLAYER, Layers.SOLIDS);
         collisionMatrix.addCollision(Layers.ENEMY, Layers.SOLIDS);
         collisionMatrix.addCollision(Layers.PLAYER, Layers.ENEMY);
     }
+}
 
+class MainScene extends Scene
+{
     onAdded(): void
     {
         super.onAdded();

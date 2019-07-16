@@ -108,7 +108,9 @@ export class Game extends ContainerLifecycleObject
 
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
-        document.body.appendChild(this.renderer.view);
+
+        // If we just want to run it raw, we can enable this again.
+        // document.body.appendChild(this.renderer.view);
     }
 
     /**
