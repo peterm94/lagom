@@ -11,7 +11,8 @@ const Keyboard = require('pixi.js-keyboard');
 class Diag
 {
     renderTime: number = 0;
-    ecsUpdateTime: number = 0;
+    fixedUpdateTime: number = 0;
+    updateTime: number = 0;
     totalFrameTime: number = 0;
 }
 
@@ -48,7 +49,8 @@ export class World extends ContainerLifecycleObject
     {
         if (!this.gameOver)
         {
-            const now = Date.now();
+            let now = Date.now();
+            const totalUpdateStart = now;
             this.deltaTime = now - this.lastFrameTime;
             this.lastFrameTime = now;
 
@@ -56,20 +58,22 @@ export class World extends ContainerLifecycleObject
 
             while (this.elapsedSinceUpdate >= this.fixedDeltaMS)
             {
-                // Update the ECS
-                this.update(this.fixedDeltaMS);
-                this.diag.ecsUpdateTime = Date.now() - now;
+                // call FixedUpdate() for the ECS
+                this.fixedUpdate(this.fixedDeltaMS);
 
                 this.elapsedSinceUpdate -= this.fixedDeltaMS;
                 this.timeMs += this.fixedDeltaMS;
             }
-            // this.update(this.deltaTime);
+            this.diag.fixedUpdateTime = Date.now() - now;
+            // Call update() for the ECS
+            now = Date.now();
+            this.update(this.deltaTime);
+            this.diag.updateTime = Date.now() - now;
 
-
-            const renderStart = Date.now();
+            now = Date.now();
             this.renderer.render(this.currentScene.pixiStage);
-            this.diag.renderTime = Date.now() - renderStart;
-            this.diag.totalFrameTime = Date.now() - now;
+            this.diag.renderTime = Date.now() - now;
+            this.diag.totalFrameTime = Date.now() - totalUpdateStart;
 
             requestAnimationFrame(this.updateLoop.bind(this));
         }
@@ -124,7 +128,15 @@ export class World extends ContainerLifecycleObject
         // Mouse.update();
         this.currentScene.update(delta);
 
+        // TODO check if this should be here or in fixed
         Keyboard.update();
+    }
+
+    fixedUpdate(delta: number): void
+    {
+        super.fixedUpdate(delta);
+
+        this.currentScene.fixedUpdate(delta);
     }
 
     /**

@@ -137,6 +137,10 @@ export abstract class System extends LifecycleObject implements Updatable
      */
     abstract update(delta: number): void;
 
+    fixedUpdate(delta: number): void
+    {
+    }
+
     /**
      * Component types that this System runs on.
      * @returns A list of Component types.

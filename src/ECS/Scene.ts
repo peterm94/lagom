@@ -67,6 +67,20 @@ export class Scene extends ContainerLifecycleObject implements Updatable
         this.systems.forEach(system => system.update(delta));
     }
 
+    fixedUpdate(delta: number): void
+    {
+        super.fixedUpdate(delta);
+
+        // Update world systems
+        this.worldSystems.forEach(system => system.fixedUpdate(delta));
+
+        // Resolve updates for entities
+        this.entities.forEach(entity => entity.fixedUpdate(delta));
+
+        // Update normal systems
+        this.systems.forEach(system => system.fixedUpdate(delta));
+    }
+
     /**
      * Add a system to the World.
      * @param system The system to add

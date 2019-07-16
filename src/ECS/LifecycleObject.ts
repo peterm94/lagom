@@ -103,6 +103,10 @@ export abstract class ContainerLifecycleObject extends LifecycleObject implement
             }
         }
     }
+
+    fixedUpdate(delta: number): void
+    {
+    }
 }
 
 /**
@@ -115,6 +119,12 @@ export interface Updatable
      * @param delta Elapsed time since the last update call.
      */
     update(delta: number): void;
+
+    /**
+     * The fixed update method. Should be called on a regular interval.
+     * @param delta Elapsed time since the last update call.
+     */
+    fixedUpdate(delta: number): void;
 }
 
 /**

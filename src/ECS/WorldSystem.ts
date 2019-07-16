@@ -18,6 +18,10 @@ export abstract class WorldSystem extends LifecycleObject implements Updatable
      */
     abstract update(delta: number): void;
 
+    fixedUpdate(delta: number): void
+    {
+    }
+
     /**
      * An array of types that this WorldSystem will run on. This should remain static.
      * @returns An array of component types to run on during update().

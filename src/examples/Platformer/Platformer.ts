@@ -65,7 +65,7 @@ export class Platformer extends Scene
     {
         super.onAdded();
 
-        // this.addEntity(new Diagnostics("white", 2));
+        this.addEntity(new Diagnostics("white", 2));
 
         // this.addWorldSystem(new MatterEngine(collisionMatrix, Vector.create(0, 1), true));
 
@@ -143,7 +143,7 @@ class Player extends Entity
         this.addComponent(new PhysicsVars());
         const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
         sprite.addAnimation(PlayerAnimationStates.IDLE,
-                            sprites.animatedConfig([[0, 16], [1, 16]], 400, 8, 8));
+                            sprites.animatedConfig([[0, 16], [2, 16]], 350, 8, 8));
         sprite.addAnimation(PlayerAnimationStates.WALK,
                             sprites.animatedConfig(
                                 [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],

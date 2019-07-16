@@ -7,6 +7,7 @@ import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
 import {World} from "../ECS/World";
 import {LagomType} from "../ECS/LifecycleObject";
+import {Log} from "./Util";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -15,14 +16,11 @@ const Keyboard = require('pixi.js-keyboard');
  */
 export class Diagnostics extends GUIEntity
 {
-    private readonly textCol: string;
-    private readonly textSize: number;
-
     onAdded()
     {
         super.onAdded();
 
-        this.addComponent(new FpsTracker());
+        this.addComponent(new FpsTracker(this.verbose));
         this.addComponent(new TextDisp("", new PIXI.TextStyle({fontSize: this.textSize, fill: this.textCol})));
 
         const scene = this.getScene();
@@ -30,11 +28,11 @@ export class Diagnostics extends GUIEntity
         scene.addWorldSystem(new DebugKeys());
     }
 
-    constructor(textCol: string, textSize: number = 10)
+    constructor(private readonly textCol: string,
+                private readonly textSize: number = 10,
+                private verbose: boolean = false)
     {
         super("diagnostics");
-        this.textCol = textCol;
-        this.textSize = textSize;
     }
 }
 
@@ -60,6 +58,10 @@ class DebugKeys extends WorldSystem
 
 class FpsTracker extends Component
 {
+    constructor(readonly verbose: boolean)
+    {
+        super();
+    }
 }
 
 class FpsUpdater extends System
@@ -69,9 +71,11 @@ class FpsUpdater extends System
 
     private world!: World;
 
+    private avgFixedUpdateDt = 0;
+    private fixedDt = 0;
     private avgUpdateDt = 0;
-    private avgAnimDt = 0;
     private avgUpdate = 0;
+    private avgFixedUpdate = 0;
     private avgRender = 0;
     private avgFrame = 0;
 
@@ -88,29 +92,46 @@ class FpsUpdater extends System
         return (prevAvg * (this.samples - 1) + newVal) / this.samples
     }
 
+    fixedUpdate(delta: number): void
+    {
+        this.avgFixedUpdateDt = this.rollAverage(this.avgFixedUpdateDt, 1000 / delta);
+        this.fixedDt = delta;
+    }
+
     update(delta: number): void
     {
         this.frameCount++;
 
         this.avgUpdateDt = this.rollAverage(this.avgUpdateDt, 1000 / delta);
-        this.avgAnimDt = this.rollAverage(this.avgAnimDt, 1000 / this.world.deltaTime);
-        this.avgUpdate = this.rollAverage(this.avgUpdate, this.world.diag.ecsUpdateTime);
+        this.avgUpdate = this.rollAverage(this.avgUpdate, this.world.diag.updateTime);
+        this.avgFixedUpdate = this.rollAverage(this.avgFixedUpdate, this.world.diag.fixedUpdateTime);
         this.avgRender = this.rollAverage(this.avgRender, this.world.diag.renderTime);
         this.avgFrame = this.rollAverage(this.avgFrame, this.world.diag.totalFrameTime);
 
         if ((this.frameCount % this.printFrame) === 0)
         {
-            this.runOnEntities((entity: Entity, text: TextDisp) => {
+            this.runOnEntities((entity: Entity, text: TextDisp, tracker: FpsTracker) => {
                 {
-                    text.pixiObj.text = `UpdateDelta: ${delta.toFixed(2)}ms // ${(1000 / delta).toFixed(
-                        2)} // ${this.avgUpdateDt.toFixed(2)}`
-                        + `\nAnimationDelta: ${(this.world.deltaTime).toFixed(2)}ms // ${(1000 /
-                            this.world.deltaTime).toFixed(2)} // ${this.avgAnimDt.toFixed(2)}ms`
-                        +
-                        `\nECSUpdateTime: ${this.world.diag.ecsUpdateTime.toFixed(2)}ms // ${this.avgUpdate.toFixed(2)}ms`
-                        + `\nRenderTime: ${this.world.diag.renderTime.toFixed(2)}ms // ${this.avgRender.toFixed(2)}ms`
-                        + `\nTotalFrameTime: ${this.world.diag.totalFrameTime.toFixed(2)}ms // ${this.avgFrame.toFixed(
-                            2)}ms`
+                    text.pixiObj.text = `${this.avgUpdateDt.toFixed(2)}`;
+
+                    if (tracker.verbose)
+                    {
+                        text.pixiObj.text =
+                            `U: ${delta.toFixed(2)}ms `
+                            + `// ${(1000 / delta).toFixed(2)}hz `
+                            + `// ${this.avgUpdateDt.toFixed(2)}hz`
+                            + `\nFixedU: ${this.fixedDt.toFixed(2)}ms `
+                            + `// ${(1000 / this.fixedDt).toFixed(2)}hz `
+                            + `// ${this.avgFixedUpdateDt.toFixed(2)}hz`
+                            + `\nUpdateTime: ${this.world.diag.updateTime.toFixed(2)}ms `
+                            + `// ${this.avgUpdate.toFixed(2)}ms`
+                            + `\nFixedUpdateTime: ${this.world.diag.fixedUpdateTime.toFixed(2)}ms `
+                            + `// ${this.avgFixedUpdate.toFixed(2)}ms`
+                            + `\nRenderTime: ${this.world.diag.renderTime.toFixed(2)}ms `
+                            + `// ${this.avgRender.toFixed(2)}ms`
+                            + `\nTotalFrameTime: ${this.world.diag.totalFrameTime.toFixed(2)}ms `
+                            + `// ${this.avgFrame.toFixed(2)}ms`
+                    }
                 }
             });
         }
