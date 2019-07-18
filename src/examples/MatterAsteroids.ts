@@ -14,13 +14,18 @@ import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
-import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Scene} from "../ECS/Scene";
 import {LagomType} from "../ECS/LifecycleObject";
 
 const Keyboard = require('pixi.js-keyboard');
 
 const loader = new PIXI.Loader();
+
+loader.add([spr_asteroid,
+            spr_asteroid2,
+            spr_asteroid3,
+            spr_ship,
+            spr_bullet]);
 
 enum CollLayers
 {
@@ -30,52 +35,16 @@ enum CollLayers
 }
 
 
-class Inspector extends GlobalSystem
+export class MatterAsteroids extends Game
 {
-    private readonly text: Text;
-
     constructor()
     {
-        super();
-
-        this.text = new Text("Inspector");
-        document.body.appendChild(this.text);
-    }
-
-    update(delta: number): void
-    {
-        this.text.textContent = this.getScene().entities.map(
-            entity => entity.name + ":\n" + entity.components.map(component => component.constructor.name).join("\n"))
-                                    .join("\n")
-    }
-
-    types(): LagomType<Component>[]
-    {
-        return [];
+        super(new MainScene(), {width: 512, height: 512, resolution: 1, backgroundColor: 0x200140} , loader);
     }
 }
 
-
-export class MatterAsteroids extends Scene
+class MainScene extends Scene
 {
-    constructor()
-    {
-        super();
-
-        const game = new Game(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0x200140});
-
-
-        loader.add([spr_asteroid,
-                    spr_asteroid2,
-                    spr_asteroid3,
-                    spr_ship,
-                    spr_bullet]).load(() => {
-
-            game.start();
-        });
-    }
-
-
     onAdded()
     {
         super.onAdded();
@@ -105,7 +74,6 @@ export class MatterAsteroids extends Scene
         matrix.addCollision(CollLayers.Asteroid, CollLayers.Bullet);
 
         this.addGlobalSystem(new MatterEngine(matrix));
-        this.addGlobalSystem(new Inspector());
     }
 }
 

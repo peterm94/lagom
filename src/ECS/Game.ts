@@ -100,7 +100,7 @@ export class Game extends ContainerLifecycleObject
         backgroundColor?: number;
         powerPreference?: string;
         context?: any;
-    })
+    }, private readonly loader?: PIXI.Loader)
     {
         super();
 
@@ -117,6 +117,22 @@ export class Game extends ContainerLifecycleObject
      * Start the game loop.
      */
     start()
+    {
+        // TODO remove this whole concept and do it like the platformer does.
+        // If we need to load additional resources, do that.
+        if (this.loader)
+        {
+            this.loader.load(() => {
+                this.startInternal();
+            })
+        }
+        else
+        {
+            this.startInternal();
+        }
+    }
+
+    private startInternal()
     {
         // Start the update loop
         this.lastFrameTime = Date.now();

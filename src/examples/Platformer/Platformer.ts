@@ -26,7 +26,6 @@ import {Vector} from "matter-js";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 
 const Keyboard = require('pixi.js-keyboard');
-const loader = new PIXI.Loader();
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
 const collisionMatrix = new CollisionMatrix();
 
