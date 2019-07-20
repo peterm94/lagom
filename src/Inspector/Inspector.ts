@@ -1,29 +1,32 @@
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {LagomType} from "../ECS/LifecycleObject";
 import {Component} from "../ECS/Component";
-import {EntityList, InspectorComponent} from "../React/InspectorComponents";
+import {observable} from "mobx";
+import {Entity} from "../ECS/Entity";
 
 export class Inspector extends GlobalSystem
 {
-    constructor(private readonly reactComp: InspectorComponent)
+    constructor()
     {
         super();
     }
 
-    public entities: string[] = [];
+    @observable public entities: string[] = [];
+    @observable public inspectingEntity: Entity | null = null;
 
     update(delta: number): void
     {
         this.entities = this.getScene().entities.map(
             entity => entity.name);
-
-        // this.reactComp.setState(() => ({
-        //     entities: this.entities
-        // }));
     }
 
     types(): LagomType<Component>[]
     {
         return [];
+    }
+
+    selectEntity(idx: number)
+    {
+        this.inspectingEntity = this.getScene().entities[idx];
     }
 }

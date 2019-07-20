@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    // TODO do I want this?
+    "experimentalDecorators": true,
     "target": "es5",
     "lib": [
       "dom",

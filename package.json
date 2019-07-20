@@ -10,6 +10,8 @@
     "@types/react-dom": "^16.8.3",
     "detect-collisions": "^2.4.3",
     "matter-js": "^0.14.2",
+    "mobx": "^5.13.0",
+    "mobx-react": "^6.1.1",
     "npm": "^6.9.0",
     "pixi.js": "^5.0.2",
     "pixi.js-keyboard": "^1.0.9",

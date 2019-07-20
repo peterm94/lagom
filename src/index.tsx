@@ -40,8 +40,8 @@ serviceWorker.unregister();
 //     default:
 //         new Platformer();
 // }
-// const game = new Platformer();
-const game = new MatterAsteroids();
+const game = new Platformer();
+// const game = new MatterAsteroids();
 
 ReactDOM.render(
     <div>

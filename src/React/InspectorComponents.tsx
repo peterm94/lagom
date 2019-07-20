@@ -1,7 +1,9 @@
 import * as React from 'react';
 import {Game} from "../ECS/Game";
 import {Inspector} from "../Inspector/Inspector";
+import {observer} from "mobx-react";
 
+@observer
 export class InspectorComponent extends React.Component<{ game: Game }, {}>
 {
     private inspector: Inspector;
@@ -9,38 +11,50 @@ export class InspectorComponent extends React.Component<{ game: Game }, {}>
     constructor(props: { game: Game })
     {
         super(props);
-        this.inspector = props.game.currentScene.addGlobalSystem(new Inspector(this));
+        this.inspector = props.game.currentScene.addGlobalSystem(new Inspector());
     }
 
     render()
     {
         return <div>
-            <EntityList/>
-            <EntityInfo/>
+            <EntityList inspector={this.inspector}/>
+            <EntityInfo inspector={this.inspector}/>
         </div>;
     }
 }
 
-export class EntityList extends React.Component<{}, { entities: string[] }>
+@observer
+export class EntityList extends React.Component<{ inspector: Inspector }>
 {
-    constructor(props: {})
-    {
-        super(props);
-        this.state = {entities: []}
-    }
-
     render()
     {
-        return (<ul>{this.state.entities.map((item, idx) => {
-            return <li key={idx}>{item}</li>
+        const entities = this.props.inspector.entities;
+
+        return (<ul>{entities.map((item, idx) => {
+            return <li key={idx}>
+                <button onClick={this.entitySelected.bind(this, idx)} key={idx}>{item}</button>
+            </li>
         })}</ul>)
+    }
+
+    private entitySelected(idx: number)
+    {
+        this.props.inspector.selectEntity(idx)
     }
 }
 
-export class EntityInfo extends React.Component<{}, {}>
+@observer
+export class EntityInfo extends React.Component<{ inspector: Inspector }, {}>
 {
     render()
     {
-        return <div>hello</div>;
+        const entity = this.props.inspector.inspectingEntity;
+        if (entity !== null)
+        {
+            return (<ul>{entity.components.map((item, idx) => {
+                return <li key={idx}>{item.constructor.name}</li>
+            })}</ul>)
+        }
+        return null;
     }
 }
