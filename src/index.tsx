@@ -46,6 +46,6 @@ const game = new Platformer();
 ReactDOM.render(
     <div>
         <LagomGameComponent game={game}/>
-        {/*<InspectorComponent game={game}/>*/}
+        <InspectorComponent game={game}/>
     </div>,
     document.getElementById("root"));

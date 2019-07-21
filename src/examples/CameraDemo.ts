@@ -4,9 +4,8 @@ import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {
     CircleCollider,
-    DetectActive, DetectActiveCollisionSystem,
+    DetectActive,
     DetectCollider,
-    DetectCollisionsSystem,
     RectCollider
 } from "../DetectCollisions/DetectCollisions";
 import {Component} from "../ECS/Component";
@@ -80,12 +79,10 @@ export class CameraDemo extends Scene
 
         this.addSystem(new PlayerMover());
 
-        this.addSystem(new DetectCollisionsSystem(collisions));
-        this.addSystem(new DetectActiveCollisionSystem());
+        // this.addSystem(new DetectCollisionsSystem(collisions));
+        // this.addSystem(new DetectActiveCollisionSystem());
         this.addGlobalSystem(new ScreenShaker());
         this.addEntity(new Diagnostics("blue"));
-        // this.addSystem(new SolidSystem());
-        // this.addGlobalSystem(new Inspector());
         this.addEntity(new Square(50, 50));
         this.addEntity(new CircleBoy(200, 200));
         this.addEntity(new Player("player", 256, 256));

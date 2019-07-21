@@ -6,12 +6,9 @@ import {Collisions, Polygon, Body, Result, Circle, Point} from "detect-collision
 import {LagomType} from "../ECS/LifecycleObject";
 import {System} from "../ECS/System";
 import {Entity} from "../ECS/Entity";
-// TODO -- one system for PlatformerPhysics(), DetectCollisionsSystem and DetectActiveCollisionSystem.
-// TODO -- make DetectActive the new PhysicsVars
 // TODO -- add trigger types, use the events
 // TODO -- add a static property to optimise checks? might not need this.
-// TODO -- add a system for gravity, should probably be external
-export class DetectCollisionsSystem extends System
+export class DetectActiveCollisionSystem extends System
 {
     readonly detectSystem: Collisions;
     readonly collisionMatrix: CollisionMatrix;
@@ -28,65 +25,6 @@ export class DetectCollisionsSystem extends System
         super.onAdded();
     }
 
-    update(delta: number): void
-    {
-        // Move all entities to their new positions
-        this.runOnEntities((entity: Entity, collider: DetectCollider) => {
-
-            collider.body.x = entity.transform.x + collider.xOff;
-            collider.body.y = entity.transform.y + collider.yoff;
-
-            // Polygons can rotate
-            if (collider.body instanceof Polygon)
-            {
-                collider.body.angle = entity.transform.angle;
-            }
-        });
-
-        // We don't need a delta, this is a pure collision checking system. No physics.
-        // Allow the system to process the changes.
-        this.detectSystem.update();
-    }
-
-    types(): LagomType<Component>[]
-    {
-        return [DetectCollider];
-    }
-
-    instanceAt(x: number, y: number, ...layers: number[]): boolean
-    {
-        // TODO this is dumb, please let there be a better way
-        const point = new Point(x, y);
-        this.detectSystem.insert(point);
-        for (let potential of this.detectSystem.potentials(point))
-        {
-            const otherComp = (<any>potential).lagom_component;
-            if (!layers.includes(otherComp.layer)) continue;
-
-            if (point.collides(potential))
-            {
-                this.detectSystem.remove(point);
-                Log.debug(x, y, true);
-                return true;
-            }
-        }
-        this.detectSystem.remove(point);
-        Log.debug(x, y, false);
-        return false;
-    }
-}
-
-
-export class DetectActiveCollisionSystem extends System
-{
-    private frame = 0;
-    private engine!: DetectCollisionsSystem;
-
-    onAdded(): void
-    {
-        super.onAdded();
-    }
-
     types(): LagomType<Component>[]
     {
         return [DetectCollider, DetectActive];
@@ -94,20 +32,27 @@ export class DetectActiveCollisionSystem extends System
 
     update(delta: number): void
     {
-        this.frame++;
-        if (this.frame < 2) return;
-        if (this.frame == 2)
-        {
-            const engine = this.getScene().getSystem<DetectCollisionsSystem>(DetectCollisionsSystem);
-            if (engine === null)
-            {
-                Log.error("DetectActiveCollisionSystem must be added to a Scene after a DetectCollisionsSystem.")
-            }
-            else
-            {
-                this.engine = engine;
-            }
-        }
+        // TODO we may be able to do this more efficiently?
+        // Step 1, move everything in the engine
+        this.runOnEntities((entity: Entity, collider: DetectCollider, body: DetectActive) => {
+
+            body.lastX = collider.body.x - collider.xOff;
+            body.lastY = collider.body.y - collider.yOff;
+
+            // TODO We may have desynced from the actual entity pos if something else interfered.
+            collider.body.x += body.pendingX;
+            collider.body.y += body.pendingY;
+
+            // TODO handle angles as above for rotation changes. can circles rotate? i think so.
+
+            body.pendingX = 0;
+            body.pendingY = 0;
+        });
+
+        // Update positions in the engine.
+        this.detectSystem.update();
+
+        // Step 2, detect collisions
         this.runOnEntities((entity: Entity, collider: DetectCollider) => {
 
             const collidersLastFrame = collider.collidersLastFrame;
@@ -120,7 +65,7 @@ export class DetectActiveCollisionSystem extends System
                 const result = new Result();
 
                 // Check layers, then do actual collision check
-                if (this.engine.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                     && collider.body.collides(potential, result))
                 {
                     // Continuous collision
@@ -142,13 +87,55 @@ export class DetectActiveCollisionSystem extends System
             collidersLastFrame.forEach(val => collider.onCollisionExit.trigger(collider, val));
         });
 
-        // TODO will this work? who knows
-        this.engine.update(delta);
+        // Step 4, move entities to resolved locations
+        this.runOnEntities((entity: Entity, collider: DetectCollider) => {
+            entity.transform.x = collider.body.x - collider.xOff;
+            entity.transform.y = collider.body.y - collider.yOff;
+        });
+
+        // Update again with final positions.
+        this.detectSystem.update();
+    }
+
+    addBody(body: DetectCollider)
+    {
+        this.detectSystem.insert(body.body);
+        body.onCollision.register(this.resolveCollision);
+    }
+
+    removeBody(body: DetectCollider)
+    {
+        this.detectSystem.remove(body.body);
+        body.onCollision.deregister(this.resolveCollision);
+    }
+
+    resolveCollision(caller: DetectCollider, data: { other: DetectCollider, result: Result })
+    {
+        // Step 3, resolve collisions
+        caller.body.x -= data.result.overlap_x * data.result.overlap;
+        caller.body.y -= data.result.overlap_y * data.result.overlap;
     }
 }
 
 export class DetectActive extends Component
 {
+    pendingX = 0;
+    pendingY = 0;
+
+    lastX: number = 0;
+    lastY: number = 0;
+
+    move(x: number, y: number)
+    {
+        this.pendingX += x;
+        this.pendingY += y;
+    }
+
+    dir()
+    {
+        const pos = this.getEntity().transform.position;
+        return [pos.x - this.lastX, pos.y - this.lastY];
+    }
 }
 
 /**
@@ -156,7 +143,7 @@ export class DetectActive extends Component
  */
 export abstract class DetectCollider extends Component
 {
-    private engine: DetectCollisionsSystem | null = null;
+    private engine: DetectActiveCollisionSystem | null = null;
     readonly onCollision: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
     readonly onCollisionEnter: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
     readonly onCollisionExit: Observable<DetectCollider, DetectCollider> = new Observable();
@@ -166,7 +153,7 @@ export abstract class DetectCollider extends Component
 
     collidersLastFrame: DetectCollider[] = [];
 
-    protected constructor(readonly body: Body, readonly xOff: number, readonly  yoff: number, readonly layer: number,
+    protected constructor(readonly body: Body, readonly xOff: number, readonly yOff: number, readonly layer: number,
                           readonly isTrigger: boolean)
     {
         super();
@@ -178,7 +165,7 @@ export abstract class DetectCollider extends Component
     {
         super.onAdded();
 
-        this.engine = this.getEntity().getScene().getSystem(DetectCollisionsSystem);
+        this.engine = this.getEntity().getScene().getSystem(DetectActiveCollisionSystem);
 
         if (this.engine == null)
         {
@@ -186,7 +173,10 @@ export abstract class DetectCollider extends Component
             return;
         }
 
-        this.engine.detectSystem.insert(this.body);
+        this.body.x = this.getEntity().transform.x + this.xOff;
+        this.body.y = this.getEntity().transform.y + this.yOff;
+
+        this.engine.addBody(this);
     }
 
     onRemoved(): void
@@ -195,7 +185,7 @@ export abstract class DetectCollider extends Component
 
         if (this.engine !== null)
         {
-            this.engine.detectSystem.remove(this.body);
+            this.engine.removeBody(this)
         }
     }
 }
