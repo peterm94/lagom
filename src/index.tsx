@@ -10,7 +10,7 @@ import {Platformer} from "./examples/Platformer/Platformer";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {LagomGameComponent} from "./React/LagomGameComponent";
-import {EntityInfo, EntityList, InspectorComponent} from "./React/InspectorComponents";
+import {InspectorComponent} from "./React/InspectorComponents";
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
@@ -46,6 +46,6 @@ const game = new Platformer();
 ReactDOM.render(
     <div>
         <LagomGameComponent game={game}/>
-        <InspectorComponent game={game}/>
+        {/*<InspectorComponent game={game}/>*/}
     </div>,
     document.getElementById("root"));

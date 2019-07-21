@@ -32,7 +32,7 @@ export class TimerSystem extends GlobalSystem
 
     update(delta: number): void
     {
-        this.runOnComponents((timers: Timer<any>[]) => {
+        this.runOnComponents((timers: Timer<unknown>[]) => {
             for (let timer of timers)
             {
                 timer.remainingMS -= delta;

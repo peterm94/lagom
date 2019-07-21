@@ -143,13 +143,13 @@ class Player extends Entity
         sprite.addAnimation(PlayerAnimationStates.WALK,
                             sprites.animatedConfig(
                                 [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
-                                70, 8, 8));
+                                70));
         sprite.addAnimation(PlayerAnimationStates.FALLING,
-                            sprites.animatedConfig([[6, 17]], 0, 8, 8));
+                            sprites.animatedConfig([[6, 17]], 0 ));
         sprite.addAnimation(PlayerAnimationStates.JUMP,
-                            sprites.animatedConfig([[5, 17]], 0, 8, 8));
-        this.addComponent(new RenderCircle(1));
-        const collider = this.addComponent(new RectCollider(-8, -8, 16, 16, Layers.PLAYER));
+                            sprites.animatedConfig([[5, 17]], 0 ));
+        this.addComponent(new RenderCircle(10));
+        const collider = this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
 
         collider.onCollision.register((caller: DetectCollider,
                                        data: { other: DetectCollider, result: Result }) => {
@@ -168,7 +168,7 @@ class Player extends Entity
                 vars.pushY = yMove;
             }
 
-            Log.debug(vars.pushX, vars.pushY);
+            // Log.debug(vars.pushX, vars.pushY);
 
 
         });

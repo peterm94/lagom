@@ -1,7 +1,7 @@
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {LagomType} from "../ECS/LifecycleObject";
 import {Component} from "../ECS/Component";
-import {computed, observable} from "mobx";
+import {observable} from "mobx";
 import {Entity} from "../ECS/Entity";
 
 class EntityStuff
