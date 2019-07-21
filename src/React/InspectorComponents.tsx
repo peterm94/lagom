@@ -2,6 +2,10 @@ import * as React from 'react';
 import {Game} from "../ECS/Game";
 import {Inspector} from "../Inspector/Inspector";
 import {observer} from "mobx-react";
+import {Entity} from "../ECS/Entity";
+import {Log} from "../Common/Util";
+import {Component} from "../ECS/Component";
+import {number} from "prop-types";
 
 @observer
 export class InspectorComponent extends React.Component<{ game: Game }, {}>
@@ -51,9 +55,35 @@ export class EntityInfo extends React.Component<{ inspector: Inspector }, {}>
         const entity = this.props.inspector.inspectingEntity;
         if (entity !== null)
         {
-            return (<ul>{entity.components.map((item, idx) => {
-                return <li key={idx}>{item.constructor.name}</li>
-            })}</ul>)
+            return (<div>{this.basicInfo(entity)}{this.componentList(entity)}</div>)
+        }
+        return null;
+    }
+
+    private componentList(entity: Entity)
+    {
+        return <ul>{entity.components.map((item, idx) => {
+            return <li key={idx}>{item.constructor.name}<pre>{JSON.stringify(item, (key, value) => {
+                if (value instanceof Component)
+                {
+                    return value;
+                }
+                if (!(value instanceof Object))
+                {
+                    return value;
+                }
+                return undefined;
+            }, 4)}</pre></li>
+        })}</ul>;
+    }
+
+    private basicInfo(entity: Entity)
+    {
+        if (this.props.inspector.entityStuff)
+        {
+            return <div>
+                <pre>{JSON.stringify(this.props.inspector.entityStuff, null, 4)}</pre>
+            </div>
         }
         return null;
     }
