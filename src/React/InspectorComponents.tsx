@@ -3,9 +3,7 @@ import {Game} from "../ECS/Game";
 import {Inspector} from "../Inspector/Inspector";
 import {observer} from "mobx-react";
 import {Entity} from "../ECS/Entity";
-import {Log} from "../Common/Util";
 import {Component} from "../ECS/Component";
-import {number} from "prop-types";
 
 @observer
 export class InspectorComponent extends React.Component<{ game: Game }, {}>
@@ -21,8 +19,20 @@ export class InspectorComponent extends React.Component<{ game: Game }, {}>
     render()
     {
         return <div>
-            <EntityList inspector={this.inspector}/>
-            <EntityInfo inspector={this.inspector}/>
+            <table>
+                <tr>
+                    <th>Entities</th>
+                    <th>Entity Info</th>
+                </tr>
+                <tr>
+                    <td>
+                        <EntityList inspector={this.inspector}/>
+                    </td>
+                    <td>
+                        <EntityInfo inspector={this.inspector}/>
+                    </td>
+                </tr>
+            </table>
         </div>;
     }
 }
@@ -63,17 +73,20 @@ export class EntityInfo extends React.Component<{ inspector: Inspector }, {}>
     private componentList(entity: Entity)
     {
         return <ul>{entity.components.map((item, idx) => {
-            return <li key={idx}>{item.constructor.name}<pre>{JSON.stringify(item, (key, value) => {
-                if (value instanceof Component)
-                {
-                    return value;
-                }
-                if (!(value instanceof Object))
-                {
-                    return value;
-                }
-                return undefined;
-            }, 4)}</pre></li>
+            return <li key={idx}>{item.constructor.name}
+                <pre>{JSON.stringify(item, (key: string, value: any) => {
+                    if (value instanceof Component)
+                    {
+                        return value;
+                    }
+                    // Ignore the warning, it works.
+                    if (!(value instanceof Object))
+                    {
+                        return value;
+                    }
+                    return undefined;
+                }, 4)}</pre>
+            </li>
         })}</ul>;
     }
 
