@@ -5,7 +5,7 @@ import spr_guy from './resources/guy.png';
 import {Game} from "../ECS/Game";
 import {Diagnostics} from "../Common/Debug";
 import {Sprite} from "../Common/PIXIComponents";
-import {MatterEngine, MCollider} from "../MatterPhysics/MatterPhysics";
+import {MatterEngine} from "../MatterPhysics/MatterPhysics";
 import * as Matter from "matter-js";
 import {Vector} from "matter-js";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
@@ -14,6 +14,7 @@ import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
 import {Scene} from "../ECS/Scene";
 import {LagomType} from "../ECS/LifecycleObject";
+import {MCollider} from "../MatterPhysics/MatterColliders";
 
 const Keyboard = require('pixi.js-keyboard');
 

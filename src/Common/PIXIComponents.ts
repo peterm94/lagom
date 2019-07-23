@@ -31,8 +31,11 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
     {
         super(new PIXI.Sprite(texture));
 
+        this.pixiObj.x += offsetX;
+        this.pixiObj.y += offsetY;
+        // TODO I don't think I want the anchor. Do I?
         // Set the anchor point. It works using a percentage of the width/height
-        this.pixiObj.anchor.set(offsetX / texture.width, offsetY / texture.height);
+        // this.pixiObj.anchor.set(offsetX / texture.width, offsetY / texture.height);
     }
 
     private _xScale: number = 1;

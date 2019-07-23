@@ -18,6 +18,10 @@ import {Diagnostics} from "../../Common/Debug";
 import {Vector} from "matter-js";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {RectCollider} from "../../DetectCollisions/Colliders";
+import {MatterEngine} from "../../MatterPhysics/MatterPhysics";
+import {MRectCollider} from "../../MatterPhysics/MatterColliders";
+import {debug} from "util";
+import * as Matter from "matter-js";
 
 const Keyboard = require('pixi.js-keyboard');
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
@@ -58,14 +62,11 @@ class MainScene extends Scene
         this.addEntity(new Diagnostics("white", 2));
 
         this.addSystem(new PlayerMover());
-        this.addSystem(new GravitySystem());
-        // this.addSystem(new PlatformerPhysics());
-        // this.addSystem(new DetectCollisionsSystem(collisionMatrix));
-        this.addSystem(new DetectActiveCollisionSystem(collisionMatrix));
+        // this.addSystem(new GravitySystem());
+        // this.addSystem(new DetectActiveCollisionSystem(collisionMatrix));
         this.addSystem(new PlayerAnimationSystem());
 
-        // this.addSystem(new PlatformerPhysicsPost());
-
+        this.addGlobalSystem(new MatterEngine(collisionMatrix, Vector.create(0, 0), true));
 
         this.addGlobalSystem(new FrameTriggerSystem());
 
@@ -107,10 +108,14 @@ class Block extends Entity
     onAdded(): void
     {
         super.onAdded();
-        this.addComponent(sprites.sprite(this.tileId, 0));
-        this.addComponent(new RectCollider(0, 0, 16, 16, Layers.SOLIDS));
-        this.addComponent(new RenderRect(16, 16, 0, 0));
-
+        this.addComponent(sprites.sprite(this.tileId, 0, -8, -8));
+        // this.addComponent(new RectCollider(0, 0, 16, 16, Layers.SOLIDS));
+        // TODO if this is offset, the rotations goes wacky because it is from the origin of the entity. this is fine?
+        // The collider anchor is the middle of the rectangle. This is strange, everything else has been anchored
+        // top left.
+        this.addComponent(new MRectCollider(0, 0, 16, 16,
+                                            {layer: Layers.SOLIDS, isStatic: true}));
+        this.addComponent(new RenderRect(16, 16, -8, -8));
     }
 }
 
@@ -135,10 +140,10 @@ class Player extends Entity
         // this.addComponent(new GravityAware());
         this.addComponent(new PlayerControlled());
         this.addComponent(new DetectActive());
-        
+
         const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
         sprite.addAnimation(PlayerAnimationStates.IDLE,
-                            sprites.animatedConfig([[0, 16], [2, 16]], 350, 8, 8));
+                            sprites.animatedConfig([[0, 16], [2, 16]], 350, -8, -8));
         sprite.addAnimation(PlayerAnimationStates.WALK,
                             sprites.animatedConfig(
                                 [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
@@ -149,8 +154,8 @@ class Player extends Entity
                             sprites.animatedConfig([[5, 17]], 0));
         this.addComponent(new RenderCircle(10));
         this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
+        this.addComponent(new MRectCollider(0, 0, 8, 16, {layer: Layers.PLAYER}));
         this.addComponent(new RenderRect(8, 16, -4, -8));
-
     }
 }
 
@@ -240,29 +245,36 @@ class PlayerMover extends System
 
     types(): LagomType<Component>[]
     {
-        return [DetectActive, PlayerControlled];
+        return [MRectCollider, PlayerControlled];
     }
 
-    update(delta: number): void
+    update()
     {
-        this.runOnEntities((entity: Entity, body: DetectActive) => {
+    }
+
+    fixedUpdate(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, body: MRectCollider) => {
 
             // body.xVelocity = 0;
+            Matter.Body.translate(body.body, Vector.create(0, 0.1 * delta));
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
             {
-                body.move(-this.mSpeed * delta, 0);
+                // body.move(-this.mSpeed * delta, 0);
+                Matter.Body.translate(body.body, Vector.create(-this.mSpeed * delta, 0));
             }
             if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
             {
-                body.move(this.mSpeed * delta, 0);
-
+                // body.move(this.mSpeed * delta, 0);
+                Matter.Body.translate(body.body, Vector.create(this.mSpeed * delta, 0));
             }
             if (Keyboard.isKeyPressed('ArrowUp', 'KeyW'))
             {
                 // TODO if grounded
                 // body.yVelocity = -0.15;
             }
+
         });
     }
 }
