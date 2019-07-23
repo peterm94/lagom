@@ -135,20 +135,18 @@ class Player extends Entity
         // this.addComponent(new GravityAware());
         this.addComponent(new PlayerControlled());
         this.addComponent(new DetectActive());
-
-        this.addComponent(sprites.sprite(0, 16, 8, 8));
-
-        // const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
-        // sprite.addAnimation(PlayerAnimationStates.IDLE,
-        //                     sprites.animatedConfig([[0, 16], [2, 16]], 350, 8, 8));
-        // sprite.addAnimation(PlayerAnimationStates.WALK,
-        //                     sprites.animatedConfig(
-        //                         [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
-        //                         70));
-        // sprite.addAnimation(PlayerAnimationStates.FALLING,
-        //                     sprites.animatedConfig([[6, 17]], 0));
-        // sprite.addAnimation(PlayerAnimationStates.JUMP,
-        //                     sprites.animatedConfig([[5, 17]], 0));
+        
+        const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
+        sprite.addAnimation(PlayerAnimationStates.IDLE,
+                            sprites.animatedConfig([[0, 16], [2, 16]], 350, 8, 8));
+        sprite.addAnimation(PlayerAnimationStates.WALK,
+                            sprites.animatedConfig(
+                                [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
+                                70));
+        sprite.addAnimation(PlayerAnimationStates.FALLING,
+                            sprites.animatedConfig([[6, 17]], 0));
+        sprite.addAnimation(PlayerAnimationStates.JUMP,
+                            sprites.animatedConfig([[5, 17]], 0));
         this.addComponent(new RenderCircle(10));
         this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
         this.addComponent(new RenderRect(8, 16, -4, -8));
