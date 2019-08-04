@@ -27,6 +27,16 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
         this._xScale = value;
     }
 
+    set anchorX(value: number)
+    {
+        this.pixiObj.anchor.x = value;
+    }
+
+    set anchorY(value: number)
+    {
+        this.pixiObj.anchor.y = value;
+    }
+
     constructor(texture: PIXI.Texture, offsetX: number = 0, offsetY: number = 0)
     {
         super(new PIXI.Sprite(texture));
@@ -55,6 +65,8 @@ export interface AnimatedSpriteConfig
     animationSpeed: number;
     offsetX?: number;
     offsetY?: number;
+    anchorX?: number;
+    anchorY?: number
     animationEndAction: AnimationEnd;
 }
 

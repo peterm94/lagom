@@ -46,7 +46,7 @@ export class SpriteSheet
     }
 
     animatedConfig(frames: [number, number][], animationSpeed: number, offX?: number, offY?: number, w?: number,
-                   h?: number)
+                   h?: number, anchorX?: number, anchorY?: number)
         : AnimatedSpriteConfig
     {
         const width = w || this.tileWidth;
@@ -64,6 +64,7 @@ export class SpriteSheet
         return {
             textures: textures,
             offsetX: offX, offsetY: offY,
+            anchorX: anchorX, anchorY: anchorY,
             animationSpeed: animationSpeed,
             animationEndAction: AnimationEnd.LOOP
         };

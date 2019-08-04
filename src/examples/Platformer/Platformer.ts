@@ -6,7 +6,7 @@ import {RenderCircle, RenderRect, Sprite, VeryAnimatedSprite} from "../../Common
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/SpriteSheet";
 import {
-    DetectActive, DetectActiveCollisionSystem
+    DetectActiveCollisionSystem
 } from "../../DetectCollisions/DetectCollisions";
 import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
 import {Component} from "../../ECS/Component";
@@ -23,6 +23,7 @@ import {MRectCollider} from "../../MatterPhysics/MatterColliders";
 import {debug} from "util";
 import * as Matter from "matter-js";
 import {Log} from "../../Common/Util";
+import {DetectActive} from "../../DetectCollisions/DetectActive";
 
 const Keyboard = require('pixi.js-keyboard');
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
@@ -135,19 +136,19 @@ class Player extends Entity
         this.addComponent(new PlayerControlled());
         this.addComponent(new DetectActive());
 
-        this.addComponent(sprites.sprite(0, 16, -8, -8));
-        // const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
-        // sprite.addAnimation(PlayerAnimationStates.IDLE,
-        //                     sprites.animatedConfig([[0, 16], [2, 16]], 350));
-        // sprite.addAnimation(PlayerAnimationStates.WALK,
-        //                     sprites.animatedConfig(
-        //                         [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
-        //                         70));
-        // sprite.addAnimation(PlayerAnimationStates.FALLING,
-        //                     sprites.animatedConfig([[6, 17]], 0));
-        // sprite.addAnimation(PlayerAnimationStates.JUMP,
-        //                     sprites.animatedConfig([[5, 17]], 0));
-        this.addComponent(new RenderCircle(10));
+        // this.addComponent(sprites.sprite(0, 16, -8, -8));
+        const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
+        sprite.addAnimation(PlayerAnimationStates.IDLE,
+                            sprites.animatedConfig([[0, 16], [2, 16]], 350, -8, -8));
+        sprite.addAnimation(PlayerAnimationStates.WALK,
+                            sprites.animatedConfig(
+                                [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
+                                70));
+        sprite.addAnimation(PlayerAnimationStates.FALLING,
+                            sprites.animatedConfig([[6, 17]], 0));
+        sprite.addAnimation(PlayerAnimationStates.JUMP,
+                            sprites.animatedConfig([[5, 17]], 0));
+        // this.addComponent(new RenderCircle(10));
         this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
         this.addComponent(new RenderRect(8, 16, -4, -8));
     }
@@ -171,18 +172,17 @@ class PlayerAnimationSystem extends System
             // TODO this makes him face the wrong way when he hits a wall. check update order? maybe it is correct?
             // TODO we might want to take the values from the input/nextframe instead. Although gravity might screw
             // it then....
-            const dir = body.dir();
 
             if (sprite.currentSprite && sprite.currentSprite.sprite)
             {
                 // We are on the ground.
-                if (dir[0] > 0)
+                if (body.dxLastFrame > 0)
                 {
                     // Moving right
                     sprite.setAnimation(PlayerAnimationStates.WALK);
                     sprite.currentSprite.sprite.xScale = 1;
                 }
-                else if (dir[0] < 0)
+                else if (body.dxLastFrame < 0)
                 {
                     // Moving left
                     sprite.setAnimation(PlayerAnimationStates.WALK);
@@ -194,11 +194,11 @@ class PlayerAnimationSystem extends System
                     sprite.setAnimation(PlayerAnimationStates.IDLE);
                 }
                 // We are in the air.
-                if (dir[1] > 0)
+                if (body.dyLastFrame > 0)
                 {
                     sprite.setAnimation(PlayerAnimationStates.FALLING);
                 }
-                else if (dir[1] < 0)
+                else if (body.dyLastFrame < 0)
                 {
                     sprite.setAnimation(PlayerAnimationStates.JUMP);
                 }

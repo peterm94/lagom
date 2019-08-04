@@ -3,7 +3,6 @@ import {Game} from "../ECS/Game";
 import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {
-    DetectActive,
     DetectActiveCollisionSystem} from "../DetectCollisions/DetectCollisions";
 import {Component} from "../ECS/Component";
 import {System} from "../ECS/System";
@@ -15,6 +14,7 @@ import {RenderCircle, RenderRect} from "../Common/PIXIComponents";
 import {Diagnostics} from "../Common/Debug";
 import {LagomType} from "../ECS/LifecycleObject";
 import {CircleCollider, DetectCollider, RectCollider} from "../DetectCollisions/Colliders";
+import {DetectActive} from "../DetectCollisions/DetectActive";
 
 const Keyboard = require('pixi.js-keyboard');
 

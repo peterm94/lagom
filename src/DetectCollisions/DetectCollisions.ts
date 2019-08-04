@@ -6,6 +6,7 @@ import {LagomType} from "../ECS/LifecycleObject";
 import {System} from "../ECS/System";
 import {Entity} from "../ECS/Entity";
 import {DetectCollider} from "./Colliders";
+import {DetectActive} from "./DetectActive";
 // TODO -- add trigger types, use the events
 // TODO -- add a static property to optimise checks? might not need this.
 export class DetectActiveCollisionSystem extends System
@@ -32,6 +33,87 @@ export class DetectActiveCollisionSystem extends System
 
     fixedUpdate(delta: number): void
     {
+        // New thing. Move incrementally, alternating x/y until we are either at the destination or have hit something.
+        this.runOnEntities((entity: Entity, collider: DetectCollider, body: DetectActive) => {
+
+            // TODO gravity extracted
+            body.pendingY = 0.1 * delta;
+
+            const xDir = Math.sign(body.pendingX);
+            let xMag = Math.abs(body.pendingX);
+            const yDir = Math.sign(body.pendingY);
+            let yMag = Math.abs(body.pendingY);
+
+            while (xMag > 0 || yMag > 0)
+            {
+                if (xMag > 0)
+                {
+                    const dx = Math.min(xMag, 1);
+                    collider.body.x += dx * xDir;
+
+                    // Do collision check + resolution
+                    this.detectSystem.update();
+                    const potentials = collider.body.potentials();
+                    for (let potential of potentials)
+                    {
+                        const otherComp = (<any>potential).lagom_component;
+                        const result = new Result();
+
+                        // Check layers, then do actual collision check
+                        if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                            && collider.body.collides(potential, result))
+                        {
+                            // Move out of the collision, we are done in this direction.
+                            collider.body.x -= result.overlap_x * result.overlap;
+                            xMag = 0;
+                        }
+                    }
+                    xMag -= dx;
+                }
+
+                if (yMag > 0)
+                {
+                    const dy = Math.min(yMag, 1);
+                    collider.body.y += dy * yDir;
+
+                    // Do collision check + resolution
+                    this.detectSystem.update();
+                    const potentials = collider.body.potentials();
+                    for (let potential of potentials)
+                    {
+                        const otherComp = (<any>potential).lagom_component;
+                        const result = new Result();
+
+                        // Check layers, then do actual collision check
+                        if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                            && collider.body.collides(potential, result))
+                        {
+                            // Move out of the collision, we are done in this direction.
+                            collider.body.y -= result.overlap_y * result.overlap;
+                            yMag = 0;
+                        }
+                    }
+                    yMag -= dy;
+                }
+            }
+
+            // Do a final update of the system.
+            this.detectSystem.update();
+
+            // Update the body properties.
+            body.pendingY = 0;
+            body.pendingX = 0;
+            body.dxLastFrame = (collider.body.x - collider.xOff) - entity.transform.x;
+            body.dyLastFrame = (collider.body.y - collider.yOff) - entity.transform.y;
+
+            // Update the entity position.
+            entity.transform.x = collider.body.x - collider.xOff;
+            entity.transform.y = collider.body.y - collider.yOff;
+        });
+
+        return;
+
+
         // TODO we may be able to do this more efficiently?
         // Step 1, move everything in the engine
         this.runOnEntities((entity: Entity, collider: DetectCollider, body: DetectActive) => {
@@ -46,8 +128,6 @@ export class DetectActiveCollisionSystem extends System
             collider.body.y += Math.round(body.pendingY);
 
             // TODO handle angles as above for rotation changes. can circles rotate? i think so.
-
-
             body.lastPendingX = body.pendingX;
             body.lastPendingY = body.pendingY;
 
@@ -133,30 +213,6 @@ export class DetectActiveCollisionSystem extends System
     update(delta: number): void
     {
         // We don't do this around here.
-    }
-}
-
-export class DetectActive extends Component
-{
-    pendingX = 0;
-    pendingY = 0;
-
-    lastPendingX = 0;
-    lastPendingY = 0;
-
-    lastX: number = 0;
-    lastY: number = 0;
-
-    move(x: number, y: number)
-    {
-        this.pendingX += x;
-        this.pendingY += y;
-    }
-
-    dir()
-    {
-        const pos = this.getEntity().transform.position;
-        return [pos.x - this.lastX, pos.y - this.lastY];
     }
 }
 
