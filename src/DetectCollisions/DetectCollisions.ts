@@ -36,14 +36,20 @@ export class DetectActiveCollisionSystem extends System
         // Step 1, move everything in the engine
         this.runOnEntities((entity: Entity, collider: DetectCollider, body: DetectActive) => {
 
-            body.lastX = collider.body.x - collider.xOff;
-            body.lastY = collider.body.y - collider.yOff;
+            body.pendingY = 0.1 * delta;
+
+            body.lastX = Math.round(collider.body.x - collider.xOff);
+            body.lastY = Math.round(collider.body.y - collider.yOff);
 
             // TODO We may have desynced from the actual entity pos if something else interfered.
-            collider.body.x += body.pendingX;
-            collider.body.y += body.pendingY;
+            collider.body.x += Math.round(body.pendingX);
+            collider.body.y += Math.round(body.pendingY);
 
             // TODO handle angles as above for rotation changes. can circles rotate? i think so.
+
+
+            body.lastPendingX = body.pendingX;
+            body.lastPendingY = body.pendingY;
 
             body.pendingX = 0;
             body.pendingY = 0;
@@ -53,7 +59,7 @@ export class DetectActiveCollisionSystem extends System
         this.detectSystem.update();
 
         // Step 2, detect collisions
-        this.runOnEntities((entity: Entity, collider: DetectCollider) => {
+        this.runOnEntities((entity: Entity, collider: DetectCollider, body: DetectActive) => {
 
             const collidersLastFrame = collider.collidersLastFrame;
             collider.collidersLastFrame = [];
@@ -68,6 +74,7 @@ export class DetectActiveCollisionSystem extends System
                 if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                     && collider.body.collides(potential, result))
                 {
+                    this.resolveCollision(collider, body, {other: otherComp, result: result});
                     // Continuous collision
                     if (collidersLastFrame.includes(otherComp))
                     {
@@ -100,21 +107,26 @@ export class DetectActiveCollisionSystem extends System
     addBody(body: DetectCollider)
     {
         this.detectSystem.insert(body.body);
-        body.onCollision.register(this.resolveCollision.bind(this));
+        // body.onCollision.register(this.resolveCollision.bind(this));
     }
 
     removeBody(body: DetectCollider)
     {
         this.detectSystem.remove(body.body);
-        body.onCollision.deregister(this.resolveCollision.bind(this));
+        // body.onCollision.deregister(this.resolveCollision.bind(this));
     }
 
-    resolveCollision(caller: DetectCollider, data: { other: DetectCollider, result: Result })
+    resolveCollision(caller: DetectCollider, body: DetectActive, data: { other: DetectCollider, result: Result })
     {
-        Log.warn("DING");
         // Step 3, resolve collisions
         caller.body.x -= data.result.overlap_x * data.result.overlap;
         caller.body.y -= data.result.overlap_y * data.result.overlap;
+
+
+        // TODO retry? do x and y independently, make sure it doesnt try again for ever though
+        // in the line above, only subtract in the smaller direction, then do the coll detection again for the other
+        // movement. inline it, i don't want to affect the rest of the run if possible...... this is kinda crazy and
+        // possibly wrong.
         this.detectSystem.update();
     }
 
@@ -128,6 +140,9 @@ export class DetectActive extends Component
 {
     pendingX = 0;
     pendingY = 0;
+
+    lastPendingX = 0;
+    lastPendingY = 0;
 
     lastX: number = 0;
     lastY: number = 0;

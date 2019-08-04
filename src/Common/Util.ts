@@ -139,7 +139,7 @@ enum LogLevel
 
 export class Log
 {
-    static logLevel: LogLevel = LogLevel.DEBUG;
+    static logLevel: LogLevel = LogLevel.ALL;
 
     static error(...x: any[])
     {

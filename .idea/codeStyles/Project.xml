@@ -1,7 +1,7 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
     <option name="LINE_SEPARATOR" value="&#10;" />
-    <TypeScriptCodeStyleSettings>
+    <TypeScriptCodeStyleSettings version="0">
       <option name="REFORMAT_C_STYLE_COMMENTS" value="true" />
       <option name="OBJECT_LITERAL_WRAP" value="1" />
       <option name="FUNCTION_EXPRESSION_BRACE_STYLE" value="5" />

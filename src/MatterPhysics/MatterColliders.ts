@@ -5,6 +5,8 @@ import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import * as PIXI from "pixi.js";
 import {Log} from "../Common/Util";
 import {MatterEngine} from "./MatterPhysics";
+import {IChamferableBodyDefinition} from "matter-js";
+import {number} from "prop-types";
 
 /**
  * Collider component for matter-js physics.
@@ -27,7 +29,7 @@ export class MCollider extends Component
     readonly onCollision: Observable<MCollider, MCollider> = new Observable();
 
     readonly debugDraw: boolean = true;
-    private engine: MatterEngine | null = null;
+    engine: MatterEngine | null = null;
     private readonly layer: number;
 
     /**
@@ -84,6 +86,8 @@ export class MCollider extends Component
             // TODO not sure what we do with rotation here.....
             Matter.Body.setAngle(this.body, entity.transform.rotation);
 
+            // Matter.Body.setInertia(this.body, Infinity);
+
             // Add the body to the world.
             Matter.World.addBody(this.engine.matterEngine.world, this.body);
         }
@@ -118,8 +122,9 @@ export class MCircleCollider extends MCollider
 export class MRectCollider extends MCollider
 {
     constructor(xOff: number, yOff: number, width: number, height: number,
-                options: { layer: number; isSensor?: boolean; isStatic?: boolean })
+                options: { layer: number; isSensor?: boolean; isStatic?: boolean },
+                rectOptions?: IChamferableBodyDefinition)
     {
-        super(Matter.Bodies.rectangle(0, 0, width, height), xOff, yOff, options);
+        super(Matter.Bodies.rectangle(0, 0, width, height, rectOptions), xOff, yOff, options);
     }
 }
