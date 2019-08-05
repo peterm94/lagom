@@ -1,7 +1,7 @@
 import {Component} from "../ECS/Component";
 import {Log, Util} from "../Common/Util";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
-import {Collisions, Result} from "detect-collisions";
+import {Collisions, Result, Body} from "detect-collisions";
 import {LagomType} from "../ECS/LifecycleObject";
 import {System} from "../ECS/System";
 import {Entity} from "../ECS/Entity";
@@ -38,9 +38,6 @@ export class DetectActiveCollisionSystem extends System
 
             const collidersLastFrame = collider.collidersLastFrame;
             collider.collidersLastFrame = [];
-
-            // TODO gravity extracted
-            body.pendingY = 0.1 * delta;
 
             const xDir = Math.sign(body.pendingX);
             let xMag = Math.abs(body.pendingX);
@@ -154,6 +151,38 @@ export class DetectActiveCollisionSystem extends System
     update(delta: number): void
     {
         // We don't do this around here.
+    }
+
+    place_free(collider: DetectCollider, dx: number, dy: number): boolean
+    {
+        // Try moving to the destination.
+        const currX = collider.body.x;
+        const currY = collider.body.y;
+
+        collider.body.x += dx;
+        collider.body.y += dy;
+
+        this.detectSystem.update();
+
+        const potentials = collider.body.potentials();
+        for (let potential of potentials)
+        {
+            const otherComp = (<any>potential).lagom_component as DetectCollider;
+
+            if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                && collider.body.collides(potential))
+            {
+                collider.body.x = currX;
+                collider.body.y = currY;
+                this.detectSystem.update();
+                return false;
+            }
+        }
+
+        collider.body.x = currX;
+        collider.body.y = currY;
+        this.detectSystem.update();
+        return true;
     }
 }
 

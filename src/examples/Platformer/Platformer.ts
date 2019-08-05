@@ -17,10 +17,9 @@ import world1 from "./resources/World1.json";
 import {Diagnostics} from "../../Common/Debug";
 import {Vector} from "matter-js";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
-import {RectCollider} from "../../DetectCollisions/Colliders";
+import {DetectCollider, RectCollider} from "../../DetectCollisions/Colliders";
 import {MatterEngine} from "../../MatterPhysics/MatterPhysics";
 import {MRectCollider} from "../../MatterPhysics/MatterColliders";
-import {debug} from "util";
 import * as Matter from "matter-js";
 import {Log} from "../../Common/Util";
 import {DetectActive} from "../../DetectCollisions/DetectActive";
@@ -64,7 +63,7 @@ class MainScene extends Scene
         this.addEntity(new Diagnostics("white", 2));
 
         this.addSystem(new PlayerMover());
-        // this.addSystem(new GravitySystem());
+        this.addSystem(new GravitySystem());
         this.addSystem(new DetectActiveCollisionSystem(collisionMatrix));
         this.addSystem(new PlayerAnimationSystem());
 
@@ -132,23 +131,22 @@ class Player extends Entity
     onAdded(): void
     {
         super.onAdded();
-        // this.addComponent(new GravityAware());
+        this.addComponent(new GravityAware());
         this.addComponent(new PlayerControlled());
         this.addComponent(new DetectActive());
 
-        // this.addComponent(sprites.sprite(0, 16, -8, -8));
-        const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
-        sprite.addAnimation(PlayerAnimationStates.IDLE,
-                            sprites.animatedConfig([[0, 16], [2, 16]], 350, -8, -8));
-        sprite.addAnimation(PlayerAnimationStates.WALK,
-                            sprites.animatedConfig(
-                                [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
-                                70));
-        sprite.addAnimation(PlayerAnimationStates.FALLING,
-                            sprites.animatedConfig([[6, 17]], 0));
-        sprite.addAnimation(PlayerAnimationStates.JUMP,
-                            sprites.animatedConfig([[5, 17]], 0));
-        // this.addComponent(new RenderCircle(10));
+        this.addComponent(sprites.sprite(0, 16, -8, -8));
+        // const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
+        // sprite.addAnimation(PlayerAnimationStates.IDLE,
+        //                     sprites.animatedConfig([[0, 16], [2, 16]], 350, -8, -8));
+        // sprite.addAnimation(PlayerAnimationStates.WALK,
+        //                     sprites.animatedConfig(
+        //                         [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
+        //                         70));
+        // sprite.addAnimation(PlayerAnimationStates.FALLING,
+        //                     sprites.animatedConfig([[6, 17]], 0));
+        // sprite.addAnimation(PlayerAnimationStates.JUMP,
+        //                     sprites.animatedConfig([[5, 17]], 0));
         this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
         this.addComponent(new RenderRect(8, 16, -4, -8));
     }
@@ -239,7 +237,7 @@ class PlayerMover extends System
 
     types(): LagomType<Component>[]
     {
-        return [DetectActive, PlayerControlled];
+        return [DetectActive, DetectCollider, PlayerControlled];
     }
 
     update()
@@ -248,7 +246,7 @@ class PlayerMover extends System
 
     fixedUpdate(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectActive) => {
+        this.runOnEntities((entity: Entity, body: DetectActive, collider: DetectCollider) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
             {
@@ -260,8 +258,12 @@ class PlayerMover extends System
             }
             if (Keyboard.isKeyPressed('ArrowUp', 'KeyW'))
             {
-                // TODO if grounded
-                // body.yVelocity = -0.15;
+                Log.error("Press");
+                if (!collider.place_free(0, 2))
+                {
+                    Log.error("Jump");
+                    body.move(0, -10);
+                }
             }
         });
     }

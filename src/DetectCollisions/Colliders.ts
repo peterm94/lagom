@@ -54,6 +54,12 @@ export abstract class DetectCollider extends Component
             this.engine.removeBody(this)
         }
     }
+
+    place_free(dx: number, dy: number): boolean
+    {
+        if (this.engine) return this.engine.place_free(this, dx, dy);
+        return true;
+    }
 }
 
 /**
