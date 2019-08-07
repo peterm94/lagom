@@ -146,7 +146,8 @@ export class Game extends ContainerLifecycleObject
         // Mouse.update();
         this.currentScene.update(delta);
 
-        // TODO check if this should be here or in fixed
+        // TODO this is fine here, but we should document it. If something in fixedUpdate() is looking for keyboard
+        //  events it is going to have a bad time.
         Keyboard.update();
     }
 

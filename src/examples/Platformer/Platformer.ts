@@ -216,11 +216,15 @@ class GravitySystem extends System
         return [DetectActive, GravityAware];
     }
 
-    update(delta: number): void
+    fixedUpdate(delta: number): void
     {
         this.runOnEntities((entity: Entity, body: DetectActive) => {
             body.addForce(0, 0.0005);
         });
+    }
+
+    update(delta: number): void
+    {
     }
 }
 
@@ -240,8 +244,17 @@ class PlayerMover extends System
         return [DetectActive, DetectCollider, PlayerControlled];
     }
 
-    update()
+    update(delta: number): void
     {
+        this.runOnEntities((entity: Entity, body: DetectActive, collider: DetectCollider) => {
+            if (Keyboard.isKeyPressed('ArrowUp', 'KeyW'))
+            {
+                if (!collider.place_free(0, 2))
+                {
+                    body.addForce(0, -0.012);
+                }
+            }
+        });
     }
 
     fixedUpdate(delta: number): void
@@ -255,15 +268,6 @@ class PlayerMover extends System
             if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
             {
                 body.move(this.mSpeed * delta, 0);
-            }
-            if (Keyboard.isKeyPressed('ArrowUp', 'KeyW'))
-            {
-                Log.error("Press");
-                if (!collider.place_free(0, 2))
-                {
-                    Log.error("Jump");
-                    body.addForce(0, -0.012);
-                }
             }
         });
     }
