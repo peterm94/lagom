@@ -36,6 +36,8 @@ export class DetectActiveCollisionSystem extends System
         // New thing. Move incrementally, alternating x/y until we are either at the destination or have hit something.
         this.runOnEntities((entity: Entity, collider: DetectCollider, body: DetectActive) => {
 
+            body.applyForce(delta);
+
             const collidersLastFrame = collider.collidersLastFrame;
             collider.collidersLastFrame = [];
 
@@ -66,6 +68,8 @@ export class DetectActiveCollisionSystem extends System
                             // Move out of the collision, we are done in this direction.
                             collider.body.x -= result.overlap_x * result.overlap;
                             xMag = 0;
+                            body.velocityX = 0;
+
 
                             DetectActiveCollisionSystem.fireCollisionEvents(collidersLastFrame,
                                                                             otherComp, collider, result);
@@ -94,6 +98,7 @@ export class DetectActiveCollisionSystem extends System
                             // Move out of the collision, we are done in this direction.
                             collider.body.y -= result.overlap_y * result.overlap;
                             yMag = 0;
+                            body.velocityY = 0;
 
                             DetectActiveCollisionSystem.fireCollisionEvents(collidersLastFrame,
                                                                             otherComp, collider, result);

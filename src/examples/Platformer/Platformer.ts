@@ -219,7 +219,7 @@ class GravitySystem extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity, body: DetectActive) => {
-            body.move(0, 0.1 * delta);
+            body.addForce(0, 0.0005);
         });
     }
 }
@@ -262,7 +262,7 @@ class PlayerMover extends System
                 if (!collider.place_free(0, 2))
                 {
                     Log.error("Jump");
-                    body.move(0, -10);
+                    body.addForce(0, -0.012);
                 }
             }
         });
