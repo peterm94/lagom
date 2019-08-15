@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import {AnimatedSprite, AnimatedSpriteConfig, AnimationEnd, Sprite} from "./PIXIComponents";
+import {AnimatedSprite, AnimatedSpriteConfig, AnimationEnd, Sprite, SpriteConfig} from "./PIXIComponents";
 
 /**
  * Convenient way to load multiple sprites from a single spritesheet.
@@ -26,34 +26,22 @@ export class SpriteSheet
         this.sheetTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
     }
 
-    /**
-     * Create a sprite from the loaded sheet.
-     * @param column The column of the sprite.
-     * @param row The row of the sprite.
-     * @param w The width of the sprite. If not set, will default to the initialized width.
-     * @param h The height of the sprite. If not set, will default to the initialized height.
-     * @returns The created sprite.
-     */
-    sprite(column: number, row: number, offX?: number, offY?: number, w?: number, h?: number): Sprite
+    texture(column: number, row: number, w?: number, h?: number): PIXI.Texture
     {
         const width = w || this.tileWidth;
         const height = h || this.tileHeight;
 
-        const texture = new PIXI.Texture(this.sheetTexture, new PIXI.Rectangle(column * this.tileWidth,
-                                                                               row * this.tileHeight,
-                                                                               width, height));
-        return new Sprite(texture, offX, offY);
+        return new PIXI.Texture(this.sheetTexture, new PIXI.Rectangle(column * this.tileWidth,
+                                                                      row * this.tileHeight,
+                                                                      width, height));
     }
 
-    animatedConfig(frames: [number, number][], animationSpeed: number, offX?: number, offY?: number, w?: number,
-                   h?: number, anchorX?: number, anchorY?: number)
-        : AnimatedSpriteConfig
+    textures(frames: [number, number][], w?: number, h?: number): PIXI.Texture[]
     {
         const width = w || this.tileWidth;
         const height = h || this.tileHeight;
 
         const textures = [];
-
         for (let frame of frames)
         {
             textures.push(new PIXI.Texture(this.sheetTexture, new PIXI.Rectangle(frame[0] * this.tileWidth,
@@ -61,26 +49,6 @@ export class SpriteSheet
                                                                                  width, height)));
         }
 
-        return {
-            textures: textures,
-            offsetX: offX, offsetY: offY,
-            anchorX: anchorX, anchorY: anchorY,
-            animationSpeed: animationSpeed,
-            animationEndAction: AnimationEnd.LOOP
-        };
-    }
-
-    /**
-     * Create a custom sprite from the loaded sheet.
-     * @param x The x offset to the top left corner of the sprite.
-     * @param y The y offset to the top left corner of the sprite.
-     * @param w The width of the sprite.
-     * @param h The height of the sprite.
-     * @returns The created sprite.
-     */
-    spriteExt(x: number, y: number, w: number, h: number): Sprite
-    {
-        const texture = new PIXI.Texture(this.sheetTexture, new PIXI.Rectangle(x, y, w, h));
-        return new Sprite(texture);
+        return textures;
     }
 }

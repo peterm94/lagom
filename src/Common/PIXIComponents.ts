@@ -1,55 +1,26 @@
-import {Component, PIXIComponent} from "../ECS/Component";
+import {PIXIComponent} from "../ECS/Component";
 import * as PIXI from "pixi.js";
-import {FrameTrigger} from "./FrameTrigger";
+import {FrameTrigger, IFrameTrigger, Trigger} from "./FrameTrigger";
 import {Log} from "./Util";
 
 export class Sprite extends PIXIComponent<PIXI.Sprite>
 {
-    get yScale(): number
-    {
-        return this._yScale;
-    }
-
-    set yScale(value: number)
-    {
-        this.pixiObj.scale.y = value;
-        this._yScale = value;
-    }
-
-    get xScale(): number
-    {
-        return this._xScale;
-    }
-
-    set xScale(value: number)
-    {
-        this.pixiObj.scale.x = value;
-        this._xScale = value;
-    }
-
-    set anchorX(value: number)
-    {
-        this.pixiObj.anchor.x = value;
-    }
-
-    set anchorY(value: number)
-    {
-        this.pixiObj.anchor.y = value;
-    }
-
-    constructor(texture: PIXI.Texture, offsetX: number = 0, offsetY: number = 0)
+    constructor(texture: PIXI.Texture, config: SpriteConfig | null = null)
     {
         super(new PIXI.Sprite(texture));
 
-        this.pixiObj.x += offsetX;
-        this.pixiObj.y += offsetY;
-        // TODO I don't think I want the anchor. Do I?
-        // Set the anchor point. It works using a percentage of the width/height
-        // this.pixiObj.anchor.set(offsetX / texture.width, offsetY / texture.height);
+        if (config) this.applyConfig(config);
     }
 
-    private _xScale: number = 1;
-    private _yScale: number = 1;
+    public applyConfig(config: SpriteConfig)
+    {
+        if (config.xOffset) this.pixiObj.x = config.xOffset;
+        if (config.yOffset) this.pixiObj.y = config.yOffset;
+        if (config.xAnchor) this.pixiObj.anchor.x = config.xAnchor;
+        if (config.yAnchor) this.pixiObj.anchor.y = config.yAnchor;
+        if (config.xScale) this.pixiObj.scale.x = config.xScale;
+        if (config.yScale) this.pixiObj.scale.y = config.yScale;
+    }
 }
 
 export enum AnimationEnd
@@ -59,134 +30,132 @@ export enum AnimationEnd
     LOOP
 }
 
-export interface AnimatedSpriteConfig
+export interface SpriteConfig
 {
-    readonly textures: PIXI.Texture[];
-    animationSpeed: number;
-    offsetX?: number;
-    offsetY?: number;
-    anchorX?: number;
-    anchorY?: number
-    animationEndAction: AnimationEnd;
+    xOffset?: number;
+    yOffset?: number;
+    xAnchor?: number;
+    yAnchor?: number;
+    xScale?: number;
+    yScale?: number
 }
 
-export class AnimatedSprite extends FrameTrigger<number>
+
+// TODO extend from SpriteConfig?
+export interface AnimatedSpriteConfig
 {
-    get sprite(): Sprite | null
-    {
-        return this._sprite;
-    }
+    textures: PIXI.Texture[];
+    animationSpeed?: number;
+    animationEndAction?: AnimationEnd;
+}
+
+export class AnimatedSprite extends Sprite implements IFrameTrigger<number>
+{
+    trigger: Trigger<number>;
 
     private frameIndex: number = 0;
     private frameAdvancer: number = 1;
-    private _sprite: Sprite | null = null;
 
-    applyConfiguration(config: AnimatedSpriteConfig)
+    textures: PIXI.Texture[] = [];
+    animationSpeed: number = 0;
+    animationEndAction: AnimationEnd = AnimationEnd.LOOP;
+
+    applyAnimConfig(config: SpriteConfig, animConfig: AnimatedSpriteConfig)
     {
-        this.config = config;
+        // Apply base sprite config
+        super.applyConfig(config);
+
+        // Do animated sprite stuff
+        this.textures = animConfig.textures;
+        this.animationSpeed = animConfig.animationSpeed || 0;
+        this.animationEndAction = animConfig.animationEndAction || AnimationEnd.LOOP;
+
+        // Do trigger stuff
         this.frameIndex = 0;
         this.frameAdvancer = 1;
 
-        this.triggerInterval = config.animationSpeed;
-        this.reset();
+        this.trigger.triggerInterval = this.animationSpeed;
+        this.trigger.reset();
     }
 
-    constructor(private config: AnimatedSpriteConfig)
+    constructor(spriteConfig: SpriteConfig,
+                animConfig: AnimatedSpriteConfig)
     {
-        super(config.animationSpeed);
+        super(animConfig.textures[0], spriteConfig);
 
-        this.onTrigger.register((caller: FrameTrigger<number>, currFrame: number) => {
-            if (this._sprite != null)
+        this.applyAnimConfig(spriteConfig, animConfig);
+
+        this.trigger = new Trigger<number>(this.animationSpeed);
+
+        this.trigger.onTrigger.register((caller: FrameTrigger<number>, currFrame: number) => {
+
+            let nextFrame = this.frameIndex + this.frameAdvancer;
+
+            // Check for after last or first frame to trigger the end action.
+            if (nextFrame == -1 || nextFrame == this.textures.length)
             {
-                let nextFrame = this.frameIndex + this.frameAdvancer;
-
-                // Check for after last or first frame to trigger the end action.
-                if (nextFrame == -1 || nextFrame == this.config.textures.length)
+                switch (this.animationEndAction)
                 {
-                    switch (this.config.animationEndAction)
-                    {
-                        // Loop back to the start
-                        case AnimationEnd.LOOP:
-                            nextFrame %= this.config.textures.length;
-                            break;
-                        // Go back the other way
-                        case AnimationEnd.REVERSE:
-                            this.frameAdvancer *= -1;
-                            nextFrame += this.frameAdvancer * 2;
-                            break;
-                        // Stop the advancer and lock the frame to the current one.
-                        case AnimationEnd.STOP:
-                            nextFrame -= this.frameAdvancer;
-                            this.frameAdvancer = 0;
-                            break;
-                    }
+                    // Loop back to the start
+                    case AnimationEnd.LOOP:
+                        nextFrame %= this.textures.length;
+                        break;
+                    // Go back the other way
+                    case AnimationEnd.REVERSE:
+                        this.frameAdvancer *= -1;
+                        nextFrame += this.frameAdvancer * 2;
+                        break;
+                    // Stop the advancer and lock the frame to the current one.
+                    case AnimationEnd.STOP:
+                        nextFrame -= this.frameAdvancer;
+                        this.frameAdvancer = 0;
+                        break;
                 }
-
-                this.frameIndex = nextFrame;
-                this._sprite.pixiObj.texture = this.config.textures[this.frameIndex];
             }
+
+            this.frameIndex = nextFrame;
+            this.pixiObj.texture = this.textures[this.frameIndex];
         });
-    }
-
-
-    onAdded(): void
-    {
-        super.onAdded();
-        this._sprite = this.getEntity().addComponent(new Sprite(this.config.textures[0],
-                                                                this.config.offsetX,
-                                                                this.config.offsetY))
-    }
-
-    onRemoved(): void
-    {
-        super.onRemoved();
-        if (this._sprite != null)
-        {
-            this._sprite.destroy();
-        }
     }
 
     payload(): number
     {
         return this.frameIndex;
     }
-
 }
 
-export class VeryAnimatedSprite extends Component
+export interface SpriteAnimation
 {
-    get currentSprite(): AnimatedSprite
-    {
-        return this._currentSprite as AnimatedSprite;
-    }
+    id: number;
+    spriteConfig: AnimatedSpriteConfig;
+}
 
+export class VeryAnimatedSprite extends AnimatedSprite
+{
     get currentState(): number
     {
         return this._currentState;
     }
 
-    private readonly animations: Map<number, AnimatedSpriteConfig> = new Map();
+    private readonly animationStates: Map<number, AnimatedSpriteConfig> = new Map();
     private readonly events: Map<number, Map<number, () => void>> = new Map();
     private currentEventMap: Map<number, () => void> | null = null;
-    private currentConfig: AnimatedSpriteConfig | null = null;
-    private _currentSprite: AnimatedSprite | null = null;
 
     private _currentState: number;
 
-    constructor(private initialState: number)
+    constructor(private initialState: number, private animations: SpriteAnimation[])
     {
-        super();
+        super({}, animations[0].spriteConfig);
         this._currentState = initialState;
     }
 
     onAdded(): void
     {
         super.onAdded();
-        const config = this.animations.get(this._currentState);
+        const config = this.animationStates.get(this._currentState);
         if (config !== undefined)
         {
-            this._currentSprite = this.getEntity().addComponent(new AnimatedSprite(config));
-            this._currentSprite.onTrigger.register(this.spriteChangeFrame.bind(this));
+            this.trigger.onTrigger.register(this.spriteChangeFrame.bind(this));
             this.setAnimation(this._currentState);
         }
         else
@@ -207,30 +176,23 @@ export class VeryAnimatedSprite extends Component
         }
     }
 
-    setAnimation(animation: number, reset: boolean = false)
+    setAnimation(stateId: number, reset: boolean = false)
     {
         // Check if we are already in the desired state.
-        if (this._currentState === animation && !reset) return;
+        if (this._currentState === stateId && !reset) return;
 
         // Create the new sprite using the factory.
-        const loadedConfig = this.animations.get(animation) || null;
+        const loadedConfig = this.animationStates.get(stateId) || null;
         if (loadedConfig !== null)
         {
             // Apply the configuration to the sprite
-            this.currentSprite.applyConfiguration(loadedConfig);
-
-            this.currentConfig = loadedConfig;
-            this.currentEventMap = this.events.get(animation) || null;
-            this._currentState = animation;
+            this.applyAnimConfig({}, loadedConfig);
+            this.currentEventMap = this.events.get(stateId) || null;
+            this._currentState = stateId;
         }
     }
 
-    addAnimation(id: number, spriteConfig: AnimatedSpriteConfig)
-    {
-        this.animations.set(id, spriteConfig);
-        this.events.set(id, new Map());
-    }
-
+    // TODO this needs to come in with the SpriteAnimation object.
     addEvent(animationId: number, frame: number, event: () => void)
     {
         const animation = this.events.get(animationId);

@@ -104,7 +104,7 @@ class Block extends Entity
     onAdded(): void
     {
         super.onAdded();
-        this.addComponent(sprites.sprite(this.tileId, 0));
+        this.addComponent(new Sprite(sprites.texture(this.tileId, 0), {}));
         this.addComponent(new RectCollider(0, 0, 16, 16, Layers.SOLIDS));
         this.addComponent(new RenderRect(16, 16));
     }
@@ -132,7 +132,7 @@ class Player extends Entity
         this.addComponent(new PlayerControlled());
         this.addComponent(new DetectRigidbody());
 
-        this.addComponent(sprites.sprite(0, 16, -8, -8));
+        this.addComponent(new Sprite(sprites.texture(0, 16), {xOffset: -8, yOffset: -8}));
         // const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
         // sprite.addAnimation(PlayerAnimationStates.IDLE,
         //                     sprites.animatedConfig([[0, 16], [2, 16]], 350, -8, -8));
@@ -166,38 +166,36 @@ class PlayerAnimationSystem extends System
 
             // TODO this makes him face the wrong way when he hits a wall. check update order? maybe it is correct?
             // TODO we might want to take the values from the input/nextframe instead. Although gravity might screw
-            // it then....
+            // TODO it then....
 
-            if (sprite.currentSprite && sprite.currentSprite.sprite)
+            // We are on the ground.
+            if (body.dxLastFrame > 0)
             {
-                // We are on the ground.
-                if (body.dxLastFrame > 0)
-                {
-                    // Moving right
-                    sprite.setAnimation(PlayerAnimationStates.WALK);
-                    sprite.currentSprite.sprite.xScale = 1;
-                }
-                else if (body.dxLastFrame < 0)
-                {
-                    // Moving left
-                    sprite.setAnimation(PlayerAnimationStates.WALK);
-                    sprite.currentSprite.sprite.xScale = -1;
-                }
-                else
-                {
-                    // Idle
-                    sprite.setAnimation(PlayerAnimationStates.IDLE);
-                }
-                // We are in the air.
-                if (body.dyLastFrame > 0)
-                {
-                    sprite.setAnimation(PlayerAnimationStates.FALLING);
-                }
-                else if (body.dyLastFrame < 0)
-                {
-                    sprite.setAnimation(PlayerAnimationStates.JUMP);
-                }
+                // Moving right
+                sprite.setAnimation(PlayerAnimationStates.WALK);
+                sprite.applyConfig({xScale: 1});
             }
+            else if (body.dxLastFrame < 0)
+            {
+                // Moving left
+                sprite.setAnimation(PlayerAnimationStates.WALK);
+                sprite.applyConfig({xScale: -1});
+            }
+            else
+            {
+                // Idle
+                sprite.setAnimation(PlayerAnimationStates.IDLE);
+            }
+            // We are in the air.
+            if (body.dyLastFrame > 0)
+            {
+                sprite.setAnimation(PlayerAnimationStates.FALLING);
+            }
+            else if (body.dyLastFrame < 0)
+            {
+                sprite.setAnimation(PlayerAnimationStates.JUMP);
+            }
+
         });
     }
 }
