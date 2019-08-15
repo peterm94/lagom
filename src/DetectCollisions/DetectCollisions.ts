@@ -7,7 +7,6 @@ import {System} from "../ECS/System";
 import {Entity} from "../ECS/Entity";
 import {DetectCollider} from "./Colliders";
 import {DetectActive} from "./DetectActive";
-// TODO -- add trigger types, use the events
 // TODO -- add a static property to optimise checks? might not need this.
 export class DetectActiveCollisionSystem extends System
 {
@@ -39,7 +38,10 @@ export class DetectActiveCollisionSystem extends System
             body.applyForce(delta);
 
             const collidersLastFrame = collider.collidersLastFrame;
+            const triggersLastFrame = collider.triggersLastFrame;
+
             collider.collidersLastFrame = [];
+            collider.triggersLastFrame = [];
 
             const xDir = Math.sign(body.pendingX);
             let xMag = Math.abs(body.pendingX);
@@ -65,14 +67,23 @@ export class DetectActiveCollisionSystem extends System
                         if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                             && collider.body.collides(potential, result))
                         {
-                            // Move out of the collision, we are done in this direction.
-                            collider.body.x -= result.overlap_x * result.overlap;
-                            xMag = 0;
-                            body.velocityX = 0;
+                            // Check if we are a trigger. If we are, don't move out of the collision.
+                            if (!collider.isTrigger && !otherComp.isTrigger)
+                            {
+                                // Move out of the collision, we are done in this direction.
+                                collider.body.x -= result.overlap_x * result.overlap;
+                                xMag = 0;
+                                body.velocityX = 0;
 
+                                DetectActiveCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                                otherComp, collider, result);
+                            }
+                            else
+                            {
+                                DetectActiveCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                                                              otherComp, collider, result);
+                            }
 
-                            DetectActiveCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                                                            otherComp, collider, result);
                         }
                     }
                     xMag -= dx;
@@ -95,13 +106,21 @@ export class DetectActiveCollisionSystem extends System
                         if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                             && collider.body.collides(potential, result))
                         {
-                            // Move out of the collision, we are done in this direction.
-                            collider.body.y -= result.overlap_y * result.overlap;
-                            yMag = 0;
-                            body.velocityY = 0;
-
-                            DetectActiveCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                                                            otherComp, collider, result);
+                            // Check if we are a trigger. If we are, don't move out of the collision.
+                            if (!collider.isTrigger && !otherComp.isTrigger)
+                            {
+                                // Move out of the collision, we are done in this direction.
+                                collider.body.y -= result.overlap_y * result.overlap;
+                                yMag = 0;
+                                body.velocityY = 0;
+                                DetectActiveCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                                otherComp, collider, result);
+                            }
+                            else
+                            {
+                                DetectActiveCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                                                              otherComp, collider, result);
+                            }
                         }
                     }
                     yMag -= dy;
@@ -110,6 +129,7 @@ export class DetectActiveCollisionSystem extends System
 
             // Trigger the exist event for anything that is no longer colliding
             collidersLastFrame.forEach(val => collider.onCollisionExit.trigger(collider, val));
+            triggersLastFrame.forEach(val => collider.onTriggerExit.trigger(collider, val));
 
             // Do a final update of the system.
             this.detectSystem.update();
@@ -141,6 +161,23 @@ export class DetectActiveCollisionSystem extends System
         }
         Util.remove(collidersLastFrame, otherComp);
         collider.collidersLastFrame.push(otherComp);
+    }
+
+    private static fireTriggerEvents(triggersLastFrame: DetectCollider[], otherComp: DetectCollider,
+                                     collider: DetectCollider, result: Result)
+    {
+        if (triggersLastFrame.includes(otherComp))
+        {
+            // Continuous collision
+            collider.onTrigger.trigger(collider, {other: otherComp, result: result});
+        }
+        else
+        {
+            // New collision
+            collider.onTriggerEnter.trigger(collider, {other: otherComp, result: result});
+        }
+        Util.remove(triggersLastFrame, otherComp);
+        collider.triggersLastFrame.push(otherComp);
     }
 
     addBody(body: DetectCollider)

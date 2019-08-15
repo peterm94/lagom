@@ -18,6 +18,7 @@ export abstract class DetectCollider extends Component
     readonly onTriggerExit: Observable<DetectCollider, DetectCollider> = new Observable();
 
     collidersLastFrame: DetectCollider[] = [];
+    triggersLastFrame: DetectCollider[] = [];
 
     protected constructor(readonly body: Body, readonly xOff: number, readonly yOff: number, readonly layer: number,
                           readonly isTrigger: boolean)
