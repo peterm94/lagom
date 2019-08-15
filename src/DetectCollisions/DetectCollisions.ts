@@ -1,23 +1,20 @@
 import {Component} from "../ECS/Component";
 import {Log, Util} from "../Common/Util";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
-import {Collisions, Result, Body} from "detect-collisions";
+import {Collisions, Result} from "detect-collisions";
 import {LagomType} from "../ECS/LifecycleObject";
 import {System} from "../ECS/System";
 import {Entity} from "../ECS/Entity";
-import {DetectCollider} from "./Colliders";
-import {DetectActive} from "./DetectActive";
-// TODO -- add a static property to optimise checks? might not need this.
-export class DetectActiveCollisionSystem extends System
-{
-    readonly detectSystem: Collisions;
-    readonly collisionMatrix: CollisionMatrix;
+import {DetectCollider} from "./DetectColliders";
+import {DetectRigidbody} from "./DetectRigidbody";
 
-    constructor(collisionMatrix: CollisionMatrix, private readonly step: number = 10)
+export class DetectCollisionSystem extends System
+{
+    readonly detectSystem: Collisions = new Collisions();
+
+    constructor(readonly collisionMatrix: CollisionMatrix, private readonly step: number = 10)
     {
         super();
-        this.collisionMatrix = collisionMatrix;
-        this.detectSystem = new Collisions();
     }
 
     onAdded(): void
@@ -27,13 +24,17 @@ export class DetectActiveCollisionSystem extends System
 
     types(): LagomType<Component>[]
     {
-        return [DetectCollider, DetectActive];
+        return [DetectCollider, DetectRigidbody];
     }
 
     fixedUpdate(delta: number): void
     {
         // New thing. Move incrementally, alternating x/y until we are either at the destination or have hit something.
-        this.runOnEntities((entity: Entity, collider: DetectCollider, body: DetectActive) => {
+        this.runOnEntities((entity: Entity, collider: DetectCollider, body: DetectRigidbody) => {
+
+            // Skip updating static bodies. They should not be moved. We may add kinematic bodies later that allow
+            // movement that aren't affected by physics.
+            if (body.isStatic) return;
 
             body.applyForce(delta);
 
@@ -75,15 +76,14 @@ export class DetectActiveCollisionSystem extends System
                                 xMag = 0;
                                 body.velocityX = 0;
 
-                                DetectActiveCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                                                                otherComp, collider, result);
+                                DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                          otherComp, collider, result);
                             }
                             else
                             {
-                                DetectActiveCollisionSystem.fireTriggerEvents(triggersLastFrame,
-                                                                              otherComp, collider, result);
+                                DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                                                        otherComp, collider, result);
                             }
-
                         }
                     }
                     xMag -= dx;
@@ -113,13 +113,13 @@ export class DetectActiveCollisionSystem extends System
                                 collider.body.y -= result.overlap_y * result.overlap;
                                 yMag = 0;
                                 body.velocityY = 0;
-                                DetectActiveCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                                                                otherComp, collider, result);
+                                DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                          otherComp, collider, result);
                             }
                             else
                             {
-                                DetectActiveCollisionSystem.fireTriggerEvents(triggersLastFrame,
-                                                                              otherComp, collider, result);
+                                DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                                                        otherComp, collider, result);
                             }
                         }
                     }

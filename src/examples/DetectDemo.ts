@@ -3,7 +3,7 @@ import {Game} from "../ECS/Game";
 import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {
-    DetectActiveCollisionSystem} from "../DetectCollisions/DetectCollisions";
+    DetectCollisionSystem} from "../DetectCollisions/DetectCollisions";
 import {Component} from "../ECS/Component";
 import {System} from "../ECS/System";
 import {Result} from "detect-collisions";
@@ -13,8 +13,8 @@ import spr_block from './resources/block.png';
 import {RenderCircle, RenderRect} from "../Common/PIXIComponents";
 import {Diagnostics} from "../Common/Debug";
 import {LagomType} from "../ECS/LifecycleObject";
-import {CircleCollider, DetectCollider, RectCollider} from "../DetectCollisions/Colliders";
-import {DetectActive} from "../DetectCollisions/DetectActive";
+import {CircleCollider, DetectCollider, RectCollider} from "../DetectCollisions/DetectColliders";
+import {DetectRigidbody} from "../DetectCollisions/DetectRigidbody";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -52,7 +52,7 @@ export class DetectDemo extends Scene
         this.addSystem(new PlayerMover());
 
         // this.addSystem(new DetectCollisionsSystem(collisions));
-        // this.addSystem(new DetectActiveCollisionSystem());
+        // this.addSystem(new DetectCollisionSystem());
         this.addEntity(new Diagnostics("blue"));
         this.addEntity(new Square(50, 50));
         this.addEntity(new CircleBoy(200, 200));
@@ -116,7 +116,7 @@ class Player extends Entity
         super.onAdded();
 
         this.addComponent(new PlayerControlled());
-        this.addComponent(new DetectActive());
+        this.addComponent(new DetectRigidbody());
 
         const collider = this.addComponent(
             new RectCollider(0, 0, 32, 32, this.layer));

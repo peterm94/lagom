@@ -6,7 +6,7 @@ import {RenderCircle, RenderRect, Sprite, VeryAnimatedSprite} from "../../Common
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/SpriteSheet";
 import {
-    DetectActiveCollisionSystem
+    DetectCollisionSystem
 } from "../../DetectCollisions/DetectCollisions";
 import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
 import {Component} from "../../ECS/Component";
@@ -17,8 +17,9 @@ import world1 from "./resources/World1.json";
 import {Diagnostics} from "../../Common/Debug";
 import {Vector} from "matter-js";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
-import {DetectCollider, RectCollider} from "../../DetectCollisions/Colliders";
-import {DetectActive} from "../../DetectCollisions/DetectActive";
+import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectColliders";
+import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
+import {Rigidbody} from "../../LagomPhysics/Physics";
 
 const Keyboard = require('pixi.js-keyboard');
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
@@ -60,7 +61,7 @@ class MainScene extends Scene
 
         this.addSystem(new PlayerMover());
         this.addSystem(new GravitySystem());
-        this.addSystem(new DetectActiveCollisionSystem(collisionMatrix));
+        this.addSystem(new DetectCollisionSystem(collisionMatrix));
         this.addSystem(new PlayerAnimationSystem());
 
         this.addGlobalSystem(new FrameTriggerSystem());
@@ -129,7 +130,7 @@ class Player extends Entity
         super.onAdded();
         this.addComponent(new GravityAware());
         this.addComponent(new PlayerControlled());
-        this.addComponent(new DetectActive());
+        this.addComponent(new DetectRigidbody());
 
         this.addComponent(sprites.sprite(0, 16, -8, -8));
         // const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
@@ -156,12 +157,12 @@ class PlayerAnimationSystem extends System
 {
     types(): LagomType<Component>[]
     {
-        return [DetectActive, VeryAnimatedSprite];
+        return [DetectRigidbody, VeryAnimatedSprite];
     }
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectActive, sprite: VeryAnimatedSprite) => {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody, sprite: VeryAnimatedSprite) => {
 
             // TODO this makes him face the wrong way when he hits a wall. check update order? maybe it is correct?
             // TODO we might want to take the values from the input/nextframe instead. Although gravity might screw
@@ -209,12 +210,12 @@ class GravitySystem extends System
 {
     types(): LagomType<Component>[]
     {
-        return [DetectActive, GravityAware];
+        return [DetectRigidbody, GravityAware];
     }
 
     fixedUpdate(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectActive) => {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody) => {
             body.addForce(0, 0.0005);
         });
     }
@@ -237,12 +238,12 @@ class PlayerMover extends System
 
     types(): LagomType<Component>[]
     {
-        return [DetectActive, DetectCollider, PlayerControlled];
+        return [DetectRigidbody, DetectCollider, PlayerControlled];
     }
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectActive, collider: DetectCollider) => {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider) => {
             if (Keyboard.isKeyPressed('ArrowUp', 'KeyW'))
             {
                 if (!collider.place_free(0, 2))
@@ -255,7 +256,7 @@ class PlayerMover extends System
 
     fixedUpdate(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectActive, collider: DetectCollider) => {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
             {

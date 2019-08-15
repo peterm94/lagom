@@ -13,8 +13,8 @@ import {Diagnostics} from "../Common/Debug";
 import {LagomType} from "../ECS/LifecycleObject";
 import {ScreenShake, ScreenShaker} from "../Common/Screenshake";
 import {FollowCamera, FollowMe} from "../Common/CameraUtil";
-import {CircleCollider, DetectCollider, RectCollider} from "../DetectCollisions/Colliders";
-import {DetectActive} from "../DetectCollisions/DetectActive";
+import {CircleCollider, DetectCollider, RectCollider} from "../DetectCollisions/DetectColliders";
+import {DetectRigidbody} from "../DetectCollisions/DetectRigidbody";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -76,7 +76,7 @@ export class CameraDemo extends Scene
         this.addSystem(new PlayerMover());
 
         // this.addSystem(new DetectCollisionsSystem(collisions));
-        // this.addSystem(new DetectActiveCollisionSystem());
+        // this.addSystem(new DetectCollisionSystem());
         this.addGlobalSystem(new ScreenShaker());
         this.addEntity(new Diagnostics("blue"));
         this.addEntity(new Square(50, 50));
@@ -147,7 +147,7 @@ class Player extends Entity
         super.onAdded();
 
         this.addComponent(new PlayerControlled());
-        this.addComponent(new DetectActive());
+        this.addComponent(new DetectRigidbody());
         this.addComponent(new FollowMe());
         this.addComponent(new ScreenShake(5, 1));
 

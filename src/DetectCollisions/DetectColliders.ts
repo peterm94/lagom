@@ -2,14 +2,14 @@ import {Body, Circle, Point, Polygon, Result} from "detect-collisions";
 import {Component} from "../ECS/Component";
 import {Observable} from "../Common/Observer";
 import {Log} from "../Common/Util";
-import {DetectActiveCollisionSystem} from "./DetectCollisions";
+import {DetectCollisionSystem} from "./DetectCollisions";
 
 /**
  * Collider types for this collision system.
  */
 export abstract class DetectCollider extends Component
 {
-    private engine: DetectActiveCollisionSystem | null = null;
+    private engine: DetectCollisionSystem | null = null;
     readonly onCollision: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
     readonly onCollisionEnter: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
     readonly onCollisionExit: Observable<DetectCollider, DetectCollider> = new Observable();
@@ -32,7 +32,7 @@ export abstract class DetectCollider extends Component
     {
         super.onAdded();
 
-        this.engine = this.getEntity().getScene().getSystem(DetectActiveCollisionSystem);
+        this.engine = this.getEntity().getScene().getSystem(DetectCollisionSystem);
 
         if (this.engine == null)
         {
@@ -72,7 +72,6 @@ export class CircleCollider extends DetectCollider
     {
         super(new Circle(0, 0, radius), xOff, yOff, layer, isTrigger);
     }
-
 }
 
 /**

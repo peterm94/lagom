@@ -1,6 +1,6 @@
 import {Component} from "../ECS/Component";
 
-export class DetectActive extends Component
+export class DetectRigidbody extends Component
 {
     // Next frame movement
     pendingX = 0;
@@ -16,6 +16,11 @@ export class DetectActive extends Component
 
     forceX = 0;
     forceY = 0;
+
+    constructor(readonly isStatic: boolean = false)
+    {
+        super();
+    }
 
     move(x: number, y: number)
     {
