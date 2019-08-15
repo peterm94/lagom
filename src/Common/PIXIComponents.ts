@@ -27,12 +27,25 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
         this._xScale = value;
     }
 
+    set anchorX(value: number)
+    {
+        this.pixiObj.anchor.x = value;
+    }
+
+    set anchorY(value: number)
+    {
+        this.pixiObj.anchor.y = value;
+    }
+
     constructor(texture: PIXI.Texture, offsetX: number = 0, offsetY: number = 0)
     {
         super(new PIXI.Sprite(texture));
 
+        this.pixiObj.x += offsetX;
+        this.pixiObj.y += offsetY;
+        // TODO I don't think I want the anchor. Do I?
         // Set the anchor point. It works using a percentage of the width/height
-        this.pixiObj.anchor.set(offsetX / texture.width, offsetY / texture.height);
+        // this.pixiObj.anchor.set(offsetX / texture.width, offsetY / texture.height);
     }
 
     private _xScale: number = 1;
@@ -52,6 +65,8 @@ export interface AnimatedSpriteConfig
     animationSpeed: number;
     offsetX?: number;
     offsetY?: number;
+    anchorX?: number;
+    anchorY?: number
     animationEndAction: AnimationEnd;
 }
 

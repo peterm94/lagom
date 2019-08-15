@@ -1,22 +1,20 @@
 import {Component} from "../ECS/Component";
 import {Log, Util} from "../Common/Util";
-import {Observable} from "../Common/Observer";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
-import {Collisions, Polygon, Body, Result, Circle, Point} from "detect-collisions";
+import {Collisions, Result, Body} from "detect-collisions";
 import {LagomType} from "../ECS/LifecycleObject";
 import {System} from "../ECS/System";
 import {Entity} from "../ECS/Entity";
-// TODO -- one system for PlatformerPhysics(), DetectCollisionsSystem and DetectActiveCollisionSystem.
-// TODO -- make DetectActive the new PhysicsVars
+import {DetectCollider} from "./Colliders";
+import {DetectActive} from "./DetectActive";
 // TODO -- add trigger types, use the events
 // TODO -- add a static property to optimise checks? might not need this.
-// TODO -- add a system for gravity, should probably be external
-export class DetectCollisionsSystem extends System
+export class DetectActiveCollisionSystem extends System
 {
     readonly detectSystem: Collisions;
     readonly collisionMatrix: CollisionMatrix;
 
-    constructor(collisionMatrix: CollisionMatrix)
+    constructor(collisionMatrix: CollisionMatrix, private readonly step: number = 10)
     {
         super();
         this.collisionMatrix = collisionMatrix;
@@ -28,272 +26,168 @@ export class DetectCollisionsSystem extends System
         super.onAdded();
     }
 
-    update(delta: number): void
-    {
-        // Move all entities to their new positions
-        this.runOnEntities((entity: Entity, collider: DetectCollider) => {
-
-            collider.body.x = entity.transform.x + collider.xOff;
-            collider.body.y = entity.transform.y + collider.yoff;
-
-            // Polygons can rotate
-            if (collider.body instanceof Polygon)
-            {
-                collider.body.angle = entity.transform.angle;
-            }
-        });
-
-        // We don't need a delta, this is a pure collision checking system. No physics.
-        // Allow the system to process the changes.
-        this.detectSystem.update();
-    }
-
-    types(): LagomType<Component>[]
-    {
-        return [DetectCollider];
-    }
-
-    instanceAt(x: number, y: number, ...layers: number[]): boolean
-    {
-        // TODO this is dumb, please let there be a better way
-        const point = new Point(x, y);
-        this.detectSystem.insert(point);
-        for (let potential of this.detectSystem.potentials(point))
-        {
-            const otherComp = (<any>potential).lagom_component;
-            if (!layers.includes(otherComp.layer)) continue;
-
-            if (point.collides(potential))
-            {
-                this.detectSystem.remove(point);
-                Log.debug(x, y, true);
-                return true;
-            }
-        }
-        this.detectSystem.remove(point);
-        Log.debug(x, y, false);
-        return false;
-    }
-}
-
-
-export class DetectActiveCollisionSystem extends System
-{
-    private frame = 0;
-    private engine!: DetectCollisionsSystem;
-
-    onAdded(): void
-    {
-        super.onAdded();
-    }
-
     types(): LagomType<Component>[]
     {
         return [DetectCollider, DetectActive];
     }
 
-    update(delta: number): void
+    fixedUpdate(delta: number): void
     {
-        this.frame++;
-        if (this.frame < 2) return;
-        if (this.frame == 2)
-        {
-            const engine = this.getScene().getSystem<DetectCollisionsSystem>(DetectCollisionsSystem);
-            if (engine === null)
-            {
-                Log.error("DetectActiveCollisionSystem must be added to a Scene after a DetectCollisionsSystem.")
-            }
-            else
-            {
-                this.engine = engine;
-            }
-        }
-        this.runOnEntities((entity: Entity, collider: DetectCollider) => {
+        // New thing. Move incrementally, alternating x/y until we are either at the destination or have hit something.
+        this.runOnEntities((entity: Entity, collider: DetectCollider, body: DetectActive) => {
+
+            body.applyForce(delta);
 
             const collidersLastFrame = collider.collidersLastFrame;
             collider.collidersLastFrame = [];
 
-            const potentials = collider.body.potentials();
-            for (let potential of potentials)
-            {
-                const otherComp = (<any>potential).lagom_component;
-                const result = new Result();
+            const xDir = Math.sign(body.pendingX);
+            let xMag = Math.abs(body.pendingX);
+            const yDir = Math.sign(body.pendingY);
+            let yMag = Math.abs(body.pendingY);
 
-                // Check layers, then do actual collision check
-                if (this.engine.collisionMatrix.canCollide(collider.layer, otherComp.layer)
-                    && collider.body.collides(potential, result))
+            while (xMag > 0 || yMag > 0)
+            {
+                if (xMag > 0)
                 {
-                    // Continuous collision
-                    if (collidersLastFrame.includes(otherComp))
+                    const dx = Math.min(xMag, this.step);
+                    collider.body.x += dx * xDir;
+
+                    // Do collision check + resolution
+                    this.detectSystem.update();
+                    const potentials = collider.body.potentials();
+                    for (let potential of potentials)
                     {
-                        collider.onCollision.trigger(collider, {other: otherComp, result: result});
+                        const otherComp = (<any>potential).lagom_component as DetectCollider;
+                        const result = new Result();
+
+                        // Check layers, then do actual collision check
+                        if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                            && collider.body.collides(potential, result))
+                        {
+                            // Move out of the collision, we are done in this direction.
+                            collider.body.x -= result.overlap_x * result.overlap;
+                            xMag = 0;
+                            body.velocityX = 0;
+
+
+                            DetectActiveCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                            otherComp, collider, result);
+                        }
                     }
-                    else
+                    xMag -= dx;
+                }
+
+                if (yMag > 0)
+                {
+                    const dy = Math.min(yMag, this.step);
+                    collider.body.y += dy * yDir;
+
+                    // Do collision check + resolution
+                    this.detectSystem.update();
+                    const potentials = collider.body.potentials();
+                    for (let potential of potentials)
                     {
-                        // New collision
-                        collider.onCollisionEnter.trigger(collider, {other: otherComp, result: result});
+                        const otherComp = (<any>potential).lagom_component;
+                        const result = new Result();
+
+                        // Check layers, then do actual collision check
+                        if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                            && collider.body.collides(potential, result))
+                        {
+                            // Move out of the collision, we are done in this direction.
+                            collider.body.y -= result.overlap_y * result.overlap;
+                            yMag = 0;
+                            body.velocityY = 0;
+
+                            DetectActiveCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                            otherComp, collider, result);
+                        }
                     }
-                    Util.remove(collidersLastFrame, otherComp);
-                    collider.collidersLastFrame.push(otherComp);
+                    yMag -= dy;
                 }
             }
 
             // Trigger the exist event for anything that is no longer colliding
             collidersLastFrame.forEach(val => collider.onCollisionExit.trigger(collider, val));
+
+            // Do a final update of the system.
+            this.detectSystem.update();
+
+            // Update the body properties.
+            body.pendingY = 0;
+            body.pendingX = 0;
+            body.dxLastFrame = (collider.body.x - collider.xOff) - entity.transform.x;
+            body.dyLastFrame = (collider.body.y - collider.yOff) - entity.transform.y;
+
+            // Update the entity position.
+            entity.transform.x = collider.body.x - collider.xOff;
+            entity.transform.y = collider.body.y - collider.yOff;
         });
-
-        // TODO will this work? who knows
-        this.engine.update(delta);
-    }
-}
-
-export class DetectActive extends Component
-{
-}
-
-/**
- * Collider types for this collision system.
- */
-export abstract class DetectCollider extends Component
-{
-    private engine: DetectCollisionsSystem | null = null;
-    readonly onCollision: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
-    readonly onCollisionEnter: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
-    readonly onCollisionExit: Observable<DetectCollider, DetectCollider> = new Observable();
-    readonly onTrigger: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
-    readonly onTriggerEnter: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
-    readonly onTriggerExit: Observable<DetectCollider, DetectCollider> = new Observable();
-
-    collidersLastFrame: DetectCollider[] = [];
-
-    protected constructor(readonly body: Body, readonly xOff: number, readonly  yoff: number, readonly layer: number,
-                          readonly isTrigger: boolean)
-    {
-        super();
-        // Add a backref
-        (<any>this.body).lagom_component = this;
     }
 
-    onAdded(): void
+    private static fireCollisionEvents(collidersLastFrame: DetectCollider[], otherComp: DetectCollider,
+                                       collider: DetectCollider, result: Result)
     {
-        super.onAdded();
-
-        this.engine = this.getEntity().getScene().getSystem(DetectCollisionsSystem);
-
-        if (this.engine == null)
+        if (collidersLastFrame.includes(otherComp))
         {
-            Log.warn("A DetectCollisionsSystem must be added to the Scene before a DetectCollider is added.");
-            return;
+            // Continuous collision
+            collider.onCollision.trigger(collider, {other: otherComp, result: result});
         }
-
-        this.engine.detectSystem.insert(this.body);
-    }
-
-    onRemoved(): void
-    {
-        super.onRemoved();
-
-        if (this.engine !== null)
+        else
         {
-            this.engine.detectSystem.remove(this.body);
+            // New collision
+            collider.onCollisionEnter.trigger(collider, {other: otherComp, result: result});
         }
-    }
-}
-
-/**
- * Circle collider type.
- */
-export class CircleCollider extends DetectCollider
-{
-    constructor(xOff: number, yOff: number, radius: number, layer: number, isTrigger: boolean = false)
-    {
-        super(new Circle(0, 0, radius), xOff, yOff, layer, isTrigger);
+        Util.remove(collidersLastFrame, otherComp);
+        collider.collidersLastFrame.push(otherComp);
     }
 
-}
-
-/**
- * Point collider type.
- */
-export class PointCollider extends DetectCollider
-{
-    constructor(xOff: number, yOff: number, layer: number, isTrigger: boolean = false)
+    addBody(body: DetectCollider)
     {
-        super(new Point(0, 0), xOff, yOff, layer, isTrigger);
-    }
-}
-
-/**
- * Polygon collider. Please only use convex shapes.
- */
-export class PolyCollider extends DetectCollider
-{
-    constructor(xOff: number, yOff: number, points: number[][], layer: number,
-                rotation: number = 0, isTrigger: boolean = false)
-    {
-        // NOTE: The order of the points matters, the library is bugged, this function ensures they are anticlockwise.
-        super(new Polygon(xOff, yOff, PolyCollider.reorderVertices(points), rotation), xOff, yOff, layer, isTrigger);
+        this.detectSystem.insert(body.body);
     }
 
-    /**
-     * Make sure that vertices are ready to use by the collision library by ensuring their rotation is correct.
-     *
-     * @param vertices Vertices to reorder.
-     * @returns Correctly ordered vertices.
-     */
-    protected static reorderVertices(vertices: number[][])
+    removeBody(body: DetectCollider)
     {
-        const area = PolyCollider.findArea(vertices);
-        if (area < 0)
+        this.detectSystem.remove(body.body);
+    }
+
+    update(delta: number): void
+    {
+        // We don't do this around here.
+    }
+
+    place_free(collider: DetectCollider, dx: number, dy: number): boolean
+    {
+        // Try moving to the destination.
+        const currX = collider.body.x;
+        const currY = collider.body.y;
+
+        collider.body.x += dx;
+        collider.body.y += dy;
+
+        this.detectSystem.update();
+
+        const potentials = collider.body.potentials();
+        for (let potential of potentials)
         {
-            vertices.reverse();
-        }
-        return vertices;
-    }
+            const otherComp = (<any>potential).lagom_component as DetectCollider;
 
-    /**
-     * Calculate the area of a polygon. The area will be negative if the points are not given in counter-clockwise
-     * order.
-     *
-     * @param vertices The polygon vertices.
-     * @returns The area of the polygon.
-     */
-    private static findArea(vertices: number[][]): number
-    {
-        // find bottom right point
-        let brIndex = 0;
-        for (let i = 1; i < vertices.length; ++i)
-        {
-            const isLower = vertices[i][1] < vertices[brIndex][1];
-            const isRight = (vertices[i][1] === vertices[brIndex][1] && vertices[i][0] > vertices[brIndex][0]);
-            if (isLower || isRight)
+            if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                && collider.body.collides(potential))
             {
-                brIndex = i;
+                collider.body.x = currX;
+                collider.body.y = currY;
+                this.detectSystem.update();
+                return false;
             }
         }
 
-        // calculate area
-        let area = 0;
-        for (let i = 0; i < vertices.length; ++i)
-        {
-            const a = vertices[(i + brIndex) % vertices.length];
-            const b = vertices[(i + 1 + brIndex) % vertices.length];
-            const c = vertices[(i + 2 + brIndex) % vertices.length];
-            area += (((b[0] - a[0]) * (c[1] - a[1])) - ((c[0] - a[0]) * (b[1] - a[1])));
-        }
-
-        return area / 2;
+        collider.body.x = currX;
+        collider.body.y = currY;
+        this.detectSystem.update();
+        return true;
     }
 }
 
-/**
- * Rectangle collider type.
- */
-export class RectCollider extends PolyCollider
-{
-    constructor(xOff: number, yOff: number, width: number, height: number,
-                layer: number, rotation: number = 0, isTrigger: boolean = false)
-    {
-        super(xOff, yOff, [[0, 0], [width, 0], [width, height], [0, height]], layer, rotation, isTrigger);
-    }
-}

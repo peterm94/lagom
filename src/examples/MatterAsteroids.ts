@@ -8,7 +8,7 @@ import spr_asteroid3 from './resources/asteroid3.png'
 import spr_ship from './resources/ship.png'
 import spr_bullet from './resources/bullet.png'
 import {MathUtil} from "../Common/Util";
-import {MatterEngine, MCollider} from "../MatterPhysics/MatterPhysics";
+import {MatterEngine} from "../MatterPhysics/MatterPhysics";
 import * as Matter from "matter-js";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Entity} from "../ECS/Entity";
@@ -16,6 +16,7 @@ import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
 import {Scene} from "../ECS/Scene";
 import {LagomType} from "../ECS/LifecycleObject";
+import {MCollider} from "../MatterPhysics/MatterColliders";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -151,7 +152,7 @@ class Bullet extends Entity
                                                          {layer: CollLayers.Bullet, isSensor: true}));
         this.addComponent(new ScreenContained());
 
-        collider.collisionStartEvent.register(this.onCollision.bind(this));
+        collider.onCollisionEnter.register(this.onCollision.bind(this));
     }
 
     onCollision(caller: MCollider, other: MCollider)
