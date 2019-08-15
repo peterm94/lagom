@@ -14,7 +14,7 @@ export class DetectActiveCollisionSystem extends System
     readonly detectSystem: Collisions;
     readonly collisionMatrix: CollisionMatrix;
 
-    constructor(collisionMatrix: CollisionMatrix)
+    constructor(collisionMatrix: CollisionMatrix, private readonly step: number = 10)
     {
         super();
         this.collisionMatrix = collisionMatrix;
@@ -50,7 +50,7 @@ export class DetectActiveCollisionSystem extends System
             {
                 if (xMag > 0)
                 {
-                    const dx = Math.min(xMag, 1);
+                    const dx = Math.min(xMag, this.step);
                     collider.body.x += dx * xDir;
 
                     // Do collision check + resolution
@@ -80,7 +80,7 @@ export class DetectActiveCollisionSystem extends System
 
                 if (yMag > 0)
                 {
-                    const dy = Math.min(yMag, 1);
+                    const dy = Math.min(yMag, this.step);
                     collider.body.y += dy * yDir;
 
                     // Do collision check + resolution

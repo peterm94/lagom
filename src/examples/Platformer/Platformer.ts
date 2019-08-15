@@ -18,10 +18,6 @@ import {Diagnostics} from "../../Common/Debug";
 import {Vector} from "matter-js";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {DetectCollider, RectCollider} from "../../DetectCollisions/Colliders";
-import {MatterEngine} from "../../MatterPhysics/MatterPhysics";
-import {MRectCollider} from "../../MatterPhysics/MatterColliders";
-import * as Matter from "matter-js";
-import {Log} from "../../Common/Util";
 import {DetectActive} from "../../DetectCollisions/DetectActive";
 
 const Keyboard = require('pixi.js-keyboard');
@@ -60,7 +56,7 @@ class MainScene extends Scene
     {
         super.onAdded();
 
-        this.addEntity(new Diagnostics("white", 2));
+        this.addEntity(new Diagnostics("white", 8));
 
         this.addSystem(new PlayerMover());
         this.addSystem(new GravitySystem());
