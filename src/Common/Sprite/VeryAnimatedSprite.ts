@@ -73,6 +73,7 @@ export class VeryAnimatedSprite extends AnimatedSprite
             if (loadedConfig.config) this.applyConfig(loadedConfig.config);
             this.currentEventMap = this.events.get(stateId) || null;
             this._currentState = stateId;
+            this.reset();
         }
     }
 

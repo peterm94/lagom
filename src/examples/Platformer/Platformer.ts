@@ -146,24 +146,24 @@ class Player extends Entity
             {
                 id: PlayerAnimationStates.IDLE,
                 textures: sprites.textures([[0, 16], [2, 16]]),
-                config: {animationSpeed: 350, yOffset: -8, xOffset: -8}
+                config: {animationSpeed: 350, yOffset: -8, xAnchor: 0.5}
             },
             {
                 id: PlayerAnimationStates.WALK,
                 textures: sprites.textures([[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]]),
-                config: {animationSpeed: 70, yOffset: -8, xOffset: -8}
+                config: {animationSpeed: 70, yOffset: -8, xAnchor: 0.5}
+            },
+            {
+                id: PlayerAnimationStates.FALLING,
+                textures: sprites.textures([[6, 17]]),
+                config: {animationSpeed: 0, yOffset: -8, xAnchor: 0.5}
+            },
+            {
+                id: PlayerAnimationStates.JUMP,
+                textures: sprites.textures([[5, 17]]),
+                config: {animationSpeed: 0, yOffset: -8, xAnchor: 0.5}
             }
         ]));
-        // sprite.addAnimation(PlayerAnimationStates.IDLE,
-        //                     sprites.animatedConfig([[0, 16], [2, 16]], 350, -8, -8));
-        // sprite.addAnimation(PlayerAnimationStates.WALK,
-        //                     sprites.animatedConfig(
-        //                         [[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]],
-        //                         70));
-        // sprite.addAnimation(PlayerAnimationStates.FALLING,
-        //                     sprites.animatedConfig([[6, 17]], 0));
-        // sprite.addAnimation(PlayerAnimationStates.JUMP,
-        //                     sprites.animatedConfig([[5, 17]], 0));
 
         this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
         this.addComponent(new RenderRect(8, 16, -4, -8));
@@ -185,22 +185,18 @@ class PlayerAnimationSystem extends System
     {
         this.runOnEntities((entity: Entity, body: DetectRigidbody, sprite: VeryAnimatedSprite) => {
 
-            // TODO this makes him face the wrong way when he hits a wall. check update order? maybe it is correct?
-            // TODO we might want to take the values from the input/nextframe instead. Although gravity might screw
-            // TODO it then....
-
             // We are on the ground.
             if (body.dxLastFrame > 0)
             {
                 // Moving right
                 sprite.setAnimation(PlayerAnimationStates.WALK);
-                // sprite.applyConfig({xScale: 1});
+                sprite.applyConfig({xScale: 1});
             }
             else if (body.dxLastFrame < 0)
             {
                 // Moving left
                 sprite.setAnimation(PlayerAnimationStates.WALK);
-                // sprite.applyConfig({xScale: -1});
+                sprite.applyConfig({xScale: -1});
             }
             else
             {
@@ -216,7 +212,6 @@ class PlayerAnimationSystem extends System
             {
                 sprite.setAnimation(PlayerAnimationStates.JUMP);
             }
-
         });
     }
 }
@@ -243,12 +238,6 @@ class GravitySystem extends System
     {
     }
 }
-
-class Physics extends Component
-{
-    /// jump pls
-}
-
 
 class PlayerMover extends System
 {

@@ -28,13 +28,17 @@ export class AnimatedSprite extends FrameTrigger<number>
         if (this._sprite) this._sprite.applyConfig(config);
 
         // Do animated sprite stuff
-        this.triggerInterval = config.animationSpeed || 0;
-        this.animationEndAction = config.animationEndAction || AnimationEnd.LOOP;
+        if (config.animationSpeed) this.triggerInterval = config.animationSpeed;
+        if (config.animationEndAction) this.animationEndAction = config.animationEndAction;
+    }
 
-        // Do trigger stuff
+
+    reset()
+    {
+        super.reset();
+
         this.frameIndex = 0;
         this.frameAdvancer = 1;
-        this.reset();
     }
 
     constructor(protected textures: PIXI.Texture[], readonly config: AnimatedSpriteConfig | null = null)
@@ -85,6 +89,7 @@ export class AnimatedSprite extends FrameTrigger<number>
     {
         super.onAdded();
         this._sprite = this.getEntity().addComponent(new Sprite(this.textures[this.frameIndex], this.config))
+        this.reset();
     }
 
     onRemoved()
