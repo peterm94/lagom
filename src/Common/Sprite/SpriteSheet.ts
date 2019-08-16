@@ -1,0 +1,58 @@
+import * as PIXI from "pixi.js";
+
+/**
+ * Convenient way to load multiple sprites from a single Sprite Sheet.
+ */
+export class SpriteSheet
+{
+    private readonly sheetTexture: PIXI.BaseTexture;
+
+    /**
+     * Create a new SpriteSheet
+     * @param resource The base sprite sheet resource.
+     * @param tileWidth The width of the tiles on the sheet.
+     * @param tileHeight The height of the tiles on the sheet.
+     */
+    constructor(resource: string, private readonly tileWidth: number, private readonly tileHeight: number)
+    {
+        this.sheetTexture = PIXI.BaseTexture.from(resource);
+        this.tileWidth = tileWidth;
+        this.tileHeight = tileHeight;
+
+        // Turn off antialiasing. I'm not even making this optional, who would want it on?
+        this.sheetTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+    }
+
+    /**
+     * Get a texture from the SpriteSheet.
+     * @param column The column index for the texture.
+     * @param row The row index for the texture.
+     * @param width Optional override for the texture width.
+     * @param height Optional override for the texture height.
+     */
+    texture(column: number, row: number, width?: number, height?: number): PIXI.Texture
+    {
+        const w = width || this.tileWidth;
+        const h = height || this.tileHeight;
+
+        return new PIXI.Texture(this.sheetTexture, new PIXI.Rectangle(column * this.tileWidth,
+                                                                      row * this.tileHeight,
+                                                                      w, h));
+    }
+
+    /**
+     * Get multiple textures from the SpriteSheet.
+     * @param frames Desired texture indexes from the SpriteSheet. Supplied as pairs of [column, row].
+     * @param width Optional override for the texture width.
+     * @param height Optional override for the texture height.
+     */
+    textures(frames: [number, number][], width?: number, height?: number): PIXI.Texture[]
+    {
+        const textures = [];
+        for (let frame of frames)
+        {
+            textures.push(this.texture(frame[0], frame[1], width, height));
+        }
+        return textures;
+    }
+}

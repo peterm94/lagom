@@ -38,10 +38,16 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
  */
 export interface SpriteConfig
 {
+    /** X offset from the entity position. */
     xOffset?: number;
+    /** Y offset from the entity position. */
     yOffset?: number;
+    /** X anchor position. This works as a percentage of the width, so 0.5 would be the centre. */
     xAnchor?: number;
+    /** Y anchor position. This works as a percentage of the height, so 0.5 would be the centre. */
     yAnchor?: number;
+    /** Texture scaling in the X direction. A negative number will flip the texture. */
     xScale?: number;
+    /** Texture scaling in the Y direction. A negative number will flip the texture. */
     yScale?: number;
 }

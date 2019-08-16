@@ -8,8 +8,19 @@ import {AnimatedSprite, AnimatedSpriteConfig} from "./AnimatedSprite";
  */
 export interface SpriteAnimation
 {
+    /**
+     * Animation ID.
+     */
     id: number;
+
+    /**
+     * Textures for this animation.
+     */
     textures: PIXI.Texture[];
+
+    /**
+     * Optional configuration for this animation.
+     */
     config?: AnimatedSpriteConfig;
 }
 

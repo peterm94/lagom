@@ -7,8 +7,19 @@ import * as PIXI from "pixi.js";
  */
 export enum AnimationEnd
 {
+    /**
+     * Stop the animation.
+     */
     STOP,
+
+    /**
+     * Reverse the animation.
+     */
     REVERSE,
+
+    /**
+     * Continue the animation from the first frame.
+     */
     LOOP
 }
 
@@ -17,7 +28,14 @@ export enum AnimationEnd
  */
 export interface AnimatedSpriteConfig extends SpriteConfig
 {
+    /**
+     * Speed at which the animation will play.
+     */
     animationSpeed?: number;
+
+    /**
+     * Action to perform when the animation completes.
+     */
     animationEndAction?: AnimationEnd;
 }
 

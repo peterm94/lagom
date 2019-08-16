@@ -4,7 +4,7 @@ import spriteSheet from './resources/spritesheet.png';
 
 import {RenderRect} from "../../Common/PIXIComponents";
 import {Entity} from "../../ECS/Entity";
-import {SpriteSheet} from "../../Common/SpriteSheet";
+import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import {
     DetectCollisionSystem
 } from "../../DetectCollisions/DetectCollisions";
