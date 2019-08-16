@@ -6,12 +6,12 @@ import {MatterEngine} from "../MatterPhysics/MatterPhysics";
 import {Vector} from "matter-js";
 
 import spr_block from './resources/block.png';
-import {Sprite} from "../Common/PIXIComponents";
 import * as Matter from "matter-js";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Entity} from "../ECS/Entity";
 import {Scene} from "../ECS/Scene";
 import {MCollider} from "../MatterPhysics/MatterColliders";
+import {Sprite} from "../Common/Sprite/Sprite";
 
 const loader = new PIXI.Loader();
 

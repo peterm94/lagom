@@ -1,5 +1,4 @@
 import * as PIXI from "pixi.js";
-import {AnimatedSprite, AnimatedSpriteConfig, AnimationEnd, Sprite, SpriteConfig} from "./PIXIComponents";
 
 /**
  * Convenient way to load multiple sprites from a single spritesheet.

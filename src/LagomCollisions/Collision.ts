@@ -1,11 +1,11 @@
 import * as PIXI from "pixi.js";
 import {Component, PIXIComponent} from "../ECS/Component";
 import {Observable} from "../Common/Observer";
-import {Sprite} from "../Common/PIXIComponents";
 import {MathUtil} from "../Common/Util";
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {LagomType} from "../ECS/LifecycleObject";
 import {CollisionMatrix} from "./CollisionMatrix";
+import {Sprite} from "../Common/Sprite/Sprite";
 
 /**
  * Collection of collision detection functions and utilities.

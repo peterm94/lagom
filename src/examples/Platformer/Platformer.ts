@@ -2,7 +2,7 @@ import {Scene} from "../../ECS/Scene";
 import {Game} from "../../ECS/Game";
 import spriteSheet from './resources/spritesheet.png';
 
-import {AnimatedSprite, RenderRect, Sprite, VeryAnimatedSprite} from "../../Common/PIXIComponents";
+import {RenderRect} from "../../Common/PIXIComponents";
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/SpriteSheet";
 import {
@@ -19,6 +19,9 @@ import {Vector} from "matter-js";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectColliders";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
+import {Sprite} from "../../Common/Sprite/Sprite";
+import {AnimatedSprite} from "../../Common/Sprite/AnimatedSprite";
+import {VeryAnimatedSprite} from "../../Common/Sprite/VeryAnimatedSprite";
 
 const Keyboard = require('pixi.js-keyboard');
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
@@ -131,10 +134,26 @@ class Player extends Entity
         this.addComponent(new PlayerControlled());
         this.addComponent(new DetectRigidbody());
 
+        // Static sprite
         // this.addComponent(new Sprite(sprites.texture(0, 16), {xOffset: -8, yOffset: -8}));
-        this.addComponent(new AnimatedSprite(sprites.textures([[0, 16], [2, 16]]),
-                                             {xOffset: -8, yOffset: -8, animationSpeed: 350}));
-        // const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
+
+        // Simple animated sprite
+        // this.addComponent(new AnimatedSprite(sprites.textures([[0, 16], [2, 16]]),
+        //                                      {xOffset: -8, yOffset: -8, animationSpeed: 350}));
+
+        // Full blown sprite with state machine
+        this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE, [
+            {
+                id: PlayerAnimationStates.IDLE,
+                textures: sprites.textures([[0, 16], [2, 16]]),
+                config: {animationSpeed: 350, yOffset: -8, xOffset: -8}
+            },
+            {
+                id: PlayerAnimationStates.WALK,
+                textures: sprites.textures([[0, 17], [1, 17], [2, 17], [3, 17], [4, 17], [5, 17], [6, 17], [7, 17]]),
+                config: {animationSpeed: 70, yOffset: -8, xOffset: -8}
+            }
+        ]));
         // sprite.addAnimation(PlayerAnimationStates.IDLE,
         //                     sprites.animatedConfig([[0, 16], [2, 16]], 350, -8, -8));
         // sprite.addAnimation(PlayerAnimationStates.WALK,
@@ -145,6 +164,7 @@ class Player extends Entity
         //                     sprites.animatedConfig([[6, 17]], 0));
         // sprite.addAnimation(PlayerAnimationStates.JUMP,
         //                     sprites.animatedConfig([[5, 17]], 0));
+
         this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
         this.addComponent(new RenderRect(8, 16, -4, -8));
     }
