@@ -2,6 +2,9 @@ import {FrameTrigger} from "../FrameTrigger";
 import {Sprite, SpriteConfig} from "./Sprite";
 import * as PIXI from "pixi.js";
 
+/**
+ * Animation end action.
+ */
 export enum AnimationEnd
 {
     STOP,
@@ -9,20 +12,30 @@ export enum AnimationEnd
     LOOP
 }
 
+/**
+ * Configuration for Animated Sprites.
+ */
 export interface AnimatedSpriteConfig extends SpriteConfig
 {
     animationSpeed?: number;
     animationEndAction?: AnimationEnd;
 }
 
+/**
+ * Animated Sprite Component type.
+ */
 export class AnimatedSprite extends FrameTrigger<number>
 {
+    animationEndAction: AnimationEnd = AnimationEnd.LOOP;
+
     private frameIndex: number = 0;
     private frameAdvancer: number = 1;
-
-    animationEndAction: AnimationEnd = AnimationEnd.LOOP;
     private _sprite: Sprite | null = null;
 
+    /**
+     * Apply configuration to this AnimatedSprite.
+     * @param config Any desired configuration options.
+     */
     public applyConfig(config: AnimatedSpriteConfig)
     {
         if (this._sprite) this._sprite.applyConfig(config);
@@ -32,7 +45,9 @@ export class AnimatedSprite extends FrameTrigger<number>
         if (config.animationEndAction) this.animationEndAction = config.animationEndAction;
     }
 
-
+    /**
+     * Reset the state of the FrameTrigger. This will also reset the sprite to the first animation frame.
+     */
     reset()
     {
         super.reset();
@@ -41,6 +56,11 @@ export class AnimatedSprite extends FrameTrigger<number>
         this.frameAdvancer = 1;
     }
 
+    /**
+     * Create a new AnimatedSprite.
+     * @param textures Textures for the Sprite to use.
+     * @param config Configuration for this Sprite.
+     */
     constructor(protected textures: PIXI.Texture[], readonly config: AnimatedSpriteConfig | null = null)
     {
         super(0);

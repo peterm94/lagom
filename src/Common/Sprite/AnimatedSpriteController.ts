@@ -3,6 +3,9 @@ import {Log} from "../Util";
 import {FrameTrigger} from "../FrameTrigger";
 import {AnimatedSprite, AnimatedSpriteConfig} from "./AnimatedSprite";
 
+/**
+ * Configured SpriteAnimation. Used for AnimatedSprite states.
+ */
 export interface SpriteAnimation
 {
     id: number;
@@ -10,17 +13,24 @@ export interface SpriteAnimation
     config?: AnimatedSpriteConfig;
 }
 
-export class VeryAnimatedSprite extends AnimatedSprite
+/**
+ * Extended version of AnimatedSprite. This allows for different animations to be played, as well as synchronizing
+ * events to specific frames.
+ */
+export class AnimatedSpriteController extends AnimatedSprite
 {
-    get currentState(): number
+    /**
+     * Get the currently playing state.
+     */
+    public get currentState(): number
     {
         return this._currentState;
     }
 
     private readonly animationStates: Map<number, SpriteAnimation> = new Map();
     private readonly events: Map<number, Map<number, () => void>> = new Map();
-    private currentEventMap: Map<number, () => void> | null = null;
 
+    private currentEventMap: Map<number, () => void> | null = null;
     private _currentState: number;
 
     constructor(private initialState: number, animations: SpriteAnimation[])
@@ -59,7 +69,14 @@ export class VeryAnimatedSprite extends AnimatedSprite
         }
     }
 
-    setAnimation(stateId: number, reset: boolean = false)
+    /**
+     * Set the animation to be played.
+     *
+     * @param stateId ID of the animation to play.
+     * @param reset Force reset. If true, will reset the animation. Otherwise, if the specified state is already
+     * active, will do nothing.
+     */
+    public setAnimation(stateId: number, reset: boolean = false)
     {
         // Check if we are already in the desired state.
         if (this._currentState === stateId && !reset) return;
@@ -77,13 +94,19 @@ export class VeryAnimatedSprite extends AnimatedSprite
         }
     }
 
+    /**
+     * Add an event to an animation fame. This will be fired whenever the specified frame triggers.
+     * @param animationId The animation ID for the desired frame.
+     * @param frame The desired frame number.
+     * @param event The event to fire.
+     */
     // TODO this needs to come in with the SpriteAnimation object.
     addEvent(animationId: number, frame: number, event: () => void)
     {
         const animation = this.events.get(animationId);
         if (animation === undefined)
         {
-            Log.warn("Expected animation does not exist on VeryAnimatedSprite.", this, animationId);
+            Log.warn("Expected animation does not exist on AnimatedSpriteController.", this, animationId);
         }
         else
         {

@@ -1,8 +1,16 @@
 import {PIXIComponent} from "../../ECS/Component";
 import * as PIXI from "pixi.js";
 
+/**
+ * Simple Sprite Component.
+ */
 export class Sprite extends PIXIComponent<PIXI.Sprite>
 {
+    /**
+     * Create a new Sprite.
+     * @param texture The Texture for the Sprite.
+     * @param config Configuration for the Sprite.
+     */
     constructor(texture: PIXI.Texture, config: SpriteConfig | null = null)
     {
         super(new PIXI.Sprite(texture));
@@ -10,6 +18,10 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
         if (config) this.applyConfig(config);
     }
 
+    /**
+     * Apply a set of configuration to the Sprite.
+     * @param config Configuration to apply.
+     */
     public applyConfig(config: SpriteConfig)
     {
         if (config.xOffset) this.pixiObj.x = config.xOffset;
@@ -21,6 +33,9 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
     }
 }
 
+/**
+ * Configuration options for the Sprite.
+ */
 export interface SpriteConfig
 {
     xOffset?: number;

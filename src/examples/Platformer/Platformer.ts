@@ -20,8 +20,7 @@ import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectColliders";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {Sprite} from "../../Common/Sprite/Sprite";
-import {AnimatedSprite} from "../../Common/Sprite/AnimatedSprite";
-import {VeryAnimatedSprite} from "../../Common/Sprite/VeryAnimatedSprite";
+import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
 
 const Keyboard = require('pixi.js-keyboard');
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
@@ -142,7 +141,7 @@ class Player extends Entity
         //                                      {xOffset: -8, yOffset: -8, animationSpeed: 350}));
 
         // Full blown sprite with state machine
-        this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE, [
+        this.addComponent(new AnimatedSpriteController(PlayerAnimationStates.IDLE, [
             {
                 id: PlayerAnimationStates.IDLE,
                 textures: sprites.textures([[0, 16], [2, 16]]),
@@ -178,12 +177,12 @@ class PlayerAnimationSystem extends System
 {
     types(): LagomType<Component>[]
     {
-        return [DetectRigidbody, VeryAnimatedSprite];
+        return [DetectRigidbody, AnimatedSpriteController];
     }
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody, sprite: VeryAnimatedSprite) => {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody, sprite: AnimatedSpriteController) => {
 
             // We are on the ground.
             if (body.dxLastFrame > 0)
