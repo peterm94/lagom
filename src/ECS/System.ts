@@ -161,6 +161,13 @@ export abstract class System extends LifecycleObject implements Updatable
         })
     }
 
+    protected runOnEntitiesWithSystem(f: Function)
+    {
+        this.runOn.forEach((value: Component[], key: Entity) => {
+            f(this, key, ...value);
+        })
+    }
+
     /**
      * Return the Scene object that this system belongs to.
      * @returns The parent Scene.

@@ -14,6 +14,7 @@ import {LagomType} from "../../ECS/LifecycleObject";
 import {System} from "../../ECS/System";
 import {TiledMapLoader} from "../../Common/TiledMapLoader";
 import world1 from "./resources/World1.json";
+import world2 from "./resources/World2.json";
 import {Diagnostics} from "../../Common/Debug";
 import {Vector} from "matter-js";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
@@ -21,6 +22,7 @@ import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectCollide
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
+import {FollowCamera, FollowMe} from "../../Common/CameraUtil";
 
 const Keyboard = require('pixi.js-keyboard');
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
@@ -64,10 +66,11 @@ class MainScene extends Scene
         this.addSystem(new GravitySystem());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
         this.addSystem(new PlayerAnimationSystem());
+        this.addSystem(new FollowCamera({centre: true, lerpSpeed: 0.005, yOffset: -10}));
 
         this.addGlobalSystem(new FrameTriggerSystem());
 
-        const world1Map = new TiledMapLoader(world1);
+        const world1Map = new TiledMapLoader(world2);
         const mapLoader: Map<number, (x: number, y: number) => void> = new Map();
         mapLoader.set(12, (x, y) => {
             this.addEntity(new Block(x, y, 12));
@@ -105,7 +108,7 @@ class Block extends Entity
     onAdded(): void
     {
         super.onAdded();
-        this.addComponent(new Sprite(sprites.texture(this.tileId, 0), {}));
+        this.addComponent(new Sprite(sprites.texture(this.tileId, 0)));
         this.addComponent(new RectCollider(0, 0, 16, 16, Layers.SOLIDS));
         this.addComponent(new RenderRect(16, 16));
     }
@@ -132,6 +135,7 @@ class Player extends Entity
         this.addComponent(new GravityAware());
         this.addComponent(new PlayerControlled());
         this.addComponent(new DetectRigidbody());
+        this.addComponent(new FollowMe());
 
         // Static sprite
         // this.addComponent(new Sprite(sprites.texture(0, 16), {xOffset: -8, yOffset: -8}));

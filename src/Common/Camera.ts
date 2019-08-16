@@ -22,8 +22,8 @@ export class Camera
     {
         this.scene = scene;
 
-        this.width = scene.getGame().renderer.view.width;
-        this.height = scene.getGame().renderer.view.height;
+        this.width = scene.getGame().renderer.screen.width;
+        this.height = scene.getGame().renderer.screen.height;
         this.halfHeight = this.height / 2;
         this.halfWidth = this.width / 2;
     }

@@ -3,25 +3,42 @@ import * as PIXI from "pixi.js";
 import {LagomType} from "../ECS/LifecycleObject";
 import {Component} from "../ECS/Component";
 import {Entity} from "../ECS/Entity";
+import {Camera} from "./Camera";
 
 export class FollowMe extends Component
 {
 }
 
+export interface CamOptions
+{
+    centre?: boolean;
+    xOffset?: number;
+    yOffset?: number;
+    lerpSpeed?: number;
+}
+
 export class FollowCamera extends System
 {
     private renderer!: PIXI.Renderer;
+    private camera!: Camera;
 
-    private readonly anchorOffsetX: number;
-    private readonly anchorOffsetY: number;
-    private readonly lerpAmt: number;
+    centre: boolean = true;
+    xOffset: number = 0;
+    yOffset: number = 0;
+    lerpSpeed: number = 0.1;
 
-    constructor(anchorOffsetX: number, anchorOffsetY: number, lerpAmt: number = 0.1)
+
+    constructor(options: CamOptions | null = null)
     {
         super();
-        this.anchorOffsetX = anchorOffsetX;
-        this.anchorOffsetY = anchorOffsetY;
-        this.lerpAmt = lerpAmt;
+
+        if (options)
+        {
+            if (options.centre) this.centre = options.centre;
+            if (options.xOffset) this.xOffset = options.xOffset;
+            if (options.yOffset) this.yOffset = options.yOffset;
+            if (options.lerpSpeed) this.lerpSpeed = options.lerpSpeed;
+        }
     }
 
     onAdded(): void
@@ -29,6 +46,7 @@ export class FollowCamera extends System
         super.onAdded();
 
         this.renderer = this.getScene().getGame().renderer;
+        this.camera = this.getScene().camera;
     }
 
     types(): LagomType<Component>[]
@@ -38,14 +56,21 @@ export class FollowCamera extends System
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity) => {
+        this.runOnEntitiesWithSystem((system: FollowCamera, entity: Entity) => {
 
-            // Hard follow
-            // this.camera.move(entity.transform.x, entity.transform.y, 256, 256);
+            let targetX = entity.transform.x + this.xOffset;
+            let targetY = entity.transform.y + this.yOffset;
+
+            // Calculate camera midpoint
+            if (system.centre)
+            {
+                targetX -= system.camera.halfWidth;
+                targetY -= system.camera.halfHeight;
+            }
 
             // Soft follow
-            this.getScene().camera.moveTowards(entity.transform.x, entity.transform.y, this.anchorOffsetX,
-                                               this.anchorOffsetY, this.lerpAmt);
+            system.camera.moveTowards(targetX, targetY, 0, 0,
+                                      system.lerpSpeed * delta);
         });
     }
 }

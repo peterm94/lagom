@@ -83,7 +83,7 @@ export class CameraDemo extends Scene
         this.addEntity(new CircleBoy(200, 200));
         this.addEntity(new Player("player", 256, 256));
 
-        this.addSystem(new FollowCamera(256, 256));
+        this.addSystem(new FollowCamera({xOffset: 256, yOffset: 256}));
 
         this.addEntity(new DrawTLC(""));
         this.addEntity(new DrawTLC("", 256, 256));
