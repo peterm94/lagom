@@ -2,7 +2,7 @@ import {Scene} from "../../ECS/Scene";
 import {Game} from "../../ECS/Game";
 import spriteSheet from './resources/spritesheet.png';
 
-import {RenderCircle, RenderRect, Sprite, VeryAnimatedSprite} from "../../Common/PIXIComponents";
+import {AnimatedSprite, RenderRect, Sprite, VeryAnimatedSprite} from "../../Common/PIXIComponents";
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/SpriteSheet";
 import {
@@ -19,7 +19,6 @@ import {Vector} from "matter-js";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectColliders";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
-import {Rigidbody} from "../../LagomPhysics/Physics";
 
 const Keyboard = require('pixi.js-keyboard');
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
@@ -132,7 +131,9 @@ class Player extends Entity
         this.addComponent(new PlayerControlled());
         this.addComponent(new DetectRigidbody());
 
-        this.addComponent(new Sprite(sprites.texture(0, 16), {xOffset: -8, yOffset: -8}));
+        // this.addComponent(new Sprite(sprites.texture(0, 16), {xOffset: -8, yOffset: -8}));
+        this.addComponent(new AnimatedSprite(sprites.textures([[0, 16], [2, 16]]),
+                                             {xOffset: -8, yOffset: -8, animationSpeed: 350}));
         // const sprite = this.addComponent(new VeryAnimatedSprite(PlayerAnimationStates.IDLE));
         // sprite.addAnimation(PlayerAnimationStates.IDLE,
         //                     sprites.animatedConfig([[0, 16], [2, 16]], 350, -8, -8));
@@ -173,13 +174,13 @@ class PlayerAnimationSystem extends System
             {
                 // Moving right
                 sprite.setAnimation(PlayerAnimationStates.WALK);
-                sprite.applyConfig({xScale: 1});
+                // sprite.applyConfig({xScale: 1});
             }
             else if (body.dxLastFrame < 0)
             {
                 // Moving left
                 sprite.setAnimation(PlayerAnimationStates.WALK);
-                sprite.applyConfig({xScale: -1});
+                // sprite.applyConfig({xScale: -1});
             }
             else
             {

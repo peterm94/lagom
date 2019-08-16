@@ -4,27 +4,6 @@ import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Observable} from "./Observer";
 
 
-export class Trigger<T>
-{
-    nextTriggerTime: number = -1;
-    onTrigger: Observable<FrameTrigger<T>, T> = new Observable();
-
-    constructor(public triggerInterval: number)
-    {
-    }
-
-    reset()
-    {
-        this.nextTriggerTime = -1;
-    }
-}
-
-// TODO remove the component and use this everywhere instead
-export interface IFrameTrigger<T>
-{
-    trigger: Trigger<T>;
-}
-
 export abstract class FrameTrigger<T> extends Component
 {
     onTrigger: Observable<FrameTrigger<T>, T> = new Observable();
@@ -40,7 +19,10 @@ export abstract class FrameTrigger<T> extends Component
         this.triggerInterval = triggerInterval;
     }
 
-
+    reset()
+    {
+        this.nextTriggerTime = -1;
+    }
 }
 
 

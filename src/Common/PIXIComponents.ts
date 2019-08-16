@@ -1,6 +1,6 @@
 import {PIXIComponent} from "../ECS/Component";
 import * as PIXI from "pixi.js";
-import {FrameTrigger, IFrameTrigger, Trigger} from "./FrameTrigger";
+import {FrameTrigger} from "./FrameTrigger";
 import {Log} from "./Util";
 
 export class Sprite extends PIXIComponent<PIXI.Sprite>
@@ -37,57 +37,45 @@ export interface SpriteConfig
     xAnchor?: number;
     yAnchor?: number;
     xScale?: number;
-    yScale?: number
+    yScale?: number;
 }
 
 
-// TODO extend from SpriteConfig?
-export interface AnimatedSpriteConfig
+export interface AnimatedSpriteConfig extends SpriteConfig
 {
-    textures: PIXI.Texture[];
     animationSpeed?: number;
     animationEndAction?: AnimationEnd;
 }
 
-export class AnimatedSprite extends Sprite implements IFrameTrigger<number>
+export class AnimatedSprite extends FrameTrigger<number>
 {
-    trigger: Trigger<number>;
-
     private frameIndex: number = 0;
     private frameAdvancer: number = 1;
 
-    textures: PIXI.Texture[] = [];
-    animationSpeed: number = 0;
     animationEndAction: AnimationEnd = AnimationEnd.LOOP;
+    private _sprite: Sprite | null = null;
 
-    applyAnimConfig(config: SpriteConfig, animConfig: AnimatedSpriteConfig)
+    private applyConfig(config: AnimatedSpriteConfig)
     {
-        // Apply base sprite config
-        super.applyConfig(config);
+        if (this._sprite) this._sprite.applyConfig(config);
 
         // Do animated sprite stuff
-        this.textures = animConfig.textures;
-        this.animationSpeed = animConfig.animationSpeed || 0;
-        this.animationEndAction = animConfig.animationEndAction || AnimationEnd.LOOP;
+        this.triggerInterval = config.animationSpeed || 0;
+        this.animationEndAction = config.animationEndAction || AnimationEnd.LOOP;
 
         // Do trigger stuff
         this.frameIndex = 0;
         this.frameAdvancer = 1;
-
-        this.trigger.triggerInterval = this.animationSpeed;
-        this.trigger.reset();
+        this.reset();
     }
 
-    constructor(spriteConfig: SpriteConfig,
-                animConfig: AnimatedSpriteConfig)
+    constructor(readonly textures: PIXI.Texture[], readonly config: AnimatedSpriteConfig | null = null)
     {
-        super(animConfig.textures[0], spriteConfig);
+        super(0);
 
-        this.applyAnimConfig(spriteConfig, animConfig);
+        if (config) this.applyConfig(config);
 
-        this.trigger = new Trigger<number>(this.animationSpeed);
-
-        this.trigger.onTrigger.register((caller: FrameTrigger<number>, currFrame: number) => {
+        this.onTrigger.register((caller: FrameTrigger<number>, currFrame: number) => {
 
             let nextFrame = this.frameIndex + this.frameAdvancer;
 
@@ -114,13 +102,27 @@ export class AnimatedSprite extends Sprite implements IFrameTrigger<number>
             }
 
             this.frameIndex = nextFrame;
-            this.pixiObj.texture = this.textures[this.frameIndex];
+
+            if (this._sprite) this._sprite.pixiObj.texture = this.textures[this.frameIndex];
         });
     }
 
     payload(): number
     {
         return this.frameIndex;
+    }
+
+
+    onAdded()
+    {
+        super.onAdded();
+        this._sprite = this.getEntity().addComponent(new Sprite(this.textures[this.frameIndex], this.config))
+    }
+
+    onRemoved()
+    {
+        super.onRemoved();
+        if (this._sprite) this._sprite.destroy();
     }
 }
 
@@ -132,80 +134,87 @@ export interface SpriteAnimation
 
 export class VeryAnimatedSprite extends AnimatedSprite
 {
-    get currentState(): number
-    {
-        return this._currentState;
-    }
-
-    private readonly animationStates: Map<number, AnimatedSpriteConfig> = new Map();
-    private readonly events: Map<number, Map<number, () => void>> = new Map();
-    private currentEventMap: Map<number, () => void> | null = null;
-
-    private _currentState: number;
-
-    constructor(private initialState: number, private animations: SpriteAnimation[])
-    {
-        super({}, animations[0].spriteConfig);
-        this._currentState = initialState;
-    }
-
-    onAdded(): void
-    {
-        super.onAdded();
-        const config = this.animationStates.get(this._currentState);
-        if (config !== undefined)
-        {
-            this.trigger.onTrigger.register(this.spriteChangeFrame.bind(this));
-            this.setAnimation(this._currentState);
-        }
-        else
-        {
-            Log.error("An animation was not added for the requested state: " + this.initialState);
-        }
-    }
-
-    private spriteChangeFrame(caller: FrameTrigger<number>, animationFrame: number)
-    {
-        if (this.currentEventMap !== null)
-        {
-            const event = this.currentEventMap.get(animationFrame);
-            if (event !== undefined)
-            {
-                event();
-            }
-        }
-    }
-
     setAnimation(stateId: number, reset: boolean = false)
     {
-        // Check if we are already in the desired state.
-        if (this._currentState === stateId && !reset) return;
-
-        // Create the new sprite using the factory.
-        const loadedConfig = this.animationStates.get(stateId) || null;
-        if (loadedConfig !== null)
-        {
-            // Apply the configuration to the sprite
-            this.applyAnimConfig({}, loadedConfig);
-            this.currentEventMap = this.events.get(stateId) || null;
-            this._currentState = stateId;
-        }
-    }
-
-    // TODO this needs to come in with the SpriteAnimation object.
-    addEvent(animationId: number, frame: number, event: () => void)
-    {
-        const animation = this.events.get(animationId);
-        if (animation === undefined)
-        {
-            Log.warn("Expected animation does not exist on VeryAnimatedSprite.", this, animationId);
-        }
-        else
-        {
-            animation.set(frame, event);
-        }
     }
 }
+
+// export class VeryAnimatedSprite extends AnimatedSprite
+// {
+//     get currentState(): number
+//     {
+//         return this._currentState;
+//     }
+//
+//     private readonly animationStates: Map<number, AnimatedSpriteConfig> = new Map();
+//     private readonly events: Map<number, Map<number, () => void>> = new Map();
+//     private currentEventMap: Map<number, () => void> | null = null;
+//
+//     private _currentState: number;
+//
+//     constructor(private initialState: number, private animations: SpriteAnimation[])
+//     {
+//         super({}, animations[0].spriteConfig);
+//         this._currentState = initialState;
+//     }
+//
+//     onAdded(): void
+//     {
+//         super.onAdded();
+//         const config = this.animationStates.get(this._currentState);
+//         if (config !== undefined)
+//         {
+//             this.trigger.onTrigger.register(this.spriteChangeFrame.bind(this));
+//             this.setAnimation(this._currentState);
+//         }
+//         else
+//         {
+//             Log.error("An animation was not added for the requested state: " + this.initialState);
+//         }
+//     }
+//
+//     private spriteChangeFrame(caller: FrameTrigger<number>, animationFrame: number)
+//     {
+//         if (this.currentEventMap !== null)
+//         {
+//             const event = this.currentEventMap.get(animationFrame);
+//             if (event !== undefined)
+//             {
+//                 event();
+//             }
+//         }
+//     }
+//
+//     setAnimation(stateId: number, reset: boolean = false)
+//     {
+//         // Check if we are already in the desired state.
+//         if (this._currentState === stateId && !reset) return;
+//
+//         // Create the new sprite using the factory.
+//         const loadedConfig = this.animationStates.get(stateId) || null;
+//         if (loadedConfig !== null)
+//         {
+//             // Apply the configuration to the sprite
+//             this.applyAnimConfig({}, loadedConfig);
+//             this.currentEventMap = this.events.get(stateId) || null;
+//             this._currentState = stateId;
+//         }
+//     }
+//
+//     // TODO this needs to come in with the SpriteAnimation object.
+//     addEvent(animationId: number, frame: number, event: () => void)
+//     {
+//         const animation = this.events.get(animationId);
+//         if (animation === undefined)
+//         {
+//             Log.warn("Expected animation does not exist on VeryAnimatedSprite.", this, animationId);
+//         }
+//         else
+//         {
+//             animation.set(frame, event);
+//         }
+//     }
+// }
 
 export class TextDisp extends PIXIComponent<PIXI.Text>
 {
