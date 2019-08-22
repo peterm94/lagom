@@ -16,7 +16,7 @@ export class Camera
 
     /**
      * Parent scene for this camera.
-     * @param scene
+     * @param scenesp
      */
     constructor(scene: Scene)
     {
@@ -55,14 +55,12 @@ export class Camera
      * Move the camera towards a specific location.
      * @param x X point to move to.
      * @param y Y point to move to.
-     * @param offsetX Offset X amount.
-     * @param offsetY Offset Y amount.
      * @param lerpAmt The liner interpolation percentage to move.
      */
-    moveTowards(x: number, y: number, offsetX: number = 0, offsetY: number = 0, lerpAmt: number = 0.5)
+    moveTowards(x: number, y: number, lerpAmt: number = 0.5)
     {
-        const xdist = x + this.scene.sceneNode.position.x - offsetX;
-        const ydist = y + this.scene.sceneNode.position.y - offsetY;
+        const xdist = x + this.scene.sceneNode.position.x;
+        const ydist = y + this.scene.sceneNode.position.y;
 
         this.translate(MathUtil.lerp(0, xdist, lerpAmt),
                        MathUtil.lerp(0, ydist, lerpAmt));
@@ -88,6 +86,24 @@ export class Camera
     {
         this.scene.sceneNode.angle = angle;
         this.angle = angle;
+    }
+
+    rotate2(angle: number)
+    {
+        const rads = MathUtil.degToRad(angle);
+
+        // Translate to top left corner (origin)
+        let transX = -this.halfWidth;
+        let transY = -this.halfWidth;
+
+        // Rotate
+        this.scene.sceneNode.angle += angle;
+        this.scene.sceneNode.position.x += transX * Math.cos(rads) - transY * Math.sin(rads) + this.halfWidth;
+        this.scene.sceneNode.position.y += transX * Math.sin(rads) + transY * Math.cos(rads) + this.halfHeight;
+
+        // Move it back.
+        // this.scene.sceneNode.position.x += this.halfWidth;
+        // this.scene.sceneNode.position.y += this.halfHeight;
     }
 
     /**

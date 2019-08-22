@@ -43,8 +43,8 @@ export class Platformer extends Game
         super(new MainScene(), {
             width: 256,
             height: 128,
-            resolution: 3,
-            backgroundColor: 0x212B4F,
+            resolution: 4,
+            backgroundColor: 0xad58ac,
             antialias: false
         });
 
@@ -66,11 +66,15 @@ class MainScene extends Scene
         this.addSystem(new GravitySystem());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
         this.addSystem(new PlayerAnimationSystem());
-        this.addSystem(new FollowCamera({centre: true, lerpSpeed: 0.005, yOffset: -10}));
+        this.addSystem(new FollowCamera({centre: true, lerpSpeed: 5, yOffset: 10}));
+
+        this.addSystem(new Rotator());
 
         this.addGlobalSystem(new FrameTriggerSystem());
 
-        const world1Map = new TiledMapLoader(world2);
+        const tileEntity = this.addEntity(new Entity("backgroundTiles"));
+
+        const world1Map = new TiledMapLoader(world1);
         const mapLoader: Map<number, (x: number, y: number) => void> = new Map();
         mapLoader.set(12, (x, y) => {
             this.addEntity(new Block(x, y, 12));
@@ -90,18 +94,18 @@ class MainScene extends Scene
             this.addEntity(new Player(x, y));
         });
 
-        world1Map.load(this, mapLoader);
+        world1Map.load(this, 0, mapLoader);
+        world1Map.loadFn(this, 1, (tileId, x, y) => {
+            tileEntity.addComponent(new Sprite(sprites.textureFromId(tileId), {xOffset: x, yOffset: y}));
+        });
     }
 }
 
 class Block extends Entity
 {
-    private readonly tileId: number;
-
-    constructor(x: number, y: number, tileId: number)
+    constructor(x: number, y: number, private readonly tileId: number)
     {
         super("block", x, y);
-        this.tileId = tileId;
         this.layer = Layers.SOLIDS;
     }
 
@@ -110,7 +114,7 @@ class Block extends Entity
         super.onAdded();
         this.addComponent(new Sprite(sprites.texture(this.tileId, 0)));
         this.addComponent(new RectCollider(0, 0, 16, 16, Layers.SOLIDS));
-        this.addComponent(new RenderRect(16, 16));
+        // this.addComponent(new RenderRect(16, 16));
     }
 }
 
@@ -120,6 +124,28 @@ enum PlayerAnimationStates
     WALK,
     FALLING,
     JUMP,
+}
+
+class Rotator extends System
+{
+    amt = 0.03;
+
+    types(): LagomType<Component>[]
+    {
+        return [];
+    }
+
+    update(delta: number): void
+    {
+        if (Keyboard.isKeyDown('KeyQ'))
+        {
+            this.getScene().camera.rotate2(this.getScene().camera.angle - delta * this.amt)
+        }
+        if (Keyboard.isKeyDown('KeyE'))
+        {
+            this.getScene().camera.rotate2(this.getScene().camera.angle + delta * this.amt)
+        }
+    }
 }
 
 class Player extends Entity
@@ -169,7 +195,7 @@ class Player extends Entity
         ]));
 
         this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
-        this.addComponent(new RenderRect(8, 16, -4, -8));
+        // this.addComponent(new RenderRect(8, 16, -4, -8));
     }
 }
 
@@ -262,12 +288,6 @@ class PlayerMover extends System
                     body.addForce(0, -0.012);
                 }
             }
-        });
-    }
-
-    fixedUpdate(delta: number): void
-    {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider) => {
 
             if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
             {
@@ -277,6 +297,14 @@ class PlayerMover extends System
             {
                 body.move(this.mSpeed * delta, 0);
             }
+        });
+    }
+
+    fixedUpdate(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider) => {
+
+
         });
     }
 }

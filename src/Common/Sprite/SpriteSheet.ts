@@ -40,6 +40,16 @@ export class SpriteSheet
                                                                       w, h));
     }
 
+    textureFromId(id: number): PIXI.Texture
+    {
+        const col = id % (this.sheetTexture.realWidth / this.tileWidth);
+        const row = Math.floor(id / (this.sheetTexture.realHeight / this.tileHeight));
+
+        return new PIXI.Texture(this.sheetTexture, new PIXI.Rectangle(col * this.tileWidth,
+                                                                      row * this.tileHeight,
+                                                                      this.tileWidth, this.tileHeight));
+    }
+
     /**
      * Get multiple textures from the SpriteSheet.
      * @param frames Desired texture indexes from the SpriteSheet. Supplied as pairs of [column, row].

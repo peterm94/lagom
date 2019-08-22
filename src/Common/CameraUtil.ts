@@ -56,6 +56,10 @@ export class FollowCamera extends System
 
     update(delta: number): void
     {
+    }
+
+    fixedUpdate(delta: number): void
+    {
         this.runOnEntitiesWithSystem((system: FollowCamera, entity: Entity) => {
 
             let targetX = entity.transform.x + this.xOffset;
@@ -69,8 +73,7 @@ export class FollowCamera extends System
             }
 
             // Soft follow
-            system.camera.moveTowards(targetX, targetY, 0, 0,
-                                      system.lerpSpeed * delta);
+            system.camera.moveTowards(targetX, targetY, system.lerpSpeed * (delta / 1000));
         });
     }
 }
