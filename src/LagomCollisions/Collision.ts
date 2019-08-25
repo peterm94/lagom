@@ -1,7 +1,7 @@
 import * as PIXI from "pixi.js";
 import {Component, PIXIComponent} from "../ECS/Component";
 import {Observable} from "../Common/Observer";
-import {MathUtil} from "../Common/Util";
+import {MathUtil, Util} from "../Common/Util";
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {LagomType} from "../ECS/LifecycleObject";
 import {CollisionMatrix} from "./CollisionMatrix";
@@ -178,7 +178,7 @@ export abstract class Collider extends PIXIComponent<PIXI.Container>
 
     protected constructor(trigger: boolean = true)
     {
-        super(new PIXI.Container());
+        super(Util.sortedContainer());
         this.isTrigger = trigger;
     }
 }

@@ -10,6 +10,12 @@ import {Scene} from "./Scene";
  */
 export class Entity extends ContainerLifecycleObject
 {
+    set depth(value: number)
+    {
+        this._depth = value;
+        this.transform.zIndex = value;
+    }
+
     readonly componentAddedEvent: Observable<Entity, Component> = new Observable();
     readonly componentRemovedEvent: Observable<Entity, Component> = new Observable();
 
@@ -18,6 +24,7 @@ export class Entity extends ContainerLifecycleObject
 
     transform: PIXI.Container;
     layer: number = 0;
+    private _depth: number = 0;
 
     /**
      * Create a new entity. It must be added to a Game to actually do anything.
@@ -30,7 +37,7 @@ export class Entity extends ContainerLifecycleObject
         super();
         this.name = name;
 
-        this.transform = new PIXI.Container();
+        this.transform = Util.sortedContainer();
         this.transform.x = x;
         this.transform.y = y;
     }

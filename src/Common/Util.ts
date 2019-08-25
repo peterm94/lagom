@@ -1,4 +1,5 @@
 import {Entity} from "../ECS/Entity";
+import * as PIXI from "pixi.js";
 
 export class Util
 {
@@ -24,6 +25,14 @@ export class Util
 
         e.transform.x += mx;
         e.transform.y += my;
+    }
+
+    static sortedContainer(): PIXI.Container
+    {
+        const container = new PIXI.Container();
+        container.sortableChildren = true;
+        container.sortDirty = true;
+        return container;
     }
 }
 

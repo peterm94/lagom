@@ -73,6 +73,7 @@ class MainScene extends Scene
         this.addGlobalSystem(new FrameTriggerSystem());
 
         const tileEntity = this.addEntity(new Entity("backgroundTiles"));
+        tileEntity.depth = -100;
 
         const world1Map = new TiledMapLoader(world1);
         const mapLoader: Map<number, (x: number, y: number) => void> = new Map();

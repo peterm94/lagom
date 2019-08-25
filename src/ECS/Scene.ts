@@ -1,4 +1,4 @@
-import * as PIXI from "pixi.js";
+import * as PIXI from 'pixi.js';
 import {ContainerLifecycleObject, ObjectState, Updatable} from "./LifecycleObject";
 import {Entity} from "./Entity";
 import {System} from "./System";
@@ -7,6 +7,7 @@ import {Observable} from "../Common/Observer";
 import {Game} from "./Game";
 import {LagomType} from "./LifecycleObject";
 import {Camera} from "../Common/Camera";
+import {Util} from "../Common/Util";
 
 /**
  * Scene object type. Should be the main interface used for games using the framework.
@@ -37,12 +38,12 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     constructor()
     {
         super();
-        this.pixiStage = new PIXI.Container();
+        this.pixiStage = Util.sortedContainer();
 
         // set up the nodes for the ECS to interact with and add them to PIXI.
-        this.sceneNode = new PIXI.Container();
+        this.sceneNode = Util.sortedContainer();
         this.sceneNode.name = "scene";
-        this.guiNode = new PIXI.Container();
+        this.guiNode = Util.sortedContainer();
         this.guiNode.name = "gui";
         this.pixiStage.addChild(this.sceneNode, this.guiNode);
     }
