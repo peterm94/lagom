@@ -27,6 +27,11 @@ export class DetectCollisionSystem extends System
         return [DetectCollider, DetectRigidbody];
     }
 
+    update(delta: number): void
+    {
+        // We don't do this around here.
+    }
+
     fixedUpdate(delta: number): void
     {
         // New thing. Move incrementally, alternating x/y until we are either at the destination or have hit something.
@@ -188,11 +193,6 @@ export class DetectCollisionSystem extends System
     removeBody(body: DetectCollider)
     {
         this.detectSystem.remove(body.body);
-    }
-
-    update(delta: number): void
-    {
-        // We don't do this around here.
     }
 
     place_free(collider: DetectCollider, dx: number, dy: number): boolean

@@ -134,6 +134,11 @@ export class MathUtil
         // trig, tan = O(y)/A(x)
         return -Math.atan2((y2 - y1), (x2 - x1));
     }
+
+    static floatEquals(f1: number, f2: number, tolerance: number = 0.001) : boolean
+    {
+        return Math.abs(f1 - f2) < tolerance;
+    }
 }
 
 enum LogLevel

@@ -5,9 +5,7 @@ import spriteSheet from './resources/spritesheet.png';
 import {RenderRect} from "../../Common/PIXIComponents";
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
-import {
-    DetectCollisionSystem
-} from "../../DetectCollisions/DetectCollisions";
+import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
 import {Component} from "../../ECS/Component";
 import {LagomType} from "../../ECS/LifecycleObject";
@@ -16,13 +14,13 @@ import {TiledMapLoader} from "../../Common/TiledMapLoader";
 import world1 from "./resources/World1.json";
 import world2 from "./resources/World2.json";
 import {Diagnostics} from "../../Common/Debug";
-import {Vector} from "matter-js";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectColliders";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
 import {FollowCamera, FollowMe} from "../../Common/CameraUtil";
+import {Log} from "../../Common/Util";
 
 const Keyboard = require('pixi.js-keyboard');
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
@@ -68,14 +66,12 @@ class MainScene extends Scene
         this.addSystem(new PlayerAnimationSystem());
         this.addSystem(new FollowCamera({centre: true, lerpSpeed: 5, yOffset: 10}));
 
-        this.addSystem(new Rotator());
-
         this.addGlobalSystem(new FrameTriggerSystem());
 
         const tileEntity = this.addEntity(new Entity("backgroundTiles"));
         tileEntity.depth = -100;
 
-        const world1Map = new TiledMapLoader(world1);
+        const world1Map = new TiledMapLoader(world2);
         const mapLoader: Map<number, (x: number, y: number) => void> = new Map();
         mapLoader.set(12, (x, y) => {
             this.addEntity(new Block(x, y, 12));
@@ -96,9 +92,9 @@ class MainScene extends Scene
         });
 
         world1Map.load(this, 0, mapLoader);
-        world1Map.loadFn(this, 1, (tileId, x, y) => {
-            tileEntity.addComponent(new Sprite(sprites.textureFromId(tileId), {xOffset: x, yOffset: y}));
-        });
+        // world1Map.loadFn(this, 1, (tileId, x, y) => {
+        //     tileEntity.addComponent(new Sprite(sprites.textureFromId(tileId), {xOffset: x, yOffset: y}));
+        // });
     }
 }
 
@@ -154,6 +150,7 @@ class Player extends Entity
     constructor(x: number, y: number)
     {
         super("player", x, y);
+        this.depth = 10;
     }
 
     onAdded(): void
@@ -196,7 +193,7 @@ class Player extends Entity
         ]));
 
         this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
-        // this.addComponent(new RenderRect(8, 16, -4, -8));
+        this.addComponent(new RenderRect(8, 16, -4, -8));
     }
 }
 
@@ -211,18 +208,18 @@ class PlayerAnimationSystem extends System
         return [DetectRigidbody, AnimatedSpriteController];
     }
 
-    update(delta: number): void
+    fixedUpdate(delta: number): void
     {
         this.runOnEntities((entity: Entity, body: DetectRigidbody, sprite: AnimatedSpriteController) => {
 
             // We are on the ground.
-            if (body.dxLastFrame > 0)
+            if (body.dxLastFrame > 0.001)
             {
                 // Moving right
                 sprite.setAnimation(PlayerAnimationStates.WALK);
                 sprite.applyConfig({xScale: 1});
             }
-            else if (body.dxLastFrame < 0)
+            else if (body.dxLastFrame < -0.001)
             {
                 // Moving left
                 sprite.setAnimation(PlayerAnimationStates.WALK);
@@ -234,15 +231,19 @@ class PlayerAnimationSystem extends System
                 sprite.setAnimation(PlayerAnimationStates.IDLE);
             }
             // We are in the air.
-            if (body.dyLastFrame > 0)
+            if (body.dyLastFrame > 0.001)
             {
                 sprite.setAnimation(PlayerAnimationStates.FALLING);
             }
-            else if (body.dyLastFrame < 0)
+            else if (body.dyLastFrame < -0.001)
             {
                 sprite.setAnimation(PlayerAnimationStates.JUMP);
             }
         });
+    }
+
+    update(delta: number): void
+    {
     }
 }
 
@@ -272,7 +273,7 @@ class GravitySystem extends System
 class PlayerMover extends System
 {
     readonly mSpeed = 0.07;
-    readonly jumpPower = Vector.create(0, -0.004);
+    readonly jumpPower = -0.012;
 
     types(): LagomType<Component>[]
     {
@@ -286,7 +287,7 @@ class PlayerMover extends System
             {
                 if (!collider.place_free(0, 2))
                 {
-                    body.addForce(0, -0.012);
+                    body.addForce(0, this.jumpPower);
                 }
             }
 
