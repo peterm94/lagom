@@ -66,13 +66,27 @@ export class Entity extends ContainerLifecycleObject
 
     /**
      * Get the first component of a given type.
-     * @param type the type of component to search for.
-     * @returns The component if found, otherwise null.
+     * @param type The type of component to search for.
+     * @param creator An optional function that will create a component if it is not present on an entity. This will
+     * also add it to the entity. It will not be available until the next game tick.
+     * @returns The component if found or created, otherwise null.
      */
-    getComponent<T extends Component>(type: LagomType<Component>): T | null
+    getComponent<T extends Component>(type: LagomType<Component>, creator?: () => Component): T | null
     {
         const found = this.components.find(value => value instanceof type);
-        return found != undefined ? found as T : null;
+        if (found != undefined)
+        {
+            return found as T;
+        }
+        else if (creator)
+        {
+            // TODO this won't be added in time? may cause quirks.
+            return this.addComponent(creator()) as T;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     onAdded()

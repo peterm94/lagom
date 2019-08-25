@@ -225,7 +225,7 @@ class PlayerAnimationSystem extends System
                 sprite.setAnimation(PlayerAnimationStates.WALK);
                 sprite.applyConfig({xScale: -1});
             }
-            else
+            else if (body.dxLastFrame == 0)
             {
                 // Idle
                 sprite.setAnimation(PlayerAnimationStates.IDLE);
@@ -299,14 +299,6 @@ class PlayerMover extends System
             {
                 body.move(this.mSpeed * delta, 0);
             }
-        });
-    }
-
-    fixedUpdate(delta: number): void
-    {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider) => {
-
-
         });
     }
 }
