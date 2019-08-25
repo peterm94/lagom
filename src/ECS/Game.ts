@@ -6,7 +6,8 @@ import {Scene} from "./Scene";
 // keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
 const Keyboard = require('pixi.js-keyboard');
 
-// const Mouse = require('pixi.js-mouse');
+// https://www.npmjs.com/package/pixi.js-mouse
+const Mouse = require('pixi.js-mouse');
 
 class Diag
 {
@@ -21,6 +22,9 @@ class Diag
  */
 export class Game extends ContainerLifecycleObject
 {
+    static mouse = Mouse;
+    static keyboard = Keyboard;
+
     // Set this to true to end the game
     gameOver: boolean = false;
 
@@ -143,12 +147,12 @@ export class Game extends ContainerLifecycleObject
     {
         super.update(delta);
 
-        // Mouse.update();
         this.currentScene.update(delta);
 
         // TODO this is fine here, but we should document it. If something in fixedUpdate() is looking for keyboard
         //  events it is going to have a bad time.
-        Keyboard.update();
+        Game.keyboard.update();
+        Game.mouse.update();
     }
 
     fixedUpdate(delta: number): void

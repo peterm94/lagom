@@ -21,8 +21,10 @@ import {Sprite} from "../../Common/Sprite/Sprite";
 import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
 import {FollowCamera, FollowMe} from "../../Common/CameraUtil";
 import {Log} from "../../Common/Util";
+import {Key} from "../../Input/Key";
+import {Button} from "../../Input/Button";
 
-const Keyboard = require('pixi.js-keyboard');
+
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
 const collisionMatrix = new CollisionMatrix();
 
@@ -134,11 +136,11 @@ class Rotator extends System
 
     update(delta: number): void
     {
-        if (Keyboard.isKeyDown('KeyQ'))
+        if (Game.keyboard.isKeyDown(Key.KeyQ))
         {
             this.getScene().camera.rotate2(this.getScene().camera.angle - delta * this.amt)
         }
-        if (Keyboard.isKeyDown('KeyE'))
+        if (Game.keyboard.isKeyDown(Key.KeyE))
         {
             this.getScene().camera.rotate2(this.getScene().camera.angle + delta * this.amt)
         }
@@ -283,7 +285,7 @@ class PlayerMover extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider) => {
-            if (Keyboard.isKeyPressed('ArrowUp', 'KeyW'))
+            if (Game.keyboard.isKeyPressed(Key.ArrowUp, Key.KeyW))
             {
                 if (!collider.place_free(0, 2))
                 {
@@ -291,13 +293,18 @@ class PlayerMover extends System
                 }
             }
 
-            if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
+            if (Game.keyboard.isKeyDown(Key.ArrowLeft, Key.KeyA))
             {
                 body.move(-this.mSpeed * delta, 0);
             }
-            if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
+            if (Game.keyboard.isKeyDown(Key.ArrowRight, Key.KeyD))
             {
                 body.move(this.mSpeed * delta, 0);
+            }
+
+            if (Game.mouse.isButtonDown(Button.LEFT))
+            {
+                this.getScene().getGame().renderer.backgroundColor += 0x00FFFF;
             }
         });
     }
