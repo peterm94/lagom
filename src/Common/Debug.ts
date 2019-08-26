@@ -7,7 +7,6 @@ import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
 import {Game} from "../ECS/Game";
 import {LagomType} from "../ECS/LifecycleObject";
-import {Log} from "./Util";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -111,27 +110,26 @@ class FpsUpdater extends System
         if ((this.frameCount % this.printFrame) === 0)
         {
             this.runOnEntities((entity: Entity, text: TextDisp, tracker: FpsTracker) => {
-                {
-                    text.pixiObj.text = `${this.avgUpdateDt.toFixed(2)}`;
 
-                    if (tracker.verbose)
-                    {
-                        text.pixiObj.text =
-                            `U: ${delta.toFixed(2)}ms `
-                            + `// ${(1000 / delta).toFixed(2)}hz `
-                            + `// ${this.avgUpdateDt.toFixed(2)}hz`
-                            + `\nFixedU: ${this.fixedDt.toFixed(2)}ms `
-                            + `// ${(1000 / this.fixedDt).toFixed(2)}hz `
-                            + `// ${this.avgFixedUpdateDt.toFixed(2)}hz`
-                            + `\nUpdateTime: ${this.game.diag.updateTime.toFixed(2)}ms `
-                            + `// ${this.avgUpdate.toFixed(2)}ms`
-                            + `\nFixedUpdateTime: ${this.game.diag.fixedUpdateTime.toFixed(2)}ms `
-                            + `// ${this.avgFixedUpdate.toFixed(2)}ms`
-                            + `\nRenderTime: ${this.game.diag.renderTime.toFixed(2)}ms `
-                            + `// ${this.avgRender.toFixed(2)}ms`
-                            + `\nTotalFrameTime: ${this.game.diag.totalFrameTime.toFixed(2)}ms `
-                            + `// ${this.avgFrame.toFixed(2)}ms`
-                    }
+                text.pixiObj.text = `${this.avgUpdateDt.toFixed(2)}`;
+
+                if (tracker.verbose)
+                {
+                    text.pixiObj.text =
+                        `U: ${delta.toFixed(2)}ms `
+                        + `// ${(1000 / delta).toFixed(2)}hz `
+                        + `// ${this.avgUpdateDt.toFixed(2)}hz`
+                        + `\nFixedU: ${this.fixedDt.toFixed(2)}ms `
+                        + `// ${(1000 / this.fixedDt).toFixed(2)}hz `
+                        + `// ${this.avgFixedUpdateDt.toFixed(2)}hz`
+                        + `\nUpdateTime: ${this.game.diag.updateTime.toFixed(2)}ms `
+                        + `// ${this.avgUpdate.toFixed(2)}ms`
+                        + `\nFixedUpdateTime: ${this.game.diag.fixedUpdateTime.toFixed(2)}ms `
+                        + `// ${this.avgFixedUpdate.toFixed(2)}ms`
+                        + `\nRenderTime: ${this.game.diag.renderTime.toFixed(2)}ms `
+                        + `// ${this.avgRender.toFixed(2)}ms`
+                        + `\nTotalFrameTime: ${this.game.diag.totalFrameTime.toFixed(2)}ms `
+                        + `// ${this.avgFrame.toFixed(2)}ms`
                 }
             });
         }

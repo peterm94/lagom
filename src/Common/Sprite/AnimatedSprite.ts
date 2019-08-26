@@ -90,7 +90,7 @@ export class AnimatedSprite extends FrameTrigger<number>
             let nextFrame = this.frameIndex + this.frameAdvancer;
 
             // Check for after last or first frame to trigger the end action.
-            if (nextFrame == -1 || nextFrame == this.textures.length)
+            if (nextFrame === -1 || nextFrame === this.textures.length)
             {
                 switch (this.animationEndAction)
                 {

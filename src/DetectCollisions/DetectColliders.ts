@@ -25,7 +25,7 @@ export abstract class DetectCollider extends Component
     {
         super();
         // Add a backref
-        (<any>this.body).lagom_component = this;
+        (this.body as any).lagom_component = this;
     }
 
     onAdded(): void

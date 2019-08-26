@@ -74,7 +74,7 @@ export class Entity extends ContainerLifecycleObject
     getComponent<T extends Component>(type: LagomType<Component>, creator?: () => Component): T | null
     {
         const found = this.components.find(value => value instanceof type);
-        if (found != undefined)
+        if (found !== undefined)
         {
             return found as T;
         }

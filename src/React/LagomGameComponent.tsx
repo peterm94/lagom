@@ -1,8 +1,5 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
 import {Game} from "../ECS/Game";
-import {Inspector} from "../Inspector/Inspector";
-import {EntityList} from "./InspectorComponents";
 
 interface IMainProps
 {
@@ -39,7 +36,7 @@ export class LagomGameComponent extends React.Component<IMainProps, {}>
     }
 
     /**
-     * Simply render the div that will contain the Game Renderer.
+     * Simdply render the div that will contain the Game Renderer.
      */
     render()
     {

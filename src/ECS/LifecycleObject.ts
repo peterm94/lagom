@@ -37,7 +37,7 @@ export abstract class LifecycleObject
         {
             // TODO throw or something
             Log.error("Object has no parent :( Use onAdded() for any initialization logic instead of the contructor.");
-            return <any>null;
+            return null as any;
         }
 
         return this.parent;

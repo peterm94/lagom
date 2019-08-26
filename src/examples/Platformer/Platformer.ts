@@ -20,7 +20,6 @@ import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
 import {FollowCamera, FollowMe} from "../../Common/CameraUtil";
-import {Log} from "../../Common/Util";
 import {Key} from "../../Input/Key";
 import {Button} from "../../Input/Button";
 
@@ -227,7 +226,7 @@ class PlayerAnimationSystem extends System
                 sprite.setAnimation(PlayerAnimationStates.WALK);
                 sprite.applyConfig({xScale: -1});
             }
-            else if (body.dxLastFrame == 0)
+            else if (body.dxLastFrame === 0)
             {
                 // Idle
                 sprite.setAnimation(PlayerAnimationStates.IDLE);

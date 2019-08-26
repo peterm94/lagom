@@ -1,5 +1,5 @@
 import {Component} from "../ECS/Component";
-import {Log, Util} from "../Common/Util";
+import {Util} from "../Common/Util";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
 import {LagomType} from "../ECS/LifecycleObject";
@@ -66,7 +66,7 @@ export class DetectCollisionSystem extends System
                     const potentials = collider.body.potentials();
                     for (let potential of potentials)
                     {
-                        const otherComp = (<any>potential).lagom_component as DetectCollider;
+                        const otherComp = (potential as any).lagom_component as DetectCollider;
                         const result = new Result();
 
                         // Check layers, then do actual collision check
@@ -104,7 +104,7 @@ export class DetectCollisionSystem extends System
                     const potentials = collider.body.potentials();
                     for (let potential of potentials)
                     {
-                        const otherComp = (<any>potential).lagom_component;
+                        const otherComp = (potential as any).lagom_component;
                         const result = new Result();
 
                         // Check layers, then do actual collision check
@@ -209,7 +209,7 @@ export class DetectCollisionSystem extends System
         const potentials = collider.body.potentials();
         for (let potential of potentials)
         {
-            const otherComp = (<any>potential).lagom_component as DetectCollider;
+            const otherComp = (potential as any).lagom_component as DetectCollider;
 
             if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                 && collider.body.collides(potential))

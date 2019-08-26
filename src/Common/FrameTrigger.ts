@@ -42,7 +42,7 @@ export class FrameTriggerSystem extends GlobalSystem
         this.runOnComponentsWithSystem((system: FrameTriggerSystem, triggers: FrameTrigger<any>[]) => {
             for (let trigger of triggers)
             {
-                if (trigger.nextTriggerTime == -1)
+                if (trigger.nextTriggerTime === -1)
                 {
                     // First trigger. Synchronise the component to the system.
                     trigger.onTrigger.trigger(trigger, trigger.payload());

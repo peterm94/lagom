@@ -18,11 +18,6 @@ class EntityStuff
 
 export class Inspector extends GlobalSystem
 {
-    constructor()
-    {
-        super();
-    }
-
     @observable public entities: string[] = [];
     @observable public inspectingEntity: Entity | null = null;
     @observable public entityStuff: EntityStuff = new EntityStuff(0, 0);

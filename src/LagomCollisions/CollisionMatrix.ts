@@ -43,7 +43,7 @@ export class CollisionMatrix
     {
         const layerMask = this.layers.get(CollisionMatrix.layerInternal(layer1));
         if (layerMask === undefined) return false;
-        return (layerMask & 1 << CollisionMatrix.layerInternal(layer2)) != 0;
+        return (layerMask & 1 << CollisionMatrix.layerInternal(layer2)) !== 0;
     }
 
     /**

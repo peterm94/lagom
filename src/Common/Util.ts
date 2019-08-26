@@ -207,17 +207,17 @@ export class MultiMap<K, V>
 
     public containsKey(key: K): boolean
     {
-        return this.entries.find(entry => entry.key == key) !== undefined;
+        return this.entries.find(entry => entry.key === key) !== undefined;
     }
 
     public containsValue(value: V): boolean
     {
-        return this.entries.find(entry => entry.value == value) !== undefined;
+        return this.entries.find(entry => entry.value === value) !== undefined;
     }
 
     public containsEntry(key: K, value: V): boolean
     {
-        return this.entries.find(entry => entry.key == key && entry.value == value) != undefined;
+        return this.entries.find(entry => entry.key === key && entry.value === value) !== undefined;
     }
 
     public remove(key: K, value: V)

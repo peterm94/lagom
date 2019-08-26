@@ -126,7 +126,7 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     getSystem<T extends System>(type: LagomType<System>): T | null
     {
         const found = this.systems.find(value => value instanceof type);
-        return found != undefined ? found as T : null;
+        return found !== undefined ? found as T : null;
     }
 
     /**
@@ -137,7 +137,7 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     getGlobalSystem<T extends GlobalSystem>(type: LagomType<GlobalSystem>): T | null
     {
         const found = this.globalSystems.find(value => value instanceof type);
-        return found != undefined ? found as T : null;
+        return found !== undefined ? found as T : null;
     }
 
     /**
@@ -149,7 +149,7 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     getEntityWithName<T extends Entity>(name: string): T | null
     {
         const found = this.entities.find(value => value.name === name);
-        return found != undefined ? found as T : null;
+        return found !== undefined ? found as T : null;
     }
 
     /**
