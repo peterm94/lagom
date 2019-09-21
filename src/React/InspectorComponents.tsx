@@ -8,7 +8,7 @@ import {Component} from "../ECS/Component";
 @observer
 export class InspectorComponent extends React.Component<{ game: Game }, {}>
 {
-    private inspector: Inspector;
+    private readonly inspector: Inspector;
 
     constructor(props: { game: Game })
     {
@@ -20,20 +20,22 @@ export class InspectorComponent extends React.Component<{ game: Game }, {}>
     {
         return <div>
             <table>
+                <tbody>
                 <tr>
-                    <th>Entities</th>
-                    <th>Entity Info</th>
+                    <th style={{textAlign: "left"}}>Entities</th>
+                    <th style={{textAlign: "left"}}>Entity Info</th>
                 </tr>
                 <tr>
-                    <td>
+                    <td style={{verticalAlign: "top"}}>
                         <EntityList inspector={this.inspector}/>
                     </td>
-                    <td>
+                    <td style={{verticalAlign: "top"}}>
                         <EntityInfo inspector={this.inspector}/>
                     </td>
                 </tr>
+                </tbody>
             </table>
-        </div>;
+        </div>
     }
 }
 
@@ -44,16 +46,16 @@ export class EntityList extends React.Component<{ inspector: Inspector }>
     {
         const entities = this.props.inspector.entities;
 
-        return (<ul>{entities.map((item, idx) => {
+        return <ul>{entities.map((item, idx) => {
             return <li key={idx}>
                 <button onClick={this.entitySelected.bind(this, idx)} key={idx}>{item}</button>
             </li>
-        })}</ul>)
+        })}</ul>
     }
 
     private entitySelected(idx: number)
     {
-        this.props.inspector.selectEntity(idx)
+        this.props.inspector.selectEntity(idx);
     }
 }
 
@@ -65,37 +67,46 @@ export class EntityInfo extends React.Component<{ inspector: Inspector }, {}>
         const entity = this.props.inspector.inspectingEntity;
         if (entity !== null)
         {
-            return (<div>{this.basicInfo(entity)}{this.componentList(entity)}</div>)
+            return (<div>
+                {this.basicInfo()}
+                {this.componentList(entity)}
+            </div>)
         }
         return null;
     }
 
     private componentList(entity: Entity)
     {
-        return <ul>{entity.components.map((item, idx) => {
-            return <li key={idx}>{item.constructor.name}
-                <pre>{JSON.stringify(item, (key: string, value: any) => {
-                    if (value instanceof Component)
-                    {
-                        return value;
-                    }
-                    // Ignore the warning, it works.
-                    if (!(value instanceof Object))
-                    {
-                        return value;
-                    }
-                    return undefined;
-                }, 4)}</pre>
-            </li>
-        })}</ul>;
+        return <div>{entity.components.map((item, idx) => {
+            return <div key={idx}>
+                <pre>
+                    {item.constructor.name}<br/>
+                    {JSON.stringify(item, (key: string, value: any) => {
+                        if (value instanceof Component)
+                        {
+                            return value;
+                        }
+                        // Don't attempt to display complex types. Can work on this in the future...
+                        if (!(value instanceof Object))
+                        {
+                            return value;
+                        }
+                        return undefined;
+                    }, 4)}
+                </pre>
+            </div>
+        })}</div>
     }
 
-    private basicInfo(entity: Entity)
+    private basicInfo()
     {
         if (this.props.inspector.entityStuff)
         {
             return <div>
-                <pre>{JSON.stringify(this.props.inspector.entityStuff, null, 4)}</pre>
+                <pre>
+                    Position<br/>
+                    {JSON.stringify(this.props.inspector.entityStuff, null, 4)}
+                </pre>
             </div>
         }
         return null;
