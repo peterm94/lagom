@@ -83,11 +83,15 @@ export class DetectCollisionSystem extends System
 
                                 DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
                                                                           otherComp, collider, result);
+                                DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                          collider, otherComp, result);
                             }
                             else
                             {
                                 DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
                                                                         otherComp, collider, result);
+                                DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                                                        collider, otherComp, result);
                             }
                         }
                     }
@@ -120,11 +124,15 @@ export class DetectCollisionSystem extends System
                                 body.velocityY = 0;
                                 DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
                                                                           otherComp, collider, result);
+                                DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                          collider, otherComp, result);
                             }
                             else
                             {
                                 DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
                                                                         otherComp, collider, result);
+                                DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                                                        collider, otherComp, result);
                             }
                         }
                     }

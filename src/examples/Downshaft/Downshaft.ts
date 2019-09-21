@@ -19,7 +19,8 @@ import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectColliders";
 import {Key} from "../../Input/Key";
-import {MathUtil} from "../../Common/Util";
+import {Log, MathUtil} from "../../Common/Util";
+import {RenderRect} from "../../Common/PIXIComponents";
 
 const playerSheet = new SpriteSheet(playerSpriteSheet, 32, 32);
 const wallSheet = new SpriteSheet(wallSpriteSheet, 32, 32);
@@ -27,7 +28,8 @@ const wallSheet = new SpriteSheet(wallSpriteSheet, 32, 32);
 enum Layers
 {
     Solid,
-    Player
+    Player,
+    EndTrigger
 }
 
 export class Downshaft extends Game
@@ -53,6 +55,7 @@ class MainScene extends Scene
 
         const matrix = new CollisionMatrix();
         matrix.addCollision(Layers.Solid, Layers.Player);
+        matrix.addCollision(Layers.Player, Layers.EndTrigger);
 
         this.addEntity(new Diagnostics("white"));
 
@@ -78,6 +81,9 @@ class MainScene extends Scene
 
         // Make some stuff
         this.createStuff();
+
+        // Add the end trigger
+        this.addEntity(new NextLevelTrigger(leftWallX, topY + gameHeight * 32));
 
         this.addSystem(new PlayerMover());
         this.addSystem(new VerticalFollowCamera());
@@ -132,6 +138,25 @@ class MainScene extends Scene
                 }
             }
         }
+    }
+}
+
+class NextLevelTrigger extends Entity
+{
+    constructor(x: number, y: number)
+    {
+        super("level end trigger", x, y);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+
+        const trigger = this.addComponent(new RectCollider(0, 0, 288, 32, Layers.EndTrigger, 0, true));
+        trigger.onTriggerEnter.register((caller, data) => {
+            // Restart the level
+            this.getScene().getGame().setScene(new MainScene());
+        });
     }
 }
 
