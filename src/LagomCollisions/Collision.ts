@@ -81,7 +81,7 @@ export class Collision
      */
     static pointInCircle(x: number, y: number, circle: CircleCollider): boolean
     {
-        const cp = circle.pixiObj.getGlobalPosition(<any>undefined, true);
+        const cp = circle.pixiObj.getGlobalPosition(undefined as any, true);
         return MathUtil.pointDistance(x, y, cp.x, cp.y) < circle.radius;
     }
 
@@ -95,7 +95,7 @@ export class Collision
     static pointInRectangle(x: number, y: number, rect: BoxCollider): boolean
     {
         // TODO check rotation cases
-        const anchor = rect.pixiObj.getGlobalPosition(<any>undefined, true);
+        const anchor = rect.pixiObj.getGlobalPosition(undefined as any, true);
 
         return x > anchor.x && x < anchor.x + rect.width &&
             y > anchor.y && y < anchor.y + rect.height;
@@ -110,8 +110,8 @@ export class Collision
     static checkCollisionCircleCircle(c1: CircleCollider, c2: CircleCollider): boolean
     {
         // TODO check how offsets work.. i think global handles it but make sure
-        let p1 = c1.pixiObj.getGlobalPosition(<any>undefined, true);
-        let p2 = c2.pixiObj.getGlobalPosition(<any>undefined, true);
+        let p1 = c1.pixiObj.getGlobalPosition(undefined as any, true);
+        let p2 = c2.pixiObj.getGlobalPosition(undefined as any, true);
 
         const dst = MathUtil.distanceSquared(p1.x, p1.y, p2.x, p2.y);
         const rad = Math.pow(c1.radius + c2.radius, 2);
@@ -127,8 +127,8 @@ export class Collision
     static checkCollisionBoxBox(box1: BoxCollider, box2: BoxCollider): boolean
     {
 
-        const anchor1 = box1.pixiObj.getGlobalPosition(<any>undefined, true);
-        const anchor2 = box2.pixiObj.getGlobalPosition(<any>undefined, true);
+        const anchor1 = box1.pixiObj.getGlobalPosition(undefined as any, true);
+        const anchor2 = box2.pixiObj.getGlobalPosition(undefined as any, true);
 
 
         // TODO this only works for axis aligned
@@ -160,8 +160,8 @@ export class Collision
     {
 
         // Find the closest point on the box edge to the circle and check the distance.
-        const boxAnchor = box.pixiObj.getGlobalPosition(<any>undefined, true);
-        const circleAnchor = circle.pixiObj.getGlobalPosition(<any>undefined, true);
+        const boxAnchor = box.pixiObj.getGlobalPosition(undefined as any, true);
+        const circleAnchor = circle.pixiObj.getGlobalPosition(undefined as any, true);
 
         return MathUtil.distanceSquared(circleAnchor.x, circleAnchor.y,
                                         Math.max(boxAnchor.x, Math.min(circleAnchor.x, boxAnchor.x + box.width)),

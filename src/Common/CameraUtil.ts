@@ -1,5 +1,4 @@
 import {System} from "../ECS/System";
-import * as PIXI from "pixi.js";
 import {LagomType} from "../ECS/LifecycleObject";
 import {Component} from "../ECS/Component";
 import {Entity} from "../ECS/Entity";
@@ -19,7 +18,6 @@ export interface CamOptions
 
 export class FollowCamera extends System
 {
-    private renderer!: PIXI.Renderer;
     private camera!: Camera;
 
     centre: boolean = true;
@@ -45,7 +43,6 @@ export class FollowCamera extends System
     {
         super.onAdded();
 
-        this.renderer = this.getScene().getGame().renderer;
         this.camera = this.getScene().camera;
     }
 

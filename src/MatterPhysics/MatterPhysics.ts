@@ -47,8 +47,8 @@ export class MatterEngine extends GlobalSystem
             for (let i = 0; i < event.pairs.length; i++)
             {
                 const pair = event.pairs[i];
-                const compA = (<any>pair.bodyA).lagom_component as MCollider;
-                const compB = (<any>pair.bodyB).lagom_component as MCollider;
+                const compA = (pair.bodyA as any).lagom_component as MCollider;
+                const compB = (pair.bodyB as any).lagom_component as MCollider;
 
                 // Call the event for both colliders.
                 compA.onCollisionEnter.trigger(compA, compB);
@@ -65,8 +65,8 @@ export class MatterEngine extends GlobalSystem
             for (let i = 0; i < event.pairs.length; i++)
             {
                 const pair = event.pairs[i];
-                const compA = (<any>pair.bodyA).lagom_component as MCollider;
-                const compB = (<any>pair.bodyB).lagom_component as MCollider;
+                const compA = (pair.bodyA as any).lagom_component as MCollider;
+                const compB = (pair.bodyB as any).lagom_component as MCollider;
 
                 compA.onCollision.trigger(compA, compB);
                 compB.onCollision.trigger(compB, compA);
@@ -77,8 +77,8 @@ export class MatterEngine extends GlobalSystem
             for (let i = 0; i < event.pairs.length; i++)
             {
                 const pair = event.pairs[i];
-                const compA = (<any>pair.bodyA).lagom_component as MCollider;
-                const compB = (<any>pair.bodyB).lagom_component as MCollider;
+                const compA = (pair.bodyA as any).lagom_component as MCollider;
+                const compB = (pair.bodyB as any).lagom_component as MCollider;
 
                 compA.onCollisionExit.trigger(compA, compB);
                 compB.onCollisionExit.trigger(compB, compA);

@@ -135,9 +135,19 @@ export class MathUtil
         return -Math.atan2((y2 - y1), (x2 - x1));
     }
 
-    static floatEquals(f1: number, f2: number, tolerance: number = 0.001) : boolean
+    static floatEquals(f1: number, f2: number, tolerance: number = 0.001): boolean
     {
         return Math.abs(f1 - f2) < tolerance;
+    }
+
+    /**
+     * Return a random integer within the given range.
+     * @param min The minimum value, inclusive.
+     * @param max The maximum value, exclusive.
+     */
+    static randomRange(min: number, max: number): number
+    {
+        return Math.floor(Math.random() * (max - min)) + min;
     }
 }
 

@@ -2,11 +2,9 @@ import * as Matter from "matter-js";
 import {Component} from "../ECS/Component";
 import {Observable} from "../Common/Observer";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
-import * as PIXI from "pixi.js";
 import {Log} from "../Common/Util";
 import {MatterEngine} from "./MatterPhysics";
 import {IChamferableBodyDefinition} from "matter-js";
-import {number} from "prop-types";
 
 /**
  * Collider component for matter-js physics.
@@ -73,7 +71,7 @@ export class MCollider extends Component
             };
 
             // Add a backref to the body for the component.
-            (<any>this.body).lagom_component = this;
+            (this.body as any).lagom_component = this;
 
             // Sync the body to the current position of the entity in real space.
             Matter.Body.setStatic(this.body, this.body.isStatic);

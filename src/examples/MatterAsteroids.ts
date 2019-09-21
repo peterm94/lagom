@@ -230,7 +230,7 @@ class DestroyOffScreen extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
-            const pos = entity.transform.getGlobalPosition(<any>undefined, false);
+            const pos = entity.transform.getGlobalPosition(undefined as any, false);
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
                 || pos.x > this.renderer.screen.width + this.tolerance
