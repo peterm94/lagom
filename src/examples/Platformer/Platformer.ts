@@ -94,7 +94,7 @@ class MainScene extends Scene
             this.addEntity(new Player(x, y));
         });
 
-        world1Map.load(this, 0, mapLoader);
+        world1Map.load(0, mapLoader);
         // world1Map.loadFn(this, 1, (tileId, x, y) => {
         //     tileEntity.addComponent(new Sprite(sprites.textureFromId(tileId), {xOffset: x, yOffset: y}));
         // });

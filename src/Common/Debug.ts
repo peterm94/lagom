@@ -1,14 +1,12 @@
 import * as PIXI from "pixi.js";
 import {GUIEntity} from "../ECS/Entity";
 import {TextDisp} from "./PIXIComponents";
-import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
 import {Game} from "../ECS/Game";
 import {LagomType} from "../ECS/LifecycleObject";
 
-const Keyboard = require('pixi.js-keyboard');
 
 /**
  * Entity that adds FPS information to the canvas.
@@ -24,7 +22,6 @@ export class Diagnostics extends GUIEntity
 
         const scene = this.getScene();
         scene.addSystem(new FpsUpdater());
-        scene.addGlobalSystem(new DebugKeys());
     }
 
     constructor(private readonly textCol: string,
@@ -32,26 +29,6 @@ export class Diagnostics extends GUIEntity
                 private verbose: boolean = false)
     {
         super("diagnostics");
-    }
-}
-
-class DebugKeys extends GlobalSystem
-{
-    update(delta: number): void
-    {
-        if (Keyboard.isKeyPressed('KeyT'))
-        {
-            console.log(this.getScene().entities.map((e) => e.name));
-        }
-        if (Keyboard.isKeyPressed('KeyY'))
-        {
-            console.log(this.getScene().getGame());
-        }
-    }
-
-    types(): LagomType<Component>[]
-    {
-        return [];
     }
 }
 

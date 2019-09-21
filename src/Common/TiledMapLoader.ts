@@ -1,5 +1,3 @@
-import {Scene} from "../ECS/Scene";
-
 export class TiledMapLoader
 {
     private readonly map: TiledMap;
@@ -9,7 +7,7 @@ export class TiledMapLoader
         this.map = map;
     }
 
-    load(scene: Scene, layerId: number, entityCreators: Map<number, (x: number, y: number) => void>): void
+    load(layerId: number, entityCreators: Map<number, (x: number, y: number) => void>): void
     {
         const layer = this.map.layers[layerId];
 
@@ -26,7 +24,7 @@ export class TiledMapLoader
         });
     }
 
-    loadFn(scene: Scene, layerId: number, fn: (tileId: number, x: number, y: number) => void): void
+    loadFn(layerId: number, fn: (tileId: number, x: number, y: number) => void): void
     {
         const layer = this.map.layers[layerId];
 

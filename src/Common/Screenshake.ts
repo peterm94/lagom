@@ -2,6 +2,9 @@ import {Component} from "../ECS/Component";
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {LagomType} from "../ECS/LifecycleObject";
 
+/**
+ * Add this component to an Entity to trigger the ScreenShaker controller.
+ */
 export class ScreenShake extends Component
 {
     readonly intensity: number;
@@ -15,6 +18,9 @@ export class ScreenShake extends Component
     }
 }
 
+/**
+ * Screenshake controller. Must be added to a scene for the ScreenShake to be applied.
+ */
 export class ScreenShaker extends GlobalSystem
 {
     intensity: number = 0;

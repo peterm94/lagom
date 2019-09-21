@@ -3,7 +3,9 @@ import {LagomType} from "../ECS/LifecycleObject";
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Observable} from "./Observer";
 
-
+/**
+ * Frame Trigger class. Custom event management base class that can be used to synchronize and coordinate events.
+ */
 export abstract class FrameTrigger<T> extends Component
 {
     onTrigger: Observable<FrameTrigger<T>, T> = new Observable();

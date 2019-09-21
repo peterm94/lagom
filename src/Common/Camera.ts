@@ -16,7 +16,7 @@ export class Camera
 
     /**
      * Parent scene for this camera.
-     * @param scenesp
+     * @param scene The scene to register for this camera.
      */
     constructor(scene: Scene)
     {
