@@ -31,8 +31,9 @@ export class Entity extends ContainerLifecycleObject
      * @param name The name of the entity. Used for lookups.
      * @param x The starting x position.
      * @param y The starting y position.
+     * @param depth Entity depth. Used for draw order.
      */
-    constructor(name: string, x: number = 0, y: number = 0)
+    constructor(name: string, x: number = 0, y: number = 0, depth: number = 0)
     {
         super();
         this.name = name;
@@ -40,6 +41,7 @@ export class Entity extends ContainerLifecycleObject
         this.transform = Util.sortedContainer();
         this.transform.x = x;
         this.transform.y = y;
+        this.depth = depth;
     }
 
     /**

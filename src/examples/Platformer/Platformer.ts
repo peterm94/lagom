@@ -22,11 +22,13 @@ import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteContro
 import {FollowCamera, FollowMe} from "../../Common/CameraUtil";
 import {Key} from "../../Input/Key";
 import {Button} from "../../Input/Button";
+import {AudioAtlas} from "../../Audio/AudioAtlas";
 
 
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
 const collisionMatrix = new CollisionMatrix();
-
+const soundLoader = new AudioAtlas();
+const jumpSound = soundLoader.load('jump', require("./resources/jump.wav"));
 
 enum Layers
 {
@@ -289,6 +291,7 @@ class PlayerMover extends System
                 if (!collider.place_free(0, 2))
                 {
                     body.addForce(0, this.jumpPower);
+                    jumpSound.play();
                 }
             }
 

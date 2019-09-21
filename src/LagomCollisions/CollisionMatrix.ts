@@ -26,11 +26,12 @@ export class CollisionMatrix
 
         let layer1mask = this.layers.get(layer1);
         layer1mask = layer1mask === undefined ? 0 : layer1mask;
-        this.layers.set(layer1, layer1mask | 1 << layer2);
+        // TODO Check braces, this might actually be the other way around. Same below. and in canCollide
+        this.layers.set(layer1, layer1mask | (1 << layer2));
 
         let layer2mask = this.layers.get(layer2);
         layer2mask = layer2mask === undefined ? 0 : layer2mask;
-        this.layers.set(layer2, layer2mask | 1 << layer1);
+        this.layers.set(layer2, layer2mask | (1 << layer1));
     }
 
     /**
@@ -43,7 +44,7 @@ export class CollisionMatrix
     {
         const layerMask = this.layers.get(CollisionMatrix.layerInternal(layer1));
         if (layerMask === undefined) return false;
-        return (layerMask & 1 << CollisionMatrix.layerInternal(layer2)) !== 0;
+        return (layerMask & (1 << CollisionMatrix.layerInternal(layer2))) !== 0;
     }
 
     /**
