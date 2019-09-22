@@ -53,6 +53,7 @@ export class DetectRigidbody extends Component
         const accX = this.forceX / this.mass;
         const accY = this.forceY / this.mass;
 
+        // TODO there is a double delta multiplication here, problems?
         this.velocityX += accX * delta;
         this.velocityY += accY * delta;
 

@@ -1,7 +1,7 @@
 import {Game} from "../../ECS/Game";
 import {Diagnostics} from "../../Common/Debug";
 import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
-import {Entity} from "../../ECS/Entity";
+import {Entity, GUIEntity} from "../../ECS/Entity";
 import {System} from "../../ECS/System";
 import {Component} from "../../ECS/Component";
 import {Scene} from "../../ECS/Scene";
@@ -10,6 +10,7 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 
 import playerSpriteSheet from "./resources/player.png";
 import wallSpriteSheet from "./resources/walls.png";
+import bulletSpriteSheet from "./resources/bullet.png";
 import {AnimatedSprite, AnimationEnd} from "../../Common/Sprite/AnimatedSprite";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {Sprite} from "../../Common/Sprite/Sprite";
@@ -21,21 +22,23 @@ import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectCollide
 import {Key} from "../../Input/Key";
 import {Log, MathUtil} from "../../Common/Util";
 import {RenderRect} from "../../Common/PIXIComponents";
+import {Timer, TimerSystem} from "../../Common/Timer";
 
 const playerSheet = new SpriteSheet(playerSpriteSheet, 32, 32);
 const wallSheet = new SpriteSheet(wallSpriteSheet, 32, 32);
+const bulletSheet = new SpriteSheet(bulletSpriteSheet, 16, 16);
 
 enum Layers
 {
     Solid,
     Player,
-    EndTrigger
+    EndTrigger,
+    Bullet,
+    Enemy
 }
 
 /**
  * TODO
- * - Jump
- * - Shoot
  * - Add 'ammo' that refreshes when we hit the ground
  * - Sound
  * - Animation
@@ -49,7 +52,7 @@ export class Downshaft extends Game
 {
     constructor()
     {
-        super(new MainScene(), {width: 512, height: 512, resolution: 1.5, backgroundColor: 0x1a2b54});
+        super(new MainScene(), {width: 512, height: 512, resolution: 1.5, backgroundColor: 0x0b1224});
     }
 }
 
@@ -69,10 +72,14 @@ class MainScene extends Scene
         const matrix = new CollisionMatrix();
         matrix.addCollision(Layers.Solid, Layers.Player);
         matrix.addCollision(Layers.Player, Layers.EndTrigger);
+        matrix.addCollision(Layers.Solid, Layers.Bullet);
+        matrix.addCollision(Layers.Solid, Layers.Enemy);
+        matrix.addCollision(Layers.Enemy, Layers.Bullet);
 
-        this.addEntity(new Diagnostics("cyan", 10, true));
+        this.addEntity(new Diagnostics("cyan", 10));
 
         this.addEntity(new Player(64, topY - 32));
+        this.addEntity(new PlayerGUI());
 
         // Make some stuff
         this.createLevel();
@@ -84,7 +91,10 @@ class MainScene extends Scene
         this.addSystem(new VerticalFollowCamera());
         this.addSystem(new DetectCollisionSystem(matrix, 2));
         this.addSystem(new SimpleGravity());
+        this.addSystem(new BulletMover());
+        this.addSystem(new BulletShooter());
         this.addGlobalSystem(new FrameTriggerSystem());
+        this.addGlobalSystem(new TimerSystem());
     }
 
     private createLevel()
@@ -173,9 +183,6 @@ class NextLevelTrigger extends Entity
 
 class GravityAware extends Component
 {
-    vel = 0;
-    readonly acc = 0.4;
-    readonly terminalVelocity = 0.8;
 }
 
 class SimpleGravity extends System
@@ -187,18 +194,12 @@ class SimpleGravity extends System
 
     fixedUpdate(delta: number): void
     {
-        // This emulates real(ish) physics, but doing it with move() instead of applyForce()
-        this.runOnEntities((entity: Entity, body: DetectRigidbody, grav: GravityAware) => {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody) => {
 
-            // Reset velocity if we stopped
-            if (body.dyLastFrame <= 0)
+            if (body.velocityY < 0.5)
             {
-                grav.vel = 0;
+                body.addForce(0, 0.0005);
             }
-
-            grav.vel = Math.min(grav.terminalVelocity, grav.vel + grav.acc * (delta / 1000));
-
-            body.move(0, grav.vel * delta);
         });
     }
 
@@ -218,12 +219,12 @@ class PlayerMover extends System
 
     types(): LagomType<Component>[]
     {
-        return [DetectRigidbody, DetectCollider, PlayerControlled];
+        return [DetectRigidbody, DetectCollider, GravityAware, PlayerControlled];
     }
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider) => {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider, grav: GravityAware) => {
 
             if (Game.keyboard.isKeyDown(Key.ArrowLeft, Key.KeyA))
             {
@@ -234,6 +235,86 @@ class PlayerMover extends System
                 body.move(this.moveSpeed * delta, 0);
             }
         });
+    }
+}
+
+class CanShoot extends Component
+{
+}
+
+class BulletShooter extends System
+{
+    types(): LagomType<Component>[]
+    {
+        return [CanShoot, DetectRigidbody];
+    }
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, canShoot: CanShoot, body: DetectRigidbody) => {
+            if (Game.keyboard.isKeyDown(Key.ArrowUp, Key.KeyW))
+            {
+                if (body.velocityY > -0.2)
+                {
+                    body.addForce(0, -0.01);
+                }
+                entity.getScene().addEntity(new Bullet(entity.transform.x + 16, entity.transform.y + 32));
+                canShoot.destroy();
+                entity.addComponent(new Timer(200, null)).onTrigger.register(() => entity.addComponent(new CanShoot()));
+            }
+        });
+    }
+}
+
+class Bullet extends Entity
+{
+    constructor(x: number, y: number)
+    {
+        super("bullet", x, y);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        this.addComponent(new Sprite(bulletSheet.texture(0, 0), {xAnchor: 0.5}));
+
+        this.addComponent(new RectCollider(-4, 0, 8, 16, Layers.Bullet)).onCollisionEnter.register(() => {
+            this.destroy();
+        });
+
+        this.addComponent(new DetectRigidbody());
+        this.addComponent(new BulletMovement());
+
+        this.addComponent(new Timer(300, null, false)).onTrigger.register(() => {
+            this.destroy();
+        });
+    }
+}
+
+class BulletMovement extends Component
+{
+}
+
+class BulletMover extends System
+{
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody) => {
+            body.move(0, 0.7 * delta);
+        });
+    }
+
+    types(): LagomType<Component>[]
+    {
+        return [DetectRigidbody, BulletMovement];
+    }
+}
+
+class PlayerGUI extends GUIEntity
+{
+    constructor()
+    {
+        super("gui", 0, 0);
     }
 }
 
@@ -263,6 +344,7 @@ class Player extends Entity
 
         this.addComponent(new PlayerControlled());
         this.addComponent(new FollowMe());
+        this.addComponent(new CanShoot());
         this.addComponent(new GravityAware());
     }
 }

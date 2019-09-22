@@ -165,43 +165,43 @@ export class Log
 {
     static logLevel: LogLevel = LogLevel.INFO;
 
-    static error(...x: any[])
+    static error(...msg: any[])
     {
         if (this.logLevel >= LogLevel.ERROR)
         {
-            console.error("%cERROR", 'color: red', ...x);
+            console.error("%cERROR", 'color: red', ...msg);
         }
     }
 
-    static warn(...x: any[])
+    static warn(...msg: any[])
     {
         if (this.logLevel >= LogLevel.WARN)
         {
-            console.warn("%cWARN ", 'color: orange', ...x);
+            console.warn("%cWARN ", 'color: orange', ...msg);
         }
     }
 
-    static info(...x: any[])
+    static info(...msg: any[])
     {
         if (this.logLevel >= LogLevel.INFO)
         {
-            console.info("%cINFO ", 'color: blue', ...x);
+            console.info("%cINFO ", 'color: blue', ...msg);
         }
     }
 
-    static debug(...x: any[])
+    static debug(...msg: any[])
     {
         if (this.logLevel >= LogLevel.DEBUG)
         {
-            console.debug("%cDEBUG", 'color: #6797c2', ...x);
+            console.debug("%cDEBUG", 'color: #6797c2', ...msg);
         }
     }
 
-    static trace(...x: any[])
+    static trace(...msg: any[])
     {
         if (this.logLevel >= LogLevel.ALL)
         {
-            console.trace("%cTRACE", 'color: #65c4ff', ...x);
+            console.trace("%cTRACE", 'color: #65c4ff', ...msg);
         }
     }
 }
