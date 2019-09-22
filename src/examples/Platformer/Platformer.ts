@@ -196,7 +196,7 @@ class Player extends Entity
         ]));
 
         this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
-        this.addComponent(new RenderRect(8, 16, -4, -8));
+        this.addComponent(new RenderRect(-4, -8, 8, 16));
     }
 }
 

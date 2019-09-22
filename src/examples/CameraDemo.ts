@@ -33,7 +33,7 @@ class DrawTLC extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new RenderCircle(4));
+        this.addComponent(new RenderCircle(0, 0, 4));
     }
 }
 
@@ -43,11 +43,11 @@ class DrawBounds extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new RenderRect(512, 512, 0, 0));
-        this.addComponent(new RenderRect(256, 256, 0, 0));
+        this.addComponent(new RenderRect(0, 0, 512, 512));
+        this.addComponent(new RenderRect(0, 0, 256, 256));
         this.addComponent(new RenderRect(256, 256, 256, 256));
-        this.addComponent(new RenderRect(256, 256, 0, 256));
-        this.addComponent(new RenderRect(256, 256, 256, 0));
+        this.addComponent(new RenderRect(0, 256, 256, 256));
+        this.addComponent(new RenderRect(256, 0, 256, 256));
     }
 }
 
@@ -109,7 +109,7 @@ class Square extends Entity
         const collider = this.addComponent(new RectCollider(0, 0, 32, 32, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new RenderRect(32, 32, 0, 0));
+        this.addComponent(new RenderRect(0, 0, 32, 32));
     }
 }
 
@@ -130,7 +130,7 @@ class CircleBoy extends Entity
         const collider = this.addComponent(new CircleCollider(0, 0, 100, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new RenderCircle(100));
+        this.addComponent(new RenderCircle(0, 0, 100));
     }
 }
 
@@ -160,7 +160,7 @@ class Player extends Entity
             this.transform.y -= res.result.overlap * res.result.overlap_y;
         });
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new RenderRect(32, 32, 0, 0));
+        this.addComponent(new RenderRect(0, 0, 32, 32));
     }
 }
 

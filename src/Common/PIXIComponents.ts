@@ -11,7 +11,7 @@ export class TextDisp extends PIXIComponent<PIXI.Text>
 
 export class RenderCircle extends PIXIComponent<PIXI.Graphics>
 {
-    constructor(radius: number, xOff: number = 0, yOff: number = 0)
+    constructor(xOff: number, yOff: number, radius: number)
     {
         super(new PIXI.Graphics());
 
@@ -23,7 +23,7 @@ export class RenderCircle extends PIXIComponent<PIXI.Graphics>
 
 export class RenderRect extends PIXIComponent<PIXI.Graphics>
 {
-    constructor(width: number, height: number, xOff: number = 0, yOff: number = 0)
+    constructor(xOff: number, yOff: number, width: number, height: number)
     {
         super(new PIXI.Graphics());
 

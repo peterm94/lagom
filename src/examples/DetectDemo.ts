@@ -3,7 +3,8 @@ import {Game} from "../ECS/Game";
 import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {
-    DetectCollisionSystem} from "../DetectCollisions/DetectCollisions";
+    DetectCollisionSystem
+} from "../DetectCollisions/DetectCollisions";
 import {Component} from "../ECS/Component";
 import {System} from "../ECS/System";
 import {Result} from "detect-collisions";
@@ -78,7 +79,7 @@ class Square extends Entity
         const collider = this.addComponent(new RectCollider(0, 0, 32, 32, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new RenderRect(32, 32, 0, 0));
+        this.addComponent(new RenderRect(0, 0, 32, 32));
     }
 }
 
@@ -99,7 +100,7 @@ class CircleBoy extends Entity
         const collider = this.addComponent(new CircleCollider(0, 0, 100, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new RenderCircle(100));
+        this.addComponent(new RenderCircle(0, 0, 100));
     }
 }
 
@@ -127,7 +128,7 @@ class Player extends Entity
             this.transform.y -= res.result.overlap * res.result.overlap_y;
         });
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
-        this.addComponent(new RenderRect(32, 32, 0, 0));
+        this.addComponent(new RenderRect(0, 0, 32, 32));
     }
 }
 

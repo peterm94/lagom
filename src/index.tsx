@@ -12,11 +12,10 @@ import {Downshaft} from "./examples/Downshaft/Downshaft";
 serviceWorker.unregister();
 
 const game = new Downshaft();
-// const game = new MatterAsteroids();
 
 ReactDOM.render(
     <div>
         <LagomGameComponent game={game}/>
-        <InspectorComponent game={game}/>
+        {/*<InspectorComponent game={game}/>*/}
     </div>,
     document.getElementById("root"));

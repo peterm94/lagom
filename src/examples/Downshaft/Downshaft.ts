@@ -32,6 +32,19 @@ enum Layers
     EndTrigger
 }
 
+/**
+ * TODO
+ * - Jump
+ * - Shoot
+ * - Add 'ammo' that refreshes when we hit the ground
+ * - Sound
+ * - Animation
+ * - An enemy
+ * - Another enemy
+ * - Score tracking
+ * - Menu/gameover screen
+ */
+
 export class Downshaft extends Game
 {
     constructor()
@@ -57,10 +70,25 @@ class MainScene extends Scene
         matrix.addCollision(Layers.Solid, Layers.Player);
         matrix.addCollision(Layers.Player, Layers.EndTrigger);
 
-        this.addEntity(new Diagnostics("white"));
+        this.addEntity(new Diagnostics("cyan", 10, true));
 
         this.addEntity(new Player(64, topY - 32));
 
+        // Make some stuff
+        this.createLevel();
+
+        // Add the end trigger
+        this.addEntity(new NextLevelTrigger(leftWallX, topY + gameHeight * 32));
+
+        this.addSystem(new PlayerMover());
+        this.addSystem(new VerticalFollowCamera());
+        this.addSystem(new DetectCollisionSystem(matrix, 2));
+        this.addSystem(new SimpleGravity());
+        this.addGlobalSystem(new FrameTriggerSystem());
+    }
+
+    private createLevel()
+    {
         // Create the top layer
         this.addEntity(new Block(0, topY, 1, 0));
         this.addEntity(new Block(32, topY, 1, 0));
@@ -79,29 +107,13 @@ class MainScene extends Scene
             this.addEntity(new Block(rightWallX, topY + i * 32, 0, 1));
         }
 
-        // Make some stuff
-        this.createStuff();
+        // Interval between inner clumps
+        const interval = 7;
 
-        // Add the end trigger
-        this.addEntity(new NextLevelTrigger(leftWallX, topY + gameHeight * 32));
-
-        this.addSystem(new PlayerMover());
-        this.addSystem(new VerticalFollowCamera());
-        this.addSystem(new DetectCollisionSystem(matrix));
-        this.addSystem(new SimpleGravity());
-        this.addGlobalSystem(new FrameTriggerSystem());
-    }
-
-    private createStuff()
-    {
-        const inverval = 7;
-
-        // Every 10 blocks, make a clump
-        for (let i = 0; i < gameHeight / inverval; i++)
+        for (let i = 0; i < gameHeight / interval; i++)
         {
-            const y = i * 32 * inverval + topY;
-
-            switch (MathUtil.randomRange(0, 3))
+            const y = i * 32 * interval + topY;
+            switch (MathUtil.randomRange(0, 4))
             {
                 case 0:
                 {
@@ -113,7 +125,6 @@ class MainScene extends Scene
                     this.addEntity(new Block(leftWallX + 96, y + 160, 2, 2));
                     this.addEntity(new Block(leftWallX + 64, y + 160, 1, 2));
                     this.addEntity(new Block(leftWallX + 32, y + 160, 1, 2));
-
                     break;
                 }
                 case 1:
@@ -128,7 +139,7 @@ class MainScene extends Scene
                     this.addEntity(new Block(rightWallX - 32, y + 160, 1, 2));
                     break;
                 }
-                case 2:
+                default:
                 {
                     const xOff2 = MathUtil.randomRange(1, 6) * 32;
                     this.addEntity(new Block(xOff2 + leftWallX, y, 0, 0));
@@ -162,6 +173,9 @@ class NextLevelTrigger extends Entity
 
 class GravityAware extends Component
 {
+    vel = 0;
+    readonly acc = 0.4;
+    readonly terminalVelocity = 0.8;
 }
 
 class SimpleGravity extends System
@@ -173,8 +187,18 @@ class SimpleGravity extends System
 
     fixedUpdate(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody) => {
-            body.move(0, 0.5 * delta);
+        // This emulates real(ish) physics, but doing it with move() instead of applyForce()
+        this.runOnEntities((entity: Entity, body: DetectRigidbody, grav: GravityAware) => {
+
+            // Reset velocity if we stopped
+            if (body.dyLastFrame <= 0)
+            {
+                grav.vel = 0;
+            }
+
+            grav.vel = Math.min(grav.terminalVelocity, grav.vel + grav.acc * (delta / 1000));
+
+            body.move(0, grav.vel * delta);
         });
     }
 
@@ -232,7 +256,10 @@ class Player extends Entity
 
         // Physics and collisions stuff
         this.addComponent(new DetectRigidbody());
-        this.addComponent(new RectCollider(0, 0, 32, 32, Layers.Player));
+        // this.addComponent(new RectCollider(0, 0, 32, 32, Layers.Player));
+        this.addComponent(new RectCollider(8, 0, 16, 32, Layers.Player));
+        this.addComponent(new RenderRect(8, 0, 16, 32));
+
 
         this.addComponent(new PlayerControlled());
         this.addComponent(new FollowMe());
@@ -258,8 +285,6 @@ class Block extends Entity
 class VerticalFollowCamera extends System
 {
     private camera!: Camera;
-
-    mSpeed = 1;
 
     onAdded(): void
     {
