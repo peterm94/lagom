@@ -431,6 +431,7 @@ class Player extends Entity
                 const body = this.getComponent<DetectRigidbody>(DetectRigidbody);
                 if (body)
                 {
+                    body.velocityY = 0;
                     body.addForce(0, PlayerMover.jumpForce);
                     res.other.getEntity().destroy();
                 }
