@@ -1,6 +1,7 @@
 import {Entity} from "./Entity";
-import {Util} from "../Common/Util";
+import {Log, Util} from "../Common/Util";
 import {LifecycleObject, ObjectState} from "./LifecycleObject";
+import {Scene} from "./Scene";
 
 /**
  * Component base class.
@@ -14,6 +15,15 @@ export abstract class Component extends LifecycleObject
     getEntity(): Entity
     {
         return this.getParent() as Entity;
+    }
+
+    /**
+     * Get the scene that the parent entity is part of.
+     * @returns The parent scene.
+     */
+    getScene(): Scene
+    {
+        return this.getEntity().getScene();
     }
 
     onAdded()
@@ -35,7 +45,10 @@ export abstract class Component extends LifecycleObject
     destroy()
     {
         super.destroy();
-        this.getEntity().toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
+
+        // We add to the scene here, not the entity, as the entity may have been destroyed before the component. If
+        // this is the case, the entity update() will not trigger, and the component will not be removed.
+        this.getScene().toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
     }
 }
 

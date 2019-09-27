@@ -121,10 +121,10 @@ export class Entity extends ContainerLifecycleObject
         super.destroy();
 
         Log.debug("Entity destroy() called for:", this.name);
-        this.getScene().toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
 
         // Take any components with us
         this.components.forEach((val) => val.destroy());
+        this.getScene().toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
     }
 
     protected rootNode(): PIXI.Container
