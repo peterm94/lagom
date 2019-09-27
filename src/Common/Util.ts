@@ -163,7 +163,7 @@ enum LogLevel
 
 export class Log
 {
-    static logLevel: LogLevel = LogLevel.INFO;
+    static logLevel: LogLevel = LogLevel.ALL;
 
     static error(...msg: any[])
     {

@@ -3,9 +3,12 @@ import * as PIXI from "pixi.js";
 
 export class TextDisp extends PIXIComponent<PIXI.Text>
 {
-    constructor(text: string, options?: PIXI.TextStyle)
+    constructor(xOff: number, yOff: number, text: string, options?: PIXI.TextStyle)
     {
         super(new PIXI.Text(text, options));
+
+        this.pixiObj.x = xOff;
+        this.pixiObj.y = yOff;
     }
 }
 

@@ -120,7 +120,7 @@ export class Entity extends ContainerLifecycleObject
     {
         super.destroy();
 
-        Log.trace("Entity destroy() called for:", this);
+        Log.debug("Entity destroy() called for:", this.name);
         this.getScene().toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
 
         // Take any components with us

@@ -49,6 +49,12 @@ export class DetectCollisionSystem extends System
             collider.collidersLastFrame = [];
             collider.triggersLastFrame = [];
 
+            // TODO this is dirty, do it properly. Probably best to bundle up all events and do them at the end of
+            //  the processing frame. This also has the advantage of not messing with anything while movement is in
+            //  progress.
+            const collidersThisFrame: DetectCollider[] = [];
+            const triggersThisFrame: DetectCollider[] = [];
+
             const xDir = Math.sign(body.pendingX);
             let xMag = Math.abs(body.pendingX);
             const yDir = Math.sign(body.pendingY);
@@ -81,17 +87,26 @@ export class DetectCollisionSystem extends System
                                 xMag = 0;
                                 body.velocityX = 0;
 
-                                DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                                                          otherComp, collider, result);
-                                DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                                                          collider, otherComp, result);
+                                if (!collidersThisFrame.includes(otherComp))
+                                {
+                                    collidersThisFrame.push(otherComp);
+
+                                    DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                              otherComp, collider, result);
+                                    // DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                    //                                           collider, otherComp, result);
+                                }
                             }
                             else
                             {
-                                DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
-                                                                        otherComp, collider, result);
-                                DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
-                                                                        collider, otherComp, result);
+                                if (!triggersThisFrame.includes(otherComp))
+                                {
+                                    triggersThisFrame.push(otherComp);
+                                    DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                                                            otherComp, collider, result);
+                                    // DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                    //                                         collider, otherComp, result);
+                                }
                             }
                         }
                     }
@@ -122,17 +137,26 @@ export class DetectCollisionSystem extends System
                                 collider.body.y -= result.overlap_y * result.overlap;
                                 yMag = 0;
                                 body.velocityY = 0;
-                                DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                                                          otherComp, collider, result);
-                                DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                                                          collider, otherComp, result);
+
+                                if (!collidersThisFrame.includes(otherComp))
+                                {
+                                    collidersThisFrame.push(otherComp);
+                                    DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                              otherComp, collider, result);
+                                    // DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                    //                                           collider, otherComp, result);
+                                }
                             }
                             else
                             {
-                                DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
-                                                                        otherComp, collider, result);
-                                DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
-                                                                        collider, otherComp, result);
+                                if (!triggersThisFrame.includes(otherComp))
+                                {
+                                    triggersThisFrame.push(otherComp);
+                                    DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                                                            otherComp, collider, result);
+                                    // DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                    //                                         collider, otherComp, result);
+                                }
                             }
                         }
                     }
@@ -196,11 +220,13 @@ export class DetectCollisionSystem extends System
     addBody(body: DetectCollider)
     {
         this.detectSystem.insert(body.body);
+        this.detectSystem.update();
     }
 
     removeBody(body: DetectCollider)
     {
         this.detectSystem.remove(body.body);
+        this.detectSystem.update();
     }
 
     place_free(collider: DetectCollider, dx: number, dy: number): boolean

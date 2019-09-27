@@ -1,3 +1,5 @@
+import * as PIXI from "pixi.js";
+
 import {Game} from "../../ECS/Game";
 import {Diagnostics} from "../../Common/Debug";
 import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
@@ -11,6 +13,7 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import playerSpriteSheet from "./resources/player.png";
 import wallSpriteSheet from "./resources/walls.png";
 import bulletSpriteSheet from "./resources/bullet.png";
+import enemiesSpriteSheet from "./resources/enemies.png";
 import {AnimatedSprite, AnimationEnd} from "../../Common/Sprite/AnimatedSprite";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {Sprite} from "../../Common/Sprite/Sprite";
@@ -21,12 +24,15 @@ import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectColliders";
 import {Key} from "../../Input/Key";
 import {Log, MathUtil} from "../../Common/Util";
-import {RenderRect} from "../../Common/PIXIComponents";
+import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
 import {Timer, TimerSystem} from "../../Common/Timer";
+import {Observable} from "../../Common/Observer";
+import {Result} from "detect-collisions";
 
 const playerSheet = new SpriteSheet(playerSpriteSheet, 32, 32);
 const wallSheet = new SpriteSheet(wallSpriteSheet, 32, 32);
 const bulletSheet = new SpriteSheet(bulletSpriteSheet, 16, 16);
+const enemiesSheet = new SpriteSheet(enemiesSpriteSheet, 32, 32);
 
 enum Layers
 {
@@ -39,10 +45,8 @@ enum Layers
 
 /**
  * TODO
- * - Add 'ammo' that refreshes when we hit the ground
  * - Sound
  * - Animation
- * - An enemy
  * - Another enemy
  * - Score tracking
  * - Menu/gameover screen
@@ -63,6 +67,22 @@ const topY = 128;
 // how many blocks tall is the level
 const gameHeight = 256;
 
+class Blob extends Entity
+{
+    constructor(x: number, y: number)
+    {
+        super("blob", x, y);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        this.addComponent(new AnimatedSprite(enemiesSheet.textures([[0, 0], [1, 0]]), {animationSpeed: 300}));
+        this.addComponent(new RectCollider(4, 4, 24, 16, Layers.Enemy, 0, true));
+        this.addComponent(new RenderRect(4, 4, 24, 16));
+    }
+}
+
 class MainScene extends Scene
 {
     onAdded()
@@ -75,11 +95,11 @@ class MainScene extends Scene
         matrix.addCollision(Layers.Solid, Layers.Bullet);
         matrix.addCollision(Layers.Solid, Layers.Enemy);
         matrix.addCollision(Layers.Enemy, Layers.Bullet);
+        matrix.addCollision(Layers.Enemy, Layers.Player);
 
         this.addEntity(new Diagnostics("cyan", 10));
 
         this.addEntity(new Player(64, topY - 32));
-        this.addEntity(new PlayerGUI());
 
         // Make some stuff
         this.createLevel();
@@ -120,9 +140,10 @@ class MainScene extends Scene
         // Interval between inner clumps
         const interval = 7;
 
-        for (let i = 0; i < gameHeight / interval; i++)
+        for (let i = 2; i < gameHeight / interval; i++)
         {
             const y = i * 32 * interval + topY;
+            this.addEntity(new Blob(leftWallX + MathUtil.randomRange(1, 6) * 32, y));
             switch (MathUtil.randomRange(0, 4))
             {
                 case 0:
@@ -215,7 +236,7 @@ class PlayerControlled extends Component
 class PlayerMover extends System
 {
     private readonly moveSpeed = 0.2;
-    private readonly jumpForce = -0.01;
+    static readonly jumpForce = -0.01;
 
     types(): LagomType<Component>[]
     {
@@ -246,14 +267,16 @@ class BulletShooter extends System
 {
     types(): LagomType<Component>[]
     {
-        return [CanShoot, DetectRigidbody];
+        return [CanShoot, DetectRigidbody, Ammo];
     }
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, canShoot: CanShoot, body: DetectRigidbody) => {
-            if (Game.keyboard.isKeyDown(Key.ArrowUp, Key.KeyW))
+        this.runOnEntities((entity: Entity, canShoot: CanShoot, body: DetectRigidbody, ammo: Ammo) => {
+            if (Game.keyboard.isKeyDown(Key.ArrowUp, Key.KeyW) && ammo.ammo > 0)
             {
+                ammo.ammo--;
+
                 if (body.velocityY > -0.2)
                 {
                     body.addForce(0, -0.01);
@@ -312,10 +335,44 @@ class BulletMover extends System
 
 class PlayerGUI extends GUIEntity
 {
-    constructor()
+    constructor(readonly ammo: Ammo)
     {
         super("gui", 0, 0);
     }
+
+    onAdded()
+    {
+        super.onAdded();
+        const ammoDisp = this.addComponent(
+            new TextDisp(0, 10, `Ammo: ${this.ammo.ammo}`, new PIXI.TextStyle({fill: 'red'})));
+        this.ammo.onChange.register((_, num) => {
+            ammoDisp.pixiObj.text = `Ammo: ${num}`
+        });
+    }
+}
+
+class Ammo extends Component
+{
+    constructor(readonly max: number)
+    {
+        super();
+        this.ammo = max;
+    }
+
+    get ammo(): number
+    {
+        return this._ammo;
+    }
+
+    set ammo(value: number)
+    {
+        this._ammo = Math.min(this.max, value);
+        this.onChange.trigger(this, value);
+    }
+
+    private _ammo: number = 0;
+
+    readonly onChange: Observable<Ammo, number> = new Observable();
 }
 
 class Player extends Entity
@@ -337,15 +394,48 @@ class Player extends Entity
 
         // Physics and collisions stuff
         this.addComponent(new DetectRigidbody());
-        // this.addComponent(new RectCollider(0, 0, 32, 32, Layers.Player));
-        this.addComponent(new RectCollider(8, 0, 16, 32, Layers.Player));
-        this.addComponent(new RenderRect(8, 0, 16, 32));
 
-
+        const ammo = this.addComponent(new Ammo(10));
+        this.getScene().addEntity(new PlayerGUI(ammo));
         this.addComponent(new PlayerControlled());
         this.addComponent(new FollowMe());
         this.addComponent(new CanShoot());
         this.addComponent(new GravityAware());
+
+        const collider = this.addComponent(new RectCollider(8, 0, 16, 32, Layers.Player));
+        this.addComponent(new RenderRect(8, 0, 16, 32));
+
+        collider.onCollisionEnter.register(this.onHitThing.bind(this));
+        collider.onTriggerEnter.register(this.onHitThing.bind(this));
+    }
+
+    onHitThing(coll: DetectCollider, res: { other: DetectCollider, result: Result })
+    {
+        // If we are above whatever we collided with, reset our ammo
+        if (res.other.getEntity().transform.y > this.transform.y)
+        {
+            // Check we are actually above an entity, the other check may trigger on touching the side of walls.
+            // Note this may match with something else.
+            if (true /*!coll.place_free(0, 1)*/)
+            {
+                const ammo = this.getComponent<Ammo>(Ammo);
+                if (ammo)
+                {
+                    ammo.ammo = ammo.max;
+                }
+            }
+
+            // If we landed on an enemy, bounce and kill it
+            if (res.other.layer === Layers.Enemy)
+            {
+                const body = this.getComponent<DetectRigidbody>(DetectRigidbody);
+                if (body)
+                {
+                    body.addForce(0, PlayerMover.jumpForce);
+                    res.other.getEntity().destroy();
+                }
+            }
+        }
     }
 }
 

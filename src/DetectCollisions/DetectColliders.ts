@@ -52,7 +52,7 @@ export abstract class DetectCollider extends Component
 
         if (this.engine !== null)
         {
-            this.engine.removeBody(this)
+            this.engine.removeBody(this);
         }
     }
 

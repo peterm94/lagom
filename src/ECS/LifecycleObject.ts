@@ -86,7 +86,7 @@ export abstract class ContainerLifecycleObject extends LifecycleObject implement
 
         for (let item of pending)
         {
-            Log.trace(item);
+            Log.debug(item);
 
             switch (item.state)
             {
@@ -99,6 +99,10 @@ export abstract class ContainerLifecycleObject extends LifecycleObject implement
                 {
                     item.object.onAdded();
                     break;
+                }
+                default:
+                {
+                    Log.error("I DON'T KNOW WHAT TO DO");
                 }
             }
         }
