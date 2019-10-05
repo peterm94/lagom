@@ -12,6 +12,12 @@ import {RenderCircle} from "../../Common/PIXIComponents";
 import {CircleCollider, DetectCollider} from "../../DetectCollisions/DetectColliders";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {Key} from "../../Input/Key";
+import {Diagnostics} from "../../Common/Debug";
+import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
+
+import hexSpr from './art/hexagon.png';
+import {Sprite} from "../../Common/Sprite/Sprite";
+import {MathUtil} from "../../Common/Util";
 
 enum Layers
 {
@@ -30,12 +36,14 @@ enum DrawLayer
 
 const collisionMatrix = new CollisionMatrix();
 collisionMatrix.addCollision(Layers.PLAYER, Layers.ENEMY_PROJECTILE);
+
 collisionMatrix.addCollision(Layers.ENEMY, Layers.PLAYER_PROJECTILE);
+const hexSheet = new SpriteSheet(hexSpr, 32, 32);
 
 
 function createShip(entity: Entity)
 {
-    entity.getScene().addEntity(new StructureBlock(entity, 10, 10));
+    entity.getScene().addEntity(new StructureBlock(entity, 100, 100));
 }
 
 export class HexGame extends Game
@@ -70,21 +78,24 @@ class StructureBlock extends Entity
     {
         super.update(delta);
 
-        this.transform.x = this.owner.transform.x + this.xOffset;
-        this.transform.y = this.owner.transform.y + this.yOffset;
+        this.transform.x = MathUtil.lengthDirX(this.xOffset, this.owner.transform.rotation) + this.owner.transform.x;
+        this.transform.y = MathUtil.lengthDirY(this.yOffset, this.owner.transform.rotation) + this.owner.transform.y;
+        //this.transform.rotation = this.owner.transform.rotation;
     }
 
     onAdded()
     {
         super.onAdded();
 
-        const circ = this.addComponent(new RenderCircle(0, 0, 16));
+        const spr = this.addComponent(new Sprite(hexSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new RenderCircle(0, 0, 16));
     }
 }
 
 class PlayerMover extends System
 {
     readonly moveSpeed = 0.2;
+    readonly rotSpeed = 0.002;
 
     types(): LagomType<Component>[]
     {
@@ -103,6 +114,25 @@ class PlayerMover extends System
             {
                 body.move(this.moveSpeed * delta, 0);
             }
+            if (Game.keyboard.isKeyDown(Key.ArrowUp, Key.KeyW))
+            {
+                body.move(0, -this.moveSpeed * delta);
+            }
+            if (Game.keyboard.isKeyDown(Key.ArrowDown, Key.KeyS))
+            {
+                body.move(0, this.moveSpeed * delta);
+            }
+
+            if (Game.keyboard.isKeyDown(Key.KeyQ))
+            {
+                entity.transform.rotation -= this.rotSpeed * delta;
+                // body.move(0, this.moveSpeed * delta);
+            }
+            if (Game.keyboard.isKeyDown(Key.KeyE))
+            {
+                entity.transform.rotation += this.rotSpeed * delta;
+                // body.move(0, this.moveSpeed * delta);
+            }
         });
     }
 }
@@ -113,6 +143,7 @@ class MainScene extends Scene
     {
         super.onAdded();
 
+        this.addEntity(new Diagnostics("white"));
         this.addEntity(new Player());
 
         this.addSystem(new PlayerMover());
@@ -135,11 +166,13 @@ class Player extends Entity
         super.onAdded();
 
         this.addComponent(new FollowMe());
-        this.addComponent(new RenderCircle(0, 0, 16));
-        this.addComponent(new CircleCollider(0, 0, 16, Layers.PLAYER, true));
+        this.addComponent(new CircleCollider(16, 16, 16, Layers.PLAYER, true));
         this.addComponent(new DetectRigidbody());
         this.addComponent(new PlayerControlled());
-        //.
+
+        const spr = this.addComponent(new Sprite(hexSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new RenderCircle(0, 0, 16));
+
         createShip(this);
     }
 }
