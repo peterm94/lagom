@@ -54,7 +54,7 @@ export class HexGame extends Game
             width: 512,
             height: 512,
             resolution: 2,
-            backgroundColor: 0x341a40,
+            backgroundColor: 0x2e2c3b,
             antialias: false
         })
     }
