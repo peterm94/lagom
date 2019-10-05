@@ -9,6 +9,7 @@ import {Entity} from "../../ECS/Entity";
 import {Component} from "../../ECS/Component";
 import {LagomType} from "../../ECS/LifecycleObject";
 import {RenderCircle} from "../../Common/PIXIComponents";
+
 enum Layers
 {
     PLAYER,
@@ -28,6 +29,12 @@ const collisionMatrix = new CollisionMatrix();
 collisionMatrix.addCollision(Layers.PLAYER, Layers.ENEMY_PROJECTILE);
 collisionMatrix.addCollision(Layers.ENEMY, Layers.PLAYER_PROJECTILE);
 
+
+function createShip(entity: Entity)
+{
+    entity.getScene().addEntity(new StructureBlock(entity, 10, 10));
+}
+
 export class HexGame extends Game
 {
     constructor()
@@ -43,7 +50,33 @@ export class HexGame extends Game
 
 }
 
-class PlayerControlled extends Component{}
+class PlayerControlled extends Component
+{
+}
+
+class StructureBlock extends Entity
+{
+    constructor(public owner: Entity, public xOffset: number, public yOffset: number, rotation: number =0){
+        super("structure", owner.transform.x + xOffset,
+              owner.transform.y + yOffset);
+    }
+
+
+    update(delta: number): void
+    {
+        super.update(delta);
+
+        this.transform.x = this.owner.transform.x + this.xOffset;
+        this.transform.y = this.owner.transform.y + this.yOffset;
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+
+        const circ = this.addComponent(new RenderCircle(0, 0, 16));
+    }
+}
 
 class PlayerMover extends System
 {
@@ -67,7 +100,7 @@ class MainScene extends Scene
 
         this.addSystem(new PlayerMover());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
-        this.addSystem(new FollowCamera({centre:true}));
+        this.addSystem(new FollowCamera({centre: true}));
 
         this.addGlobalSystem(new FrameTriggerSystem());
     }
@@ -77,7 +110,7 @@ class Player extends Entity
 {
     constructor()
     {
-        super("player", 256,256,DrawLayer.BLOCK);
+        super("player", 256, 256, DrawLayer.BLOCK);
     }
 
     onAdded()
@@ -85,7 +118,9 @@ class Player extends Entity
         super.onAdded();
 
         this.addComponent(new FollowMe());
-        this.addComponent(new RenderCircle(0,0, 16));
+        this.addComponent(new RenderCircle(0, 0, 16));
+
+        createShip(this);
     }
 }
 
