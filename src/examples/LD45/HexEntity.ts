@@ -88,12 +88,6 @@ export abstract class HexEntity extends Entity
 
     addFor(owner: HexRegister, hex: Hex)
     {
-        // Remove existing colliders
-        // this.getComponentsOfType<CircleCollider>(CircleCollider).forEach(value => {
-        //     value.destroy();
-        //     Log.error("removing", value)
-        // });
-
         this.owner = owner;
         this.hex = hex;
         this.layer = owner.getEntity().layer;
