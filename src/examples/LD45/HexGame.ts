@@ -21,13 +21,15 @@ import {Sprite} from "../../Common/Sprite/Sprite";
 import {MathUtil} from "../../Common/Util";
 import {Hex} from "./Hexagons/Hex";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
+import {hexToWorld} from "./Hexagons/HexUtil";
 
 enum Layers
 {
     PLAYER,
     PLAYER_PROJECTILE,
     ENEMY_PROJECTILE,
-    ENEMY
+    ENEMY,
+    NONE
 }
 
 enum DrawLayer
@@ -98,8 +100,9 @@ class MoveMe extends Component
     {
         super();
 
-        const xOff = 0;
-        const yOff = 0;
+        const offVec = hexToWorld(hex);
+        const xOff = offVec.x;
+        const yOff = offVec.y;
         this.len = Math.sqrt(xOff * xOff + yOff * yOff);
         this.angle = Math.atan2(yOff, xOff);
     }
@@ -237,9 +240,15 @@ class Player extends Entity
         this.addComponent(new FollowMe());
         this.addComponent(new PlayerControlled());
 
+        this.addComponent(new DetectRigidbody());
+        this.addComponent(new CircleCollider(0, 0, 1, Layers.NONE, true));
+
         const register = this.addComponent(new HexRegister());
 
         this.getScene().addEntity(new CoreHex(register, new Hex(0, 0, 0)));
+        this.getScene().addEntity(new StructureHex(register, new Hex(0, 1, -1)));
+        this.getScene().addEntity(new StructureHex(register, new Hex(0, 2, -2)));
+        this.getScene().addEntity(new StructureHex(register, new Hex(0, -1, 1)));
     }
 }
 
