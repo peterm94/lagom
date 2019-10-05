@@ -83,7 +83,7 @@ export class HexRegister extends Component
 
 export abstract class HexEntity extends Entity
 {
-    protected constructor(name: string, public owner: HexRegister, public hex: Hex)
+    protected constructor(name: string, public owner: HexRegister, public hex: Hex, public value: number)
     {
         super(name, -999, -999, 0);
     }
@@ -156,7 +156,7 @@ export class CoreHex extends HexEntity
 {
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("core", owner, hex);
+        super("core", owner, hex, 0);
     }
 
 
@@ -172,7 +172,7 @@ export class StructureHex extends HexEntity
 {
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("structure", owner, hex);
+        super("structure", owner, hex, 1);
     }
 
     onAdded()
