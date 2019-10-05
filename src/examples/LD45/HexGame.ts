@@ -65,22 +65,45 @@ class PlayerControlled extends Component
 {
 }
 
+class MoveMe extends Component
+{
+    constructor(public owner: Entity, public xOff: number, public yOff: number)
+    {
+        super();
+    }
+}
+
+class MoveWithPlayer extends System
+{
+    types(): LagomType<Component>[]
+    {
+        return [MoveMe, DetectRigidbody];
+    }
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, moveMe: MoveMe, body: DetectRigidbody) => {
+            // this.transform.x = MathUtil.lengthDirX(this.xOffset, this.owner.transform.rotation) +
+            // this.owner.transform.x;
+
+            // entity.transform.x = moveMe.xOff + moveMe.parent.transform.x;
+            // entity.transform.y = moveMe.yOff + moveMe.parent.transform.y;
+            entity.transform.x =
+                MathUtil.lengthDirX(moveMe.xOff, moveMe.owner.transform.rotation) + moveMe.owner.transform.x;
+            entity.transform.y =
+                MathUtil.lengthDirY(moveMe.yOff, moveMe.owner.transform.rotation) + moveMe.owner.transform.y;
+            entity.transform.rotation = moveMe.owner.transform.rotation;
+
+            // body.
+        });
+    }
+}
+
 class StructureBlock extends Entity
 {
     constructor(public owner: Entity, public xOffset: number, public yOffset: number, rotation: number = 0)
     {
-        super("structure", owner.transform.x + xOffset,
-              owner.transform.y + yOffset);
-    }
-
-
-    update(delta: number): void
-    {
-        super.update(delta);
-
-        this.transform.x = MathUtil.lengthDirX(this.xOffset, this.owner.transform.rotation) + this.owner.transform.x;
-        this.transform.y = MathUtil.lengthDirY(this.yOffset, this.owner.transform.rotation) + this.owner.transform.y;
-        //this.transform.rotation = this.owner.transform.rotation;
+        super("structure");
     }
 
     onAdded()
@@ -89,6 +112,7 @@ class StructureBlock extends Entity
 
         const spr = this.addComponent(new Sprite(hexSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
         this.addComponent(new RenderCircle(0, 0, 16));
+        this.addComponent(new MoveMe(this.owner, this.xOffset, this.yOffset));
     }
 }
 
@@ -149,6 +173,7 @@ class MainScene extends Scene
         this.addSystem(new PlayerMover());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
         this.addSystem(new FollowCamera({centre: true}));
+        this.addSystem(new MoveWithPlayer());
 
         this.addGlobalSystem(new FrameTriggerSystem());
     }
