@@ -15,6 +15,7 @@ import {RenderCircle} from "../../Common/PIXIComponents";
 import {CircleCollider} from "../../DetectCollisions/DetectColliders";
 import {ThrusterAnimationSystem} from "./Systems/ThrusterAnimationSystem";
 import {HexDetacher} from "./HexEntity";
+import {TimerSystem} from "../../Common/Timer";
 
 export enum Layers
 {
@@ -68,12 +69,13 @@ class MainScene extends Scene
         this.addSystem(new FollowCamera({centre: true}));
         this.addSystem(new MoveWithPlayer());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
-        this.addSystem(new HexDetacher());
+        // this.addSystem(new HexDetacher());
 
-        this.addEntity(new MouseGuy("mouse", 100, 100));
+        this.addEntity(new MouseGuy("mouse", 300, 300));
         this.addSystem(new ThrusterAnimationSystem());
         this.addSystem(new ClearMovement());
 
+        this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new FrameTriggerSystem());
     }
 }
@@ -86,6 +88,5 @@ class MouseGuy extends Entity
 
         this.addComponent(new RenderCircle(0, 0, 8));
         this.addComponent(new CircleCollider(0, 0, 8, Layers.ENEMY_PROJECTILE, true));
-        this.addComponent(new DetectRigidbody());
     }
 }
