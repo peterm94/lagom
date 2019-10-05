@@ -23,7 +23,7 @@ export class ThrusterHex extends HexEntity
 {
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("thruster", owner, hex, 1);
+        super("thruster", owner, hex, 2);
     }
 
     onAdded()

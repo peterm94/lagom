@@ -15,7 +15,7 @@ export class TurretHex extends HexEntity
 {
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("turret", owner, hex, 1);
+        super("turret", owner, hex, 4);
     }
 
     onAdded()

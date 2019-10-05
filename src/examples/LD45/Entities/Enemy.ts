@@ -30,7 +30,7 @@ export class Enemy extends Entity
         greenAlienSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0]]),
         {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 250});
 
-    constructor(private sprite: Component, public value: number = 25)
+    constructor(private sprite: Component, public value: number = 20)
     {
         super("enemy", 512, 256, DrawLayer.BLOCK);
         this.layer = Layers.ENEMY;
