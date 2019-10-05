@@ -14,6 +14,8 @@ import {CircleCollider} from "../../DetectCollisions/DetectColliders";
 import {ThrusterAnimationSystem} from "./Systems/ThrusterAnimationSystem";
 import {TimerSystem} from "../../Common/Timer";
 import {Player} from "./Entities/Player";
+import {OffScreenGarbageGuy} from "./Systems/OffScreenGarbageGuy";
+import {ScreenShaker} from "../../Common/Screenshake";
 
 export enum Layers
 {
@@ -72,6 +74,9 @@ class MainScene extends Scene
         this.addSystem(new ThrusterAnimationSystem());
         this.addSystem(new ClearMovement());
 
+        this.addSystem(new OffScreenGarbageGuy());
+
+        this.addGlobalSystem(new ScreenShaker());
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new FrameTriggerSystem());
     }

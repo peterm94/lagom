@@ -4,11 +4,12 @@ import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {CircleCollider, DetectCollider} from "../../DetectCollisions/DetectColliders";
 import {Component} from "../../ECS/Component";
 import {MoveMe} from "./Movement";
-import {Log, MathUtil} from "../../Common/Util";
+import {MathUtil} from "../../Common/Util";
 import {add, neighbours} from "./Hexagons/HexUtil";
 import {Layers} from "./HexGame";
 import {Timer} from "../../Common/Timer";
 import {Result} from "detect-collisions";
+import {ScreenShake} from "../../Common/Screenshake";
 
 export class HexRegister extends Component
 {
@@ -42,7 +43,6 @@ export class HexRegister extends Component
             {
                 this.register.delete(value.toString());
 
-                Log.error("detaching", value);
                 const moveMe = value.getComponent<MoveMe>(MoveMe);
                 if (moveMe) moveMe.destroy();
                 const coll = value.getComponent<CircleCollider>(CircleCollider);
@@ -51,7 +51,6 @@ export class HexRegister extends Component
                 value.layer = Layers.FREE_FLOAT;
 
                 value.addComponent(new Timer(1000, undefined)).onTrigger.register(() => {
-                    Log.error("Adding flat collider for ", value);
                     value.addComponent(new CircleCollider(0, 0, 16, Layers.FREE_FLOAT, true));
                 });
             }
@@ -91,11 +90,12 @@ export abstract class HexEntity extends Entity
 
         const col = this.addComponent(new CircleCollider(0, 0, 16, this.layer, true));
         col.onTriggerEnter.register((coll: DetectCollider, res: { other: DetectCollider, result: Result }) => {
+            const me = coll.getEntity() as HexEntity;
+
             if (res.other.layer === Layers.FREE_FLOAT && coll.layer !== Layers.FREE_FLOAT)
             {
                 const other = res.other.getEntity() as HexEntity;
-                const me = coll.getEntity() as HexEntity;
-                Log.error("TRY ATTACH");
+
                 // Figure out which side is closest
                 // TODO I think rotation makes this incorrect
                 const dir = MathUtil.pointDirection(me.transform.x,
@@ -108,7 +108,6 @@ export abstract class HexEntity extends Entity
                 const dest = add(me.hex, neighbours[neighbour]);
                 if (this.owner.register.get(dest.toString()) === undefined)
                 {
-                    Log.error("Try to attach set ", dest);
                     res.other.destroy();
                     other.addFor(me.owner, dest);
                 }
@@ -116,6 +115,7 @@ export abstract class HexEntity extends Entity
             else if ((res.other.layer === Layers.ENEMY_PROJECTILE && coll.layer === Layers.PLAYER)
                 || (res.other.layer === Layers.PLAYER_PROJECTILE && coll.layer === Layers.ENEMY))
             {
+                me.owner.getEntity().addComponent(new ScreenShake(0.8, 80));
                 this.destroy();
             }
         });
