@@ -15,7 +15,7 @@ import {Key} from "../../Input/Key";
 import {Diagnostics} from "../../Common/Debug";
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 
-import hexSpr from './art/hexagon.png';
+import playerSpr from './art/player.png';
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {MathUtil} from "../../Common/Util";
 
@@ -38,7 +38,7 @@ const collisionMatrix = new CollisionMatrix();
 collisionMatrix.addCollision(Layers.PLAYER, Layers.ENEMY_PROJECTILE);
 
 collisionMatrix.addCollision(Layers.ENEMY, Layers.PLAYER_PROJECTILE);
-const hexSheet = new SpriteSheet(hexSpr, 32, 32);
+const hexSheet = new SpriteSheet(playerSpr, 32, 32);
 
 
 function createShip(entity: Entity)
@@ -53,7 +53,7 @@ export class HexGame extends Game
         super(new MainScene(), {
             width: 512,
             height: 512,
-            resolution: 1,
+            resolution: 2,
             backgroundColor: 0x341a40,
             antialias: false
         })
