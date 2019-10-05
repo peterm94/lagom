@@ -16,8 +16,11 @@ import {Diagnostics} from "../../Common/Debug";
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 
 import playerSpr from './art/player.png';
+import block1Spr from './art/block1.png'
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {MathUtil} from "../../Common/Util";
+import {Hex} from "./Hexagons/Hex";
+import {GlobalSystem} from "../../ECS/GlobalSystem";
 
 enum Layers
 {
@@ -36,15 +39,11 @@ enum DrawLayer
 
 const collisionMatrix = new CollisionMatrix();
 collisionMatrix.addCollision(Layers.PLAYER, Layers.ENEMY_PROJECTILE);
-
 collisionMatrix.addCollision(Layers.ENEMY, Layers.PLAYER_PROJECTILE);
-const hexSheet = new SpriteSheet(playerSpr, 32, 32);
 
+const playerSheet = new SpriteSheet(playerSpr, 32, 32);
+const block1Sheet = new SpriteSheet(block1Spr, 32, 32);
 
-function createShip(entity: Entity)
-{
-    entity.getScene().addEntity(new StructureBlock(entity, 25, 16));
-}
 
 export class HexGame extends Game
 {
@@ -61,6 +60,31 @@ export class HexGame extends Game
 
 }
 
+class HexRegister extends Component
+{
+    readonly register: Map<String, HexEntity> = new Map();
+}
+
+abstract class HexEntity extends Entity
+{
+    protected constructor(name: string, x: number, y: number,
+                          public owner: HexRegister, public hex: Hex)
+    {
+        super(name, x, y, 0);
+        this.owner.register.set(this.hex.toString(), this);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+
+        this.addComponent(new MoveMe(this.owner.getEntity(), this.hex));
+        this.addComponent(new DetectRigidbody());
+        this.addComponent(new CircleCollider(0, 0, 16, this.owner.getEntity().layer, true));
+    }
+}
+
+
 class PlayerControlled extends Component
 {
 }
@@ -70,10 +94,12 @@ class MoveMe extends Component
     len: number;
     angle: number;
 
-    constructor(public owner: Entity, public xOff: number, public yOff: number)
+    constructor(public owner: Entity, public hex: Hex)
     {
         super();
 
+        const xOff = 0;
+        const yOff = 0;
         this.len = Math.sqrt(xOff * xOff + yOff * yOff);
         this.angle = Math.atan2(yOff, xOff);
     }
@@ -99,25 +125,6 @@ class MoveWithPlayer extends System
                 moveMe.owner.transform.y;
 
         });
-    }
-}
-
-class StructureBlock extends Entity
-{
-    constructor(public owner: Entity, public xOffset: number, public yOffset: number, rotation: number = 0)
-    {
-        super("structure");
-    }
-
-    onAdded()
-    {
-        super.onAdded();
-
-        const spr = this.addComponent(new Sprite(hexSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
-        // this.addComponent(new RenderCircle(0, 0, 16));
-        this.addComponent(new MoveMe(this.owner, this.xOffset, this.yOffset));
-        this.addComponent(new DetectRigidbody());
-        this.addComponent(new CircleCollider(0, 0, 16, Layers.PLAYER, true));
     }
 }
 
@@ -152,6 +159,7 @@ class PlayerMover extends System
                 body.move(0, this.moveSpeed * delta);
             }
 
+            // TODO this will break collisions?? something needs to update the body position
             if (Game.keyboard.isKeyDown(Key.KeyQ))
             {
                 entity.transform.rotation -= this.rotSpeed * delta;
@@ -184,11 +192,42 @@ class MainScene extends Scene
     }
 }
 
+class CoreHex extends HexEntity
+{
+    constructor(public owner: HexRegister, public hex: Hex)
+    {
+        super("core", 0, 0, owner, hex);
+    }
+
+
+    onAdded()
+    {
+        super.onAdded();
+
+        const spr = this.addComponent(new Sprite(playerSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
+    }
+}
+
+class StructureHex extends HexEntity
+{
+    constructor(public owner: HexRegister, public hex: Hex)
+    {
+        super("core", 0, 0, owner, hex);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        const spr = this.addComponent(new Sprite(block1Sheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
+    }
+}
+
 class Player extends Entity
 {
     constructor()
     {
         super("player", 256, 256, DrawLayer.BLOCK);
+        this.layer = Layers.PLAYER;
     }
 
     onAdded()
@@ -196,14 +235,11 @@ class Player extends Entity
         super.onAdded();
 
         this.addComponent(new FollowMe());
-        this.addComponent(new CircleCollider(16, 16, 16, Layers.PLAYER, true));
-        this.addComponent(new DetectRigidbody());
         this.addComponent(new PlayerControlled());
 
-        const spr = this.addComponent(new Sprite(hexSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
-        // this.addComponent(new RenderCircle(0, 0, 16));
+        const register = this.addComponent(new HexRegister());
 
-        createShip(this);
+        this.getScene().addEntity(new CoreHex(register, new Hex(0, 0, 0)));
     }
 }
 
