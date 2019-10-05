@@ -60,6 +60,8 @@ export class Movement extends Component
     x = 0;
     y = 0;
     rotation = 0;
+    aimX = 0;
+    aimY = 0;
 
     move(x: number = 0, y: number = 0,)
     {
@@ -81,6 +83,12 @@ export class Movement extends Component
         this.x = 0;
         this.y = 0;
         this.rotation = 0;
+    }
+
+    setAim(x: number, y: number)
+    {
+        this.aimX = x;
+        this.aimY = y;
     }
 }
 
@@ -148,6 +156,9 @@ export class PlayerControls extends System
                 movement.rotate(this.rotSpeed * delta);
                 // body.move(0, this.moveSpeed * delta);
             }
+
+            // Mouse aim
+            movement.setAim(Game.mouse.getPosX(), Game.mouse.getPosY());
         });
     }
 }

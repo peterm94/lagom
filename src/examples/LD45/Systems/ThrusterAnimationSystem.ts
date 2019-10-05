@@ -5,8 +5,6 @@ import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteCon
 import {HexEntity} from "../HexEntity";
 import {MathUtil} from "../../../Common/Util";
 
-export const a = 0;
-
 export class ThrusterAnimationSystem extends System
 {
     types = () => [AnimatedSpriteController, ThrusterTag];
