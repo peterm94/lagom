@@ -10,22 +10,64 @@ import block1Spr from './art/block1.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import {Component} from "../../ECS/Component";
 import {MoveMe} from "./Movement";
+import {add, neighbours} from "./Hexagons/HexUtil";
 
 const playerSheet = new SpriteSheet(playerSpr, 32, 32);
 const block1Sheet = new SpriteSheet(block1Spr, 32, 32);
 
 
-
 export class HexRegister extends Component
 {
     readonly register: Map<String, HexEntity> = new Map();
+
+    DFS(explored: HexEntity[], hexEntity: HexEntity): boolean
+    {
+        if (hexEntity.hex.toString() === new Hex(0, 0, 0).toString())
+        {
+            return true;
+        }
+
+        explored.push(hexEntity);
+        for (const neighbour of neighbours)
+        {
+            const nextNodeKey = add(neighbour, hexEntity.hex).toString();
+            const nextNode = this.register.get(nextNodeKey);
+            if (nextNode !== undefined && explored.find(value1 => value1.hex == nextNode.hex) === undefined)
+            {
+                if (this.DFS(explored, nextNode))
+                {
+                    return true;
+                }
+            }
+        }
+
+        // remove all visited nodes, no way to the core
+        explored.forEach(value => {
+            this.register.delete(value.toString());
+            value.destroy();
+
+        });
+
+        return false;
+    }
+
+    removeHex(hexEntity: HexEntity)
+    {
+        // Remove the hex from the map.
+        this.register.delete(hexEntity.hex.toString());
+
+        // Delete any node that can't reach the core any more
+        this.register.forEach((value, key) => {
+            this.DFS([], value);
+        })
+    }
 }
+
 export abstract class HexEntity extends Entity
 {
-    protected constructor(name: string, x: number, y: number,
-                          public owner: HexRegister, public hex: Hex)
+    protected constructor(name: string, public owner: HexRegister, public hex: Hex)
     {
-        super(name, x, y, 0);
+        super(name, -999, -999, 0);
         this.owner.register.set(this.hex.toString(), this);
     }
 
@@ -35,7 +77,16 @@ export abstract class HexEntity extends Entity
 
         this.addComponent(new MoveMe(this.owner.getEntity(), this.hex));
         this.addComponent(new DetectRigidbody());
-        this.addComponent(new CircleCollider(0, 0, 16, this.owner.getEntity().layer, true));
+        const col = this.addComponent(new CircleCollider(0, 0, 16, this.owner.getEntity().layer, true));
+        col.onTrigger.register((caller, data) => {
+            this.destroy();
+        });
+    }
+
+    destroy()
+    {
+        super.destroy();
+        this.owner.removeHex(this);
     }
 }
 
@@ -44,7 +95,7 @@ export class CoreHex extends HexEntity
 {
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("core", 0, 0, owner, hex);
+        super("core", owner, hex);
     }
 
 
@@ -60,7 +111,7 @@ export class StructureHex extends HexEntity
 {
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("structure", 0, 0, owner, hex);
+        super("structure", owner, hex);
     }
 
     onAdded()

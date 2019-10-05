@@ -67,10 +67,14 @@ export class Movement extends Component
         this.y += y;
     }
 
+    isMoving = () => this.x !== 0 || this.y !== 0;
+
     rotate(rotation: number)
     {
         this.rotation += rotation;
     }
+
+    isRotating = () => this.rotation !== 0;
 
     clear()
     {

@@ -7,23 +7,24 @@ import {HexEntity, HexRegister} from "../HexEntity";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import thrusterSpr from "../art/thruster.png";
 import thrusterBaseSpr from "../art/thruster_base.png";
+import {Entity} from "../../../ECS/Entity";
 
 const thrusterSheet = new SpriteSheet(thrusterSpr, 32, 32);
 const thrusterBaseSheet = new SpriteSheet(thrusterBaseSpr, 32, 32);
 
-enum ThrusterAnimationStates
+export enum ThrusterAnimationStates
 {
     OFF,
     ON,
 }
 
-class ThrusterTag extends Component {}
+export class ThrusterTag extends Component {}
 
 export class ThrusterHex extends HexEntity
 {
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("thruster", 0, 0, owner, hex);
+        super("thruster", owner, hex);
     }
 
     onAdded()
@@ -34,7 +35,6 @@ export class ThrusterHex extends HexEntity
 
         const spr = this.addComponent(new Sprite(thrusterBaseSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
 
-        // Full blown sprite with state machine
         const thruster = this.addComponent(new AnimatedSpriteController(ThrusterAnimationStates.OFF, [
             {
                 id: ThrusterAnimationStates.OFF,
@@ -48,4 +48,9 @@ export class ThrusterHex extends HexEntity
             }
         ]));
     }
+}
+
+export class Thruster extends Entity
+{
+
 }

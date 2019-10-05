@@ -9,6 +9,13 @@ import {Diagnostics} from "../../Common/Debug";
 import {Player} from "./Player";
 import {Enemy} from "./Enemy";
 import {ClearMovement, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
+import {Entity} from "../../ECS/Entity";
+import {Component} from "../../ECS/Component";
+import {System} from "../../ECS/System";
+import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
+import {RenderCircle} from "../../Common/PIXIComponents";
+import {CircleCollider} from "../../DetectCollisions/DetectColliders";
+import {ThrusterAnimationSystem} from "./Systems/ThrusterAnimationSystem";
 
 export enum Layers
 {
@@ -57,14 +64,26 @@ class MainScene extends Scene
 
         this.addSystem(new PlayerControls());
         this.addSystem(new Mover());
-        this.addSystem(new DetectCollisionSystem(collisionMatrix));
         this.addSystem(new FollowCamera({centre: true}));
         this.addSystem(new MoveWithPlayer());
+        this.addSystem(new DetectCollisionSystem(collisionMatrix));
+
+        this.addEntity(new MouseGuy("mouse", 100, 100));
+        this.addSystem(new ThrusterAnimationSystem());
         this.addSystem(new ClearMovement());
 
         this.addGlobalSystem(new FrameTriggerSystem());
     }
 }
 
+class MouseGuy extends Entity
+{
+    onAdded()
+    {
+        super.onAdded();
 
-
+        this.addComponent(new RenderCircle(0, 0, 8));
+        this.addComponent(new CircleCollider(0, 0, 8, Layers.ENEMY_PROJECTILE, true));
+        this.addComponent(new DetectRigidbody());
+    }
+}

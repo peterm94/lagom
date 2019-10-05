@@ -64,6 +64,22 @@ export class MathUtil
     }
 
     /**
+     * Linearly interpolate between two angles (in radians).
+     *
+     * @param start The angle to start from.
+     * @param end The target angle.
+     * @param amount The percentage to interpolate by.
+     */
+    static angleLerp(start: number, end: number, amount: number): number
+    {
+        const max = Math.PI * 2;
+
+        const delta = (end - start) % max;
+        const shortDistance = 2 * delta % max - delta;
+        return start + shortDistance * amount;
+    }
+
+    /**
      * Convert a radian to a degree.
      * @param rad The radian to convert.
      * @returns The converted degree.
