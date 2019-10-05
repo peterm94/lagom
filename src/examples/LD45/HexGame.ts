@@ -60,7 +60,7 @@ class MainScene extends Scene
 
         this.addEntity(new Diagnostics("white", 10, true));
         this.addEntity(new Player());
-        this.addEntity(new Enemy(Enemy.purpleEnemy));
+        this.addEntity(new Enemy(Enemy.greenAlien));
 
         this.addSystem(new PlayerControls());
         this.addSystem(new Mover());

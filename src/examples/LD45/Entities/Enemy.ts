@@ -8,15 +8,21 @@ import {HexEntity, HexRegister} from "../HexEntity";
 import {Component} from "../../../ECS/Component";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
-import purpleAlienSpr from '../art/purple_alien.png';
 import {StructureHex} from "./Structure";
 
+import purpleAlienSpr from '../art/purple_alien.png';
+import greenAlienSpr from '../art/green_alien.png';
 const purpleAlienSheet = new SpriteSheet(purpleAlienSpr, 32, 32);
+const greenAlienSheet = new SpriteSheet(greenAlienSpr, 32, 32);
 
 export class Enemy extends Entity
 {
-    public static purpleEnemy = new AnimatedSprite(
+    public static purpleAlien = new AnimatedSprite(
         purpleAlienSheet.textures([[0, 0], [1, 0], [2, 0]]),
+        {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 250});
+
+    public static greenAlien = new AnimatedSprite(
+        greenAlienSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0]]),
         {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 250});
 
     constructor(private sprite: Component)
