@@ -8,6 +8,7 @@ import {Movement, PlayerControlled} from "./Movement";
 import {PlayerHex, HexRegister, StructureHex} from "./HexEntity";
 import {ThrusterHex} from "./Entities/Thruster";
 import {ShieldHex} from "./Shield";
+import {TurretHex} from "./Turret";
 
 export class Player extends Entity
 {
@@ -32,7 +33,7 @@ export class Player extends Entity
         this.getScene().addEntity(new PlayerHex(register, new Hex(0, 0, 0)));
         this.getScene().addEntity(new StructureHex(register, new Hex(0, 1, -1)));
         this.getScene().addEntity(new ShieldHex(register, new Hex(0, 2, -2)));
-        this.getScene().addEntity(new ThrusterHex(register, new Hex(0, -1, 1)));
+        this.getScene().addEntity(new TurretHex(register, new Hex(0, -1, 1)));
         this.getScene().addEntity(new ThrusterHex(register, new Hex(-1, 1, 0)));
         this.getScene().addEntity(new ThrusterHex(register, new Hex(-1, 0, 1)));
     }
