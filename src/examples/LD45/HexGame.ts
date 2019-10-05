@@ -7,7 +7,7 @@ import {FollowCamera} from "../../Common/CameraUtil";
 
 import {Diagnostics} from "../../Common/Debug";
 import {Player} from "./Player";
-import {Enemy} from "./Enemy";
+import {Enemy} from "./Enemies/Enemy";
 import {ClearMovement, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
 import {Entity} from "../../ECS/Entity";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
@@ -43,8 +43,8 @@ export class HexGame extends Game
     constructor()
     {
         super(new MainScene(), {
-            width: 512,
-            height: 512,
+            width: 640,
+            height: 360,
             resolution: 2,
             backgroundColor: 0x2e2c3b,
             antialias: false
@@ -59,9 +59,9 @@ class MainScene extends Scene
     {
         super.onAdded();
 
-        this.addEntity(new Diagnostics("white"));
+        this.addEntity(new Diagnostics("white", 10, true));
         this.addEntity(new Player());
-        this.addEntity(new Enemy());
+        this.addEntity(new Enemy(Enemy.purpleEnemy));
 
         this.addSystem(new PlayerControls());
         this.addSystem(new Mover());
