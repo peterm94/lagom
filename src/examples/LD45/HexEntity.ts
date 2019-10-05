@@ -76,6 +76,7 @@ export abstract class HexEntity extends Entity
     protected constructor(name: string, public owner: HexRegister, public hex: Hex, public value: number)
     {
         super(name, -999, -999, 0);
+        owner.register.set(hex.toString(), this);
     }
 
     addFor(owner: HexRegister, hex: Hex)

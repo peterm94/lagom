@@ -11,7 +11,7 @@ export class ShieldHex extends HexEntity
 {
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("shield", owner, hex, 0);
+        super("shield", owner, hex, 1);
     }
 
     onAdded()
