@@ -1,7 +1,7 @@
 import {Entity} from "../../ECS/Entity";
 import {Hex} from "./Hexagons/Hex";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
-import {CircleCollider} from "../../DetectCollisions/DetectColliders";
+import {CircleCollider, DetectCollider} from "../../DetectCollisions/DetectColliders";
 import {Sprite} from "../../Common/Sprite/Sprite";
 
 
@@ -10,10 +10,12 @@ import block1Spr from './art/block1.png'
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import {Component} from "../../ECS/Component";
 import {MoveMe} from "./Movement";
-import {Log} from "../../Common/Util";
+import {Log, MathUtil} from "../../Common/Util";
 import {add, neighbours} from "./Hexagons/HexUtil";
 import {System} from "../../ECS/System";
 import {Layers} from "./HexGame";
+import {Timer} from "../../Common/Timer";
+import {Result} from "detect-collisions";
 
 const playerSheet = new SpriteSheet(playerSpr, 32, 32);
 const block1Sheet = new SpriteSheet(block1Spr, 32, 32);
@@ -30,10 +32,7 @@ export class HexDetacher extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity, detach: DetachHex, coll: CircleCollider, moveMe: MoveMe) => {
-            moveMe.destroy();
-            coll.destroy();
-            detach.destroy();
-            entity.addComponent(new CircleCollider(0, 0, 16, Layers.FREE_FLOAT, true));
+
         });
     }
 }
@@ -65,9 +64,24 @@ export class HexRegister extends Component
 
         // remove all visited nodes, no way to the core
         explored.forEach(value => {
-            this.register.delete(value.toString());
 
-            value.addComponent(new DetachHex());
+            if (value.layer !== Layers.FREE_FLOAT)
+            {
+                this.register.delete(value.toString());
+
+                Log.error("detaching", value);
+                const moveMe = value.getComponent<MoveMe>(MoveMe);
+                if (moveMe) moveMe.destroy();
+                const coll = value.getComponent<CircleCollider>(CircleCollider);
+                if (coll) coll.destroy();
+
+                value.layer = Layers.FREE_FLOAT;
+
+                value.addComponent(new Timer(1000, undefined)).onTrigger.register(() => {
+                    Log.error("Adding flat collider for ", value);
+                    value.addComponent(new CircleCollider(0, 0, 16, Layers.FREE_FLOAT, true));
+                });
+            }
         });
 
         return false;
@@ -90,26 +104,62 @@ export abstract class HexEntity extends Entity
     protected constructor(name: string, public owner: HexRegister, public hex: Hex)
     {
         super(name, -999, -999, 0);
-        this.owner.register.set(this.hex.toString(), this);
+    }
+
+    addFor(owner: HexRegister, hex: Hex)
+    {
+        // Remove existing colliders
+        // this.getComponentsOfType<CircleCollider>(CircleCollider).forEach(value => {
+        //     value.destroy();
+        //     Log.error("removing", value)
+        // });
+
+        this.owner = owner;
+        this.hex = hex;
+        this.layer = owner.getEntity().layer;
+
+        owner.register.set(hex.toString(), this);
+        this.addComponent(new MoveMe(this.owner.getEntity(), this.hex));
+
+
+        const col = this.addComponent(new CircleCollider(0, 0, 16, this.layer, true));
+        col.onTriggerEnter.register((coll: DetectCollider, res: { other: DetectCollider, result: Result }) => {
+            if (res.other.layer === Layers.FREE_FLOAT && coll.layer !== Layers.FREE_FLOAT)
+            {
+                const other = res.other.getEntity() as HexEntity;
+                const me = coll.getEntity() as HexEntity;
+                Log.error("TRY ATTACH");
+                // Figure out which side is closest
+                // TODO I think rotation makes this incorrect
+                const dir = MathUtil.pointDirection(me.transform.x,
+                                                    me.transform.y,
+                                                    other.transform.x,
+                                                    other.transform.y);
+
+                const neighbour = Math.floor(((MathUtil.radToDeg(dir) + 720) % 360) / 60) % 6;
+
+                const dest = add(me.hex, neighbours[neighbour]);
+                if (this.owner.register.get(dest.toString()) === undefined)
+                {
+                    Log.error("Try to attach set ", dest);
+                    res.other.destroy();
+                    other.addFor(me.owner, dest);
+                }
+            }
+            else if ((res.other.layer === Layers.ENEMY_PROJECTILE && coll.layer === Layers.PLAYER)
+                || (res.other.layer === Layers.PLAYER_PROJECTILE && coll.layer === Layers.ENEMY))
+            {
+                this.destroy();
+            }
+        });
     }
 
     onAdded()
     {
         super.onAdded();
 
-        this.addComponent(new MoveMe(this.owner.getEntity(), this.hex));
+        this.addFor(this.owner, this.hex);
         this.addComponent(new DetectRigidbody());
-        const col = this.addComponent(new CircleCollider(0, 0, 16, this.owner.getEntity().layer, true));
-        col.onTrigger.register((caller, data) => {
-            if (data.other.layer === Layers.FREE_FLOAT)
-            {
-                Log.error("TRY ATTACH");
-            }
-            else
-            {
-                this.destroy();
-            }
-        });
     }
 
     destroy()

@@ -30,6 +30,8 @@ export class Player extends Entity
         this.getScene().addEntity(new CoreHex(register, new Hex(0, 0, 0)));
         this.getScene().addEntity(new StructureHex(register, new Hex(0, 1, -1)));
         this.getScene().addEntity(new StructureHex(register, new Hex(0, 2, -2)));
+        this.getScene().addEntity(new StructureHex(register, new Hex(0, 3, -3)));
+        this.getScene().addEntity(new StructureHex(register, new Hex(0, 4, -4)));
         this.getScene().addEntity(new StructureHex(register, new Hex(0, -1, 1)));
     }
 }
