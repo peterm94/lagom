@@ -6,14 +6,14 @@ import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {FollowCamera} from "../../Common/CameraUtil";
 
 import {Diagnostics} from "../../Common/Debug";
-import {Player} from "./Player";
-import {Enemy} from "./Enemies/Enemy";
+import {Enemy} from "./Entities/Enemy";
 import {ClearMovement, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
 import {Entity} from "../../ECS/Entity";
 import {RenderCircle} from "../../Common/PIXIComponents";
 import {CircleCollider} from "../../DetectCollisions/DetectColliders";
 import {ThrusterAnimationSystem} from "./Systems/ThrusterAnimationSystem";
 import {TimerSystem} from "../../Common/Timer";
+import {Player} from "./Entities/Player";
 
 export enum Layers
 {

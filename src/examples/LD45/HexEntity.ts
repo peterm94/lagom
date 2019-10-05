@@ -2,10 +2,6 @@ import {Entity} from "../../ECS/Entity";
 import {Hex} from "./Hexagons/Hex";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {CircleCollider, DetectCollider} from "../../DetectCollisions/DetectColliders";
-import {Sprite} from "../../Common/Sprite/Sprite";
-import playerSpr from './art/player.png';
-import block1Spr from './art/block1.png';
-import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import {Component} from "../../ECS/Component";
 import {MoveMe} from "./Movement";
 import {Log, MathUtil} from "../../Common/Util";
@@ -13,9 +9,6 @@ import {add, neighbours} from "./Hexagons/HexUtil";
 import {Layers} from "./HexGame";
 import {Timer} from "../../Common/Timer";
 import {Result} from "detect-collisions";
-
-const playerSheet = new SpriteSheet(playerSpr, 32, 32);
-const block1Sheet = new SpriteSheet(block1Spr, 32, 32);
 
 export class HexRegister extends Component
 {
@@ -146,51 +139,5 @@ export abstract class HexEntity extends Entity
     {
         super.destroy();
         this.owner.removeHex(this);
-    }
-}
-
-
-export class PlayerHex extends HexEntity
-{
-    constructor(public owner: HexRegister, public hex: Hex)
-    {
-        super("player", owner, hex, 0);
-    }
-
-
-    onAdded()
-    {
-        super.onAdded();
-
-        const spr = this.addComponent(new Sprite(playerSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
-    }
-}
-
-export class EnemyHex extends HexEntity
-{
-    constructor(public owner: HexRegister, public hex: Hex, private sprite: Component)
-    {
-        super("purpleEnemy", owner, hex, 0);
-    }
-
-    onAdded()
-    {
-        super.onAdded();
-
-        const spr = this.addComponent(this.sprite);
-    }
-}
-
-export class StructureHex extends HexEntity
-{
-    constructor(public owner: HexRegister, public hex: Hex)
-    {
-        super("structure", owner, hex, 1);
-    }
-
-    onAdded()
-    {
-        super.onAdded();
-        const spr = this.addComponent(new Sprite(block1Sheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
     }
 }

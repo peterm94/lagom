@@ -7,7 +7,6 @@ import {HexEntity, HexRegister} from "../HexEntity";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import thrusterSpr from "../art/thruster.png";
 import thrusterBaseSpr from "../art/thruster_base.png";
-import {Entity} from "../../../ECS/Entity";
 
 const thrusterSheet = new SpriteSheet(thrusterSpr, 32, 32);
 const thrusterBaseSheet = new SpriteSheet(thrusterBaseSpr, 32, 32);
@@ -48,9 +47,4 @@ export class ThrusterHex extends HexEntity
             }
         ]));
     }
-}
-
-export class Thruster extends Entity
-{
-
 }
