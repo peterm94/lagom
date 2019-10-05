@@ -43,7 +43,7 @@ const hexSheet = new SpriteSheet(playerSpr, 32, 32);
 
 function createShip(entity: Entity)
 {
-    entity.getScene().addEntity(new StructureBlock(entity, 100, 100));
+    entity.getScene().addEntity(new StructureBlock(entity, 25, 16));
 }
 
 export class HexGame extends Game
@@ -67,9 +67,15 @@ class PlayerControlled extends Component
 
 class MoveMe extends Component
 {
+    len: number;
+    angle: number;
+
     constructor(public owner: Entity, public xOff: number, public yOff: number)
     {
         super();
+
+        this.len = Math.sqrt(xOff * xOff + yOff * yOff);
+        this.angle = Math.atan2(yOff, xOff);
     }
 }
 
@@ -77,7 +83,7 @@ class MoveWithPlayer extends System
 {
     types(): LagomType<Component>[]
     {
-        return [MoveMe, DetectRigidbody];
+        return [MoveMe];
     }
 
     update(delta: number): void
@@ -89,9 +95,9 @@ class MoveWithPlayer extends System
             // entity.transform.x = moveMe.xOff + moveMe.parent.transform.x;
             // entity.transform.y = moveMe.yOff + moveMe.parent.transform.y;
             entity.transform.x =
-                MathUtil.lengthDirX(moveMe.xOff, moveMe.owner.transform.rotation) + moveMe.owner.transform.x;
+                MathUtil.lengthDirX(moveMe.len, moveMe.owner.transform.rotation + moveMe.angle) + moveMe.owner.transform.x;
             entity.transform.y =
-                MathUtil.lengthDirY(moveMe.yOff, moveMe.owner.transform.rotation) + moveMe.owner.transform.y;
+                MathUtil.lengthDirY(moveMe.len, moveMe.owner.transform.rotation + moveMe.angle) + moveMe.owner.transform.y;
             entity.transform.rotation = moveMe.owner.transform.rotation;
 
             // body.
@@ -111,7 +117,7 @@ class StructureBlock extends Entity
         super.onAdded();
 
         const spr = this.addComponent(new Sprite(hexSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
-        this.addComponent(new RenderCircle(0, 0, 16));
+        // this.addComponent(new RenderCircle(0, 0, 16));
         this.addComponent(new MoveMe(this.owner, this.xOffset, this.yOffset));
     }
 }
@@ -196,7 +202,7 @@ class Player extends Entity
         this.addComponent(new PlayerControlled());
 
         const spr = this.addComponent(new Sprite(hexSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
-        this.addComponent(new RenderCircle(0, 0, 16));
+        // this.addComponent(new RenderCircle(0, 0, 16));
 
         createShip(this);
     }
