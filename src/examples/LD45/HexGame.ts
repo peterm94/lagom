@@ -42,7 +42,7 @@ export class HexGame extends Game
         super(new MainScene(), {
             width: 512,
             height: 512,
-            resolution: 2,
+            resolution: 1,
             backgroundColor: 0x341a40,
             antialias: false
         })

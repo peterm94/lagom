@@ -4,6 +4,7 @@ import {Inspector} from "../Inspector/Inspector";
 import {observer} from "mobx-react";
 import {Entity} from "../ECS/Entity";
 import {Component} from "../ECS/Component";
+import {Button, Table} from "reactstrap";
 
 @observer
 export class InspectorComponent extends React.Component<{ game: Game }, {}>
@@ -19,7 +20,7 @@ export class InspectorComponent extends React.Component<{ game: Game }, {}>
     render()
     {
         return <div>
-            <table>
+            <Table>
                 <tbody>
                 <tr>
                     <th style={{textAlign: "left"}}>Entities</th>
@@ -34,7 +35,7 @@ export class InspectorComponent extends React.Component<{ game: Game }, {}>
                     </td>
                 </tr>
                 </tbody>
-            </table>
+            </Table>
         </div>
     }
 }
@@ -48,7 +49,7 @@ export class EntityList extends React.Component<{ inspector: Inspector }>
 
         return <ul>{entities.map((item, idx) => {
             return <li key={idx}>
-                <button onClick={this.entitySelected.bind(this, idx)} key={idx}>{item}</button>
+                <Button onClick={this.entitySelected.bind(this, idx)} key={idx}>{item}</Button>
             </li>
         })}</ul>
     }
