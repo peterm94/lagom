@@ -10,11 +10,9 @@ import {Player} from "./Player";
 import {Enemy} from "./Enemy";
 import {ClearMovement, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
 import {Entity} from "../../ECS/Entity";
-import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {RenderCircle} from "../../Common/PIXIComponents";
 import {CircleCollider} from "../../DetectCollisions/DetectColliders";
 import {ThrusterAnimationSystem} from "./Systems/ThrusterAnimationSystem";
-import {HexDetacher} from "./HexEntity";
 import {TimerSystem} from "../../Common/Timer";
 
 export enum Layers

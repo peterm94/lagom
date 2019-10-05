@@ -1,7 +1,6 @@
 import {FrameTrigger} from "../FrameTrigger";
 import {Sprite, SpriteConfig} from "./Sprite";
 import * as PIXI from "pixi.js";
-import {Log} from "../Util";
 
 /**
  * Animation end action.
@@ -106,7 +105,6 @@ export class AnimatedSprite extends FrameTrigger<number>
                         break;
                     // Stop the advancer and lock the frame to the current one.
                     case AnimationEnd.STOP:
-                        Log.error("it is time");
                         nextFrame = currFrame;
                         this.frameAdvancer = 0;
                         break;
