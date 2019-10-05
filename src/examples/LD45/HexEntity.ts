@@ -3,8 +3,6 @@ import {Hex} from "./Hexagons/Hex";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {CircleCollider, DetectCollider} from "../../DetectCollisions/DetectColliders";
 import {Sprite} from "../../Common/Sprite/Sprite";
-
-
 import playerSpr from './art/player.png';
 import block1Spr from './art/block1.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
@@ -152,11 +150,11 @@ export abstract class HexEntity extends Entity
 }
 
 
-export class CoreHex extends HexEntity
+export class PlayerHex extends HexEntity
 {
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("core", owner, hex, 0);
+        super("player", owner, hex, 0);
     }
 
 
@@ -165,6 +163,21 @@ export class CoreHex extends HexEntity
         super.onAdded();
 
         const spr = this.addComponent(new Sprite(playerSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
+    }
+}
+
+export class EnemyHex extends HexEntity
+{
+    constructor(public owner: HexRegister, public hex: Hex, private sprite: Component)
+    {
+        super("purpleEnemy", owner, hex, 0);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+
+        const spr = this.addComponent(this.sprite);
     }
 }
 

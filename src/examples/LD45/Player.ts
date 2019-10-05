@@ -5,7 +5,7 @@ import {CircleCollider} from "../../DetectCollisions/DetectColliders";
 import {Hex} from "./Hexagons/Hex";
 import {DrawLayer, Layers} from "./HexGame";
 import {Movement, PlayerControlled} from "./Movement";
-import {CoreHex, HexRegister, StructureHex} from "./HexEntity";
+import {PlayerHex, HexRegister, StructureHex} from "./HexEntity";
 import {ThrusterHex} from "./Entities/Thruster";
 
 export class Player extends Entity
@@ -28,7 +28,7 @@ export class Player extends Entity
 
         const register = this.addComponent(new HexRegister());
 
-        this.getScene().addEntity(new CoreHex(register, new Hex(0, 0, 0)));
+        this.getScene().addEntity(new PlayerHex(register, new Hex(0, 0, 0)));
         this.getScene().addEntity(new StructureHex(register, new Hex(0, 1, -1)));
         this.getScene().addEntity(new StructureHex(register, new Hex(0, 2, -2)));
         this.getScene().addEntity(new ThrusterHex(register, new Hex(0, -1, 1)));
