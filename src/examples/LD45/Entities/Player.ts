@@ -11,6 +11,7 @@ import {DetectRigidbody} from "../../../DetectCollisions/DetectRigidbody";
 import {CircleCollider} from "../../../DetectCollisions/DetectColliders";
 import {ThrusterHex} from "./Thruster";
 import {StructureHex} from "./Structure";
+import {ShieldHex} from "./Shield";
 
 const playerSheet = new SpriteSheet(playerSpr, 32, 32);
 
@@ -36,7 +37,7 @@ export class Player extends Entity
 
         this.getScene().addEntity(new PlayerHex(register, new Hex(0, 0, 0)));
         this.getScene().addEntity(new StructureHex(register, new Hex(0, 1, -1)));
-        this.getScene().addEntity(new StructureHex(register, new Hex(0, 2, -2)));
+        this.getScene().addEntity(new ShieldHex(register, new Hex(0, 2, -2)));
         this.getScene().addEntity(new ThrusterHex(register, new Hex(0, -1, 1)));
         this.getScene().addEntity(new ThrusterHex(register, new Hex(-1, 1, 0)));
         this.getScene().addEntity(new ThrusterHex(register, new Hex(-1, 0, 1)));

@@ -81,12 +81,6 @@ export abstract class HexEntity extends Entity
 
     addFor(owner: HexRegister, hex: Hex)
     {
-        // Remove existing colliders
-        // this.getComponentsOfType<CircleCollider>(CircleCollider).forEach(value => {
-        //     value.destroy();
-        //     Log.error("removing", value)
-        // });
-
         this.owner = owner;
         this.hex = hex;
         this.layer = owner.getEntity().layer;
@@ -109,7 +103,7 @@ export abstract class HexEntity extends Entity
                                                     other.transform.x,
                                                     other.transform.y);
 
-                const neighbour = Math.floor(((MathUtil.radToDeg(dir) + 720) % 360) / 60) % 6;
+                const neighbour = Math.floor(((MathUtil.radToDeg(dir) + 780) % 360) / 60) % 6; // what the fuck?
 
                 const dest = add(me.hex, neighbours[neighbour]);
                 if (this.owner.register.get(dest.toString()) === undefined)
