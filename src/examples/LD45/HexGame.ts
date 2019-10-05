@@ -9,6 +9,9 @@ import {Entity} from "../../ECS/Entity";
 import {Component} from "../../ECS/Component";
 import {LagomType} from "../../ECS/LifecycleObject";
 import {RenderCircle} from "../../Common/PIXIComponents";
+import {CircleCollider, DetectCollider} from "../../DetectCollisions/DetectColliders";
+import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
+import {Key} from "../../Input/Key";
 
 enum Layers
 {
@@ -56,7 +59,8 @@ class PlayerControlled extends Component
 
 class StructureBlock extends Entity
 {
-    constructor(public owner: Entity, public xOffset: number, public yOffset: number, rotation: number =0){
+    constructor(public owner: Entity, public xOffset: number, public yOffset: number, rotation: number = 0)
+    {
         super("structure", owner.transform.x + xOffset,
               owner.transform.y + yOffset);
     }
@@ -80,13 +84,26 @@ class StructureBlock extends Entity
 
 class PlayerMover extends System
 {
+    readonly moveSpeed = 0.2;
+
     types(): LagomType<Component>[]
     {
-        return [PlayerControlled];
+        return [DetectRigidbody, PlayerControlled];
     }
 
     update(delta: number): void
     {
+        this.runOnEntitiesWithSystem((system: FollowCamera, entity: Entity, body: DetectRigidbody) => {
+
+            if (Game.keyboard.isKeyDown(Key.ArrowLeft, Key.KeyA))
+            {
+                body.move(-this.moveSpeed * delta, 0);
+            }
+            if (Game.keyboard.isKeyDown(Key.ArrowRight, Key.KeyD))
+            {
+                body.move(this.moveSpeed * delta, 0);
+            }
+        });
     }
 }
 
@@ -119,7 +136,10 @@ class Player extends Entity
 
         this.addComponent(new FollowMe());
         this.addComponent(new RenderCircle(0, 0, 16));
-
+        this.addComponent(new CircleCollider(0, 0, 16, Layers.PLAYER, true));
+        this.addComponent(new DetectRigidbody());
+        this.addComponent(new PlayerControlled());
+        //.
         createShip(this);
     }
 }
