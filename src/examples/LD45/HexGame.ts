@@ -10,8 +10,6 @@ import {Player} from "./Player";
 import {Enemy} from "./Enemy";
 import {ClearMovement, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
 import {Entity} from "../../ECS/Entity";
-import {Component} from "../../ECS/Component";
-import {System} from "../../ECS/System";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {RenderCircle} from "../../Common/PIXIComponents";
 import {CircleCollider} from "../../DetectCollisions/DetectColliders";
