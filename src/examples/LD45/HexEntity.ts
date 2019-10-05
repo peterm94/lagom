@@ -10,9 +10,6 @@ import {Layers} from "./HexGame";
 import {Timer} from "../../Common/Timer";
 import {Result} from "detect-collisions";
 
-const playerSheet = new SpriteSheet(playerSpr, 32, 32);
-export const block1Sheet = new SpriteSheet(block1Spr, 32, 32);
-
 export class HexRegister extends Component
 {
     readonly register: Map<String, HexEntity> = new Map();

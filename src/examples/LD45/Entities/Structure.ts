@@ -4,7 +4,7 @@ import {HexEntity, HexRegister} from "../HexEntity";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import block1Spr from "../art/block1.png";
 
-const block1Sheet = new SpriteSheet(block1Spr, 32, 32);
+export const block1Sheet = new SpriteSheet(block1Spr, 32, 32);
 
 export class StructureHex extends HexEntity
 {

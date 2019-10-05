@@ -1,9 +1,10 @@
-import {block1Sheet, HexEntity, HexRegister} from "./HexEntity";
-import {Hex} from "./Hexagons/Hex";
-import {Sprite} from "../../Common/Sprite/Sprite";
-import {AnimatedSprite} from "../../Common/Sprite/AnimatedSprite";
-import turretSpr from "./art/turret.png";
-import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
+import {HexEntity, HexRegister} from "../HexEntity";
+import {Hex} from "../Hexagons/Hex";
+import {Sprite} from "../../../Common/Sprite/Sprite";
+import {AnimatedSprite} from "../../../Common/Sprite/AnimatedSprite";
+import turretSpr from "../art/turret.png";
+import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
+import {block1Sheet} from "./Structure";
 
 const turretSheet = new SpriteSheet(turretSpr, 32, 32);
 
