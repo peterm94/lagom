@@ -69,7 +69,6 @@ class MainScene extends Scene
         this.addSystem(new FollowCamera({centre: true}));
         this.addSystem(new MoveWithPlayer());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
-        // this.addSystem(new HexDetacher());
 
         this.addEntity(new MouseGuy("mouse", 300, 300));
         this.addSystem(new ThrusterAnimationSystem());

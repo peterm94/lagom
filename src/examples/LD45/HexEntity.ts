@@ -12,30 +12,12 @@ import {Component} from "../../ECS/Component";
 import {MoveMe} from "./Movement";
 import {Log, MathUtil} from "../../Common/Util";
 import {add, neighbours} from "./Hexagons/HexUtil";
-import {System} from "../../ECS/System";
 import {Layers} from "./HexGame";
 import {Timer} from "../../Common/Timer";
 import {Result} from "detect-collisions";
 
 const playerSheet = new SpriteSheet(playerSpr, 32, 32);
 const block1Sheet = new SpriteSheet(block1Spr, 32, 32);
-
-
-class DetachHex extends Component
-{
-}
-
-export class HexDetacher extends System
-{
-    types = () => [DetachHex, CircleCollider, MoveMe];
-
-    update(delta: number): void
-    {
-        this.runOnEntities((entity: Entity, detach: DetachHex, coll: CircleCollider, moveMe: MoveMe) => {
-
-        });
-    }
-}
 
 export class HexRegister extends Component
 {

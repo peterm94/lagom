@@ -128,7 +128,7 @@ export class AnimatedSprite extends FrameTrigger<number>
     onAdded()
     {
         super.onAdded();
-        this.sprite = this.getEntity().addComponent(new Sprite(this.textures[this.frameIndex], this.config))
+        this.sprite = this.getEntity().addComponent(new Sprite(this.textures[this.frameIndex], this.config));
         this.reset();
     }
 
