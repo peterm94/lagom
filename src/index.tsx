@@ -6,6 +6,8 @@ import {LagomGameComponent} from "./React/LagomGameComponent";
 import {InspectorComponent} from "./React/InspectorComponents";
 import {Downshaft} from "./examples/Downshaft/Downshaft";
 import {HexGame} from "./examples/LD45/HexGame";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import {Col, Container, Row} from "reactstrap";
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
@@ -15,8 +17,10 @@ serviceWorker.unregister();
 const game = new HexGame();
 
 ReactDOM.render(
-    <div>
-        <LagomGameComponent game={game}/>
-        {/*<InspectorComponent game={game}/>*/}
-    </div>,
+    <Container>
+        <Row>
+            <Col><LagomGameComponent game={game}/></Col>
+            <Col><InspectorComponent game={game}/></Col>
+        </Row>
+    </Container>,
     document.getElementById("root"));
