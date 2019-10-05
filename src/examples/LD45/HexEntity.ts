@@ -11,10 +11,32 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import {Component} from "../../ECS/Component";
 import {MoveMe} from "./Movement";
 import {add, neighbours} from "./Hexagons/HexUtil";
+import {System} from "../../ECS/System";
+import {Layers} from "./HexGame";
+import {Log} from "../../Common/Util";
 
 const playerSheet = new SpriteSheet(playerSpr, 32, 32);
 const block1Sheet = new SpriteSheet(block1Spr, 32, 32);
 
+
+class DetachHex extends Component
+{
+}
+
+export class HexDetacher extends System
+{
+    types = () => [DetachHex, CircleCollider, MoveMe];
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, detach: DetachHex, coll: CircleCollider, moveMe: MoveMe) => {
+            moveMe.destroy();
+            coll.destroy();
+            detach.destroy();
+            entity.addComponent(new CircleCollider(0, 0, 16, Layers.FREE_FLOAT, true));
+        });
+    }
+}
 
 export class HexRegister extends Component
 {
@@ -44,8 +66,8 @@ export class HexRegister extends Component
         // remove all visited nodes, no way to the core
         explored.forEach(value => {
             this.register.delete(value.toString());
-            value.destroy();
 
+            value.addComponent(new DetachHex());
         });
 
         return false;
@@ -79,7 +101,14 @@ export abstract class HexEntity extends Entity
         this.addComponent(new DetectRigidbody());
         const col = this.addComponent(new CircleCollider(0, 0, 16, this.owner.getEntity().layer, true));
         col.onTrigger.register((caller, data) => {
-            this.destroy();
+            if (data.other.layer === Layers.FREE_FLOAT)
+            {
+                Log.error("TRY ATTACH");
+            }
+            else
+            {
+                this.destroy();
+            }
         });
     }
 
