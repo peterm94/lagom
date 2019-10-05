@@ -83,24 +83,21 @@ class MoveWithPlayer extends System
 {
     types(): LagomType<Component>[]
     {
-        return [MoveMe];
+        return [MoveMe, DetectRigidbody];
     }
 
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity, moveMe: MoveMe, body: DetectRigidbody) => {
-            // this.transform.x = MathUtil.lengthDirX(this.xOffset, this.owner.transform.rotation) +
-            // this.owner.transform.x;
-
-            // entity.transform.x = moveMe.xOff + moveMe.parent.transform.x;
-            // entity.transform.y = moveMe.yOff + moveMe.parent.transform.y;
-            entity.transform.x =
-                MathUtil.lengthDirX(moveMe.len, moveMe.owner.transform.rotation + moveMe.angle) + moveMe.owner.transform.x;
-            entity.transform.y =
-                MathUtil.lengthDirY(moveMe.len, moveMe.owner.transform.rotation + moveMe.angle) + moveMe.owner.transform.y;
             entity.transform.rotation = moveMe.owner.transform.rotation;
 
-            // body.
+            body.pendingX =
+                -entity.transform.x + MathUtil.lengthDirX(moveMe.len, moveMe.owner.transform.rotation + moveMe.angle) +
+                moveMe.owner.transform.x;
+            body.pendingY =
+                -entity.transform.y + MathUtil.lengthDirY(moveMe.len, moveMe.owner.transform.rotation + moveMe.angle) +
+                moveMe.owner.transform.y;
+
         });
     }
 }
@@ -119,6 +116,8 @@ class StructureBlock extends Entity
         const spr = this.addComponent(new Sprite(hexSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
         // this.addComponent(new RenderCircle(0, 0, 16));
         this.addComponent(new MoveMe(this.owner, this.xOffset, this.yOffset));
+        this.addComponent(new DetectRigidbody());
+        this.addComponent(new CircleCollider(0, 0, 16, Layers.PLAYER, true));
     }
 }
 
