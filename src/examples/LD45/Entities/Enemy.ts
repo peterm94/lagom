@@ -4,11 +4,12 @@ import {DetectRigidbody} from "../../../DetectCollisions/DetectRigidbody";
 import {CircleCollider} from "../../../DetectCollisions/DetectColliders";
 import {Hex} from "../Hexagons/Hex";
 import {DrawLayer, Layers} from "../HexGame";
-import {EnemyHex, HexRegister, StructureHex} from "../HexEntity";
+import {HexEntity, HexRegister} from "../HexEntity";
 import {Component} from "../../../ECS/Component";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import purpleAlienSpr from '../art/purple_alien.png';
+import {StructureHex} from "./Structure";
 
 const purpleAlienSheet = new SpriteSheet(purpleAlienSpr, 32, 32);
 
@@ -39,5 +40,20 @@ export class Enemy extends Entity
         this.getScene().addEntity(new StructureHex(register, new Hex(0, 1, -1)));
         this.getScene().addEntity(new StructureHex(register, new Hex(0, 2, -2)));
         this.getScene().addEntity(new StructureHex(register, new Hex(0, -1, 1)));
+    }
+}
+
+export class EnemyHex extends HexEntity
+{
+    constructor(public owner: HexRegister, public hex: Hex, private sprite: Component)
+    {
+        super("purpleEnemy", owner, hex, 0);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+
+        const spr = this.addComponent(this.sprite);
     }
 }

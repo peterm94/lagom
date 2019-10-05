@@ -1,9 +1,9 @@
-import {HexEntity, HexRegister} from "./HexEntity";
-import {Hex} from "./Hexagons/Hex";
+import {HexEntity, HexRegister} from "../HexEntity";
+import {Hex} from "../Hexagons/Hex";
 
-import shieldSpr from './art/shield.png'
-import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
-import {Sprite} from "../../Common/Sprite/Sprite";
+import shieldSpr from '../art/shield.png'
+import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
+import {Sprite} from "../../../Common/Sprite/Sprite";
 
 const shieldSheet = new SpriteSheet(shieldSpr, 32, 32);
 
