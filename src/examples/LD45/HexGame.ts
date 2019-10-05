@@ -15,6 +15,7 @@ import {System} from "../../ECS/System";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {RenderCircle} from "../../Common/PIXIComponents";
 import {CircleCollider} from "../../DetectCollisions/DetectColliders";
+import {HexDetacher} from "./HexEntity";
 
 export enum Layers
 {
@@ -22,6 +23,7 @@ export enum Layers
     PLAYER_PROJECTILE,
     ENEMY_PROJECTILE,
     ENEMY,
+    FREE_FLOAT,
     NONE
 }
 
@@ -35,6 +37,7 @@ export enum DrawLayer
 const collisionMatrix = new CollisionMatrix();
 collisionMatrix.addCollision(Layers.PLAYER, Layers.ENEMY_PROJECTILE);
 collisionMatrix.addCollision(Layers.ENEMY, Layers.PLAYER_PROJECTILE);
+collisionMatrix.addCollision(Layers.PLAYER, Layers.FREE_FLOAT);
 
 export class HexGame extends Game
 {
@@ -65,6 +68,7 @@ class MainScene extends Scene
         this.addSystem(new FollowCamera({centre: true}));
         this.addSystem(new MoveWithPlayer());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
+        this.addSystem(new HexDetacher());
 
         this.addEntity(new MouseGuy("mouse", 100, 100));
 
