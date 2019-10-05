@@ -55,46 +55,97 @@ export class MoveWithPlayer extends System
     }
 }
 
-export class PlayerMover extends System
+export class Movement extends Component
+{
+    x = 0;
+    y = 0;
+    rotation = 0;
+
+    move(x: number = 0, y: number = 0,)
+    {
+        this.x += x;
+        this.y += y;
+    }
+
+    isMoving = () => this.x !== 0 || this.y !== 0;
+
+    rotate(rotation: number)
+    {
+        this.rotation += rotation;
+    }
+
+    isRotating = () => this.rotation !== 0;
+
+    clear()
+    {
+        this.x = 0;
+        this.y = 0;
+        this.rotation = 0;
+    }
+}
+
+export class Mover extends System
+{
+    types = () => [DetectRigidbody, Movement];
+
+    update(delta: number)
+    {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody, movement: Movement) => {
+            body.move(movement.x, movement.y);
+            entity.transform.rotation += movement.rotation;
+        })
+    }
+}
+
+export class ClearMovement extends System
+{
+    types = () => [Movement];
+
+    update(delta: number)
+    {
+        this.runOnEntities((entity: Entity, movement: Movement) => {
+            movement.clear();
+        })
+    }
+}
+
+export class PlayerControls extends System
 {
     readonly moveSpeed = 0.2;
     readonly rotSpeed = 0.002;
 
-    types(): LagomType<Component>[]
-    {
-        return [DetectRigidbody, PlayerControlled];
-    }
+    types = () => [Movement, PlayerControlled];
 
     update(delta: number): void
     {
-        this.runOnEntitiesWithSystem((system: FollowCamera, entity: Entity, body: DetectRigidbody) => {
+        this.runOnEntitiesWithSystem((system: FollowCamera, entity: Entity, movement: Movement) => {
 
             if (Game.keyboard.isKeyDown(Key.ArrowLeft, Key.KeyA))
             {
-                body.move(-this.moveSpeed * delta, 0);
+                movement.move(-this.moveSpeed * delta, 0);
             }
             if (Game.keyboard.isKeyDown(Key.ArrowRight, Key.KeyD))
             {
-                body.move(this.moveSpeed * delta, 0);
+                movement.move(this.moveSpeed * delta, 0);
             }
             if (Game.keyboard.isKeyDown(Key.ArrowUp, Key.KeyW))
             {
-                body.move(0, -this.moveSpeed * delta);
+                movement.move(0, -this.moveSpeed * delta);
             }
             if (Game.keyboard.isKeyDown(Key.ArrowDown, Key.KeyS))
             {
-                body.move(0, this.moveSpeed * delta);
+                movement.move(0, this.moveSpeed * delta);
             }
 
             // TODO this will break collisions?? something needs to update the body position
             if (Game.keyboard.isKeyDown(Key.KeyQ))
             {
-                entity.transform.rotation -= this.rotSpeed * delta;
+                movement.rotate(-this.rotSpeed * delta);
                 // body.move(0, this.moveSpeed * delta);
             }
             if (Game.keyboard.isKeyDown(Key.KeyE))
             {
-                entity.transform.rotation += this.rotSpeed * delta;
+                movement.rotate(this.rotSpeed * delta);
                 // body.move(0, this.moveSpeed * delta);
             }
         });

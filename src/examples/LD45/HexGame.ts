@@ -8,13 +8,12 @@ import {FollowCamera} from "../../Common/CameraUtil";
 import {Diagnostics} from "../../Common/Debug";
 import {Player} from "./Player";
 import {Enemy} from "./Enemy";
-import {MoveWithPlayer, PlayerMover} from "./Movement";
+import {ClearMovement, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
 import {Entity} from "../../ECS/Entity";
-import {Component} from "../../ECS/Component";
-import {System} from "../../ECS/System";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {RenderCircle} from "../../Common/PIXIComponents";
 import {CircleCollider} from "../../DetectCollisions/DetectColliders";
+import {ThrusterAnimationSystem} from "./Systems/ThrusterAnimationSystem";
 import {HexDetacher} from "./HexEntity";
 import {TimerSystem} from "../../Common/Timer";
 
@@ -65,13 +64,16 @@ class MainScene extends Scene
         this.addEntity(new Player());
         this.addEntity(new Enemy());
 
-        this.addSystem(new PlayerMover());
+        this.addSystem(new PlayerControls());
+        this.addSystem(new Mover());
         this.addSystem(new FollowCamera({centre: true}));
         this.addSystem(new MoveWithPlayer());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
         // this.addSystem(new HexDetacher());
 
         this.addEntity(new MouseGuy("mouse", 300, 300));
+        this.addSystem(new ThrusterAnimationSystem());
+        this.addSystem(new ClearMovement());
 
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new FrameTriggerSystem());

@@ -30,6 +30,7 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
         if (config.yAnchor) this.pixiObj.anchor.y = config.yAnchor;
         if (config.xScale) this.pixiObj.scale.x = config.xScale;
         if (config.yScale) this.pixiObj.scale.y = config.yScale;
+        if (config.rotation) this.pixiObj.rotation = config.rotation;
     }
 }
 
@@ -50,4 +51,6 @@ export interface SpriteConfig
     xScale?: number;
     /** Texture scaling in the Y direction. A negative number will flip the texture. */
     yScale?: number;
+
+    rotation?: number;
 }

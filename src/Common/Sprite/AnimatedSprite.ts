@@ -48,7 +48,7 @@ export class AnimatedSprite extends FrameTrigger<number>
 
     private frameIndex: number = 0;
     private frameAdvancer: number = 1;
-    private _sprite: Sprite | null = null;
+    public sprite: Sprite | null = null;
 
     /**
      * Apply configuration to this AnimatedSprite.
@@ -56,7 +56,7 @@ export class AnimatedSprite extends FrameTrigger<number>
      */
     public applyConfig(config: AnimatedSpriteConfig)
     {
-        if (this._sprite) this._sprite.applyConfig(config);
+        if (this.sprite) this.sprite.applyConfig(config);
 
         // Do animated sprite stuff
         if (config.animationSpeed) this.triggerInterval = config.animationSpeed;
@@ -113,7 +113,7 @@ export class AnimatedSprite extends FrameTrigger<number>
 
             this.frameIndex = nextFrame;
 
-            if (this._sprite) this._sprite.pixiObj.texture = this.textures[this.frameIndex];
+            if (this.sprite) this.sprite.pixiObj.texture = this.textures[this.frameIndex];
         });
     }
 
@@ -126,13 +126,13 @@ export class AnimatedSprite extends FrameTrigger<number>
     onAdded()
     {
         super.onAdded();
-        this._sprite = this.getEntity().addComponent(new Sprite(this.textures[this.frameIndex], this.config))
+        this.sprite = this.getEntity().addComponent(new Sprite(this.textures[this.frameIndex], this.config))
         this.reset();
     }
 
     onRemoved()
     {
         super.onRemoved();
-        if (this._sprite) this._sprite.destroy();
+        if (this.sprite) this.sprite.destroy();
     }
 }
