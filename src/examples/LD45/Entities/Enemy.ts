@@ -74,7 +74,6 @@ export class Enemy extends Entity
             // Choose an entity to add a neighbour to
             const rando = MathUtil.randomRange(0, register.register.size);
             let list = Array.from(register.register)
-            console.log(list);
             let hexEntity = list[rando][1]
 
             // choose which neighbour
