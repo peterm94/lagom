@@ -6,7 +6,7 @@ import {Sprite} from "../../Common/Sprite/Sprite";
 
 
 import playerSpr from './art/player.png';
-import block1Spr from './art/block1.png'
+import block1Spr from './art/block1.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import {Component} from "../../ECS/Component";
 import {MoveMe} from "./Movement";

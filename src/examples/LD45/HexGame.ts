@@ -8,7 +8,7 @@ import {FollowCamera} from "../../Common/CameraUtil";
 import {Diagnostics} from "../../Common/Debug";
 import {Player} from "./Player";
 import {Enemy} from "./Enemy";
-import {MoveWithPlayer, PlayerMover} from "./Movement";
+import {ClearMovement, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
 
 export enum Layers
 {
@@ -55,10 +55,12 @@ class MainScene extends Scene
         this.addEntity(new Player());
         this.addEntity(new Enemy());
 
-        this.addSystem(new PlayerMover());
+        this.addSystem(new PlayerControls());
+        this.addSystem(new Mover());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
         this.addSystem(new FollowCamera({centre: true}));
         this.addSystem(new MoveWithPlayer());
+        this.addSystem(new ClearMovement());
 
         this.addGlobalSystem(new FrameTriggerSystem());
     }
