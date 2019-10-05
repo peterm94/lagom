@@ -20,7 +20,7 @@ ReactDOM.render(
     <Container>
         <Row>
             <Col><LagomGameComponent game={game}/></Col>
-            <Col><InspectorComponent game={game}/></Col>
+            {/*<Col><InspectorComponent game={game}/></Col>*/}
         </Row>
     </Container>,
     document.getElementById("root"));
