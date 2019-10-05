@@ -1,5 +1,6 @@
 import {Hex} from "./Hex";
 import {FlatTop} from "./FlatTop";
+import {Vector} from "../../../LagomPhysics/Physics";
 
 /**
  * List of relative neighbouring hexes.
@@ -31,3 +32,11 @@ export const length = (hex: Hex) => (Math.abs(hex.x) + Math.abs(hex.y) + Math.ab
  * Find out if two Hex tiles are adjacent.
  */
 export const adjacent = (hex1: Hex, hex2: Hex) => neighbours.find(neighbour => add(hex1, neighbour).equals(hex2));
+
+export const hexToWorld = (hex: Hex): Vector =>
+{
+    const x = 25 * hex.x;
+    const y = 16 * hex.x + 32 * hex.y;
+
+    return new Vector(x, y);
+};
