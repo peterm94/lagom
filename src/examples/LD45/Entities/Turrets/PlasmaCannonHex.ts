@@ -22,12 +22,12 @@ export class PlasmaCannonHex extends HexEntity
     public static shootingFrameSpeed = 48;
     public static shootingTime = PlasmaCannonHex.shootingSprites.length * PlasmaCannonHex.shootingFrameSpeed;
     public static cooldownSprites = turretSheet.textureSliceFromRow(0, 23, 28);
-    public static cooldownFrameSpeed = 240;
+    public static cooldownFrameSpeed = 48;
     public static cooldownTime = PlasmaCannonHex.cooldownSprites.length * PlasmaCannonHex.cooldownFrameSpeed;
 
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("laserTurret", owner, hex, 8);
+        super("plasmaCannon", owner, hex, 6);
     }
 
     onAdded()

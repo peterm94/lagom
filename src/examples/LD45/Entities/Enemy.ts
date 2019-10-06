@@ -102,7 +102,11 @@ export class Enemy extends Entity
             // Pick which thing to put there
             let hexEntity = this.buildRandomHexType(register, hex);
             points -= hexEntity.value;
-            this.getScene().addEntity(hexEntity);
+
+            if (points > 0)
+            {
+                this.getScene().addEntity(hexEntity);
+            }
         }
     }
 

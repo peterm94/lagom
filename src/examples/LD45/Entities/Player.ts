@@ -38,11 +38,11 @@ export class Player extends Entity
         const register = this.addComponent(new HexRegister());
 
         this.getScene().addEntity(new PlayerHex(register, new Hex(0, 0, 0)));
-        this.getScene().addEntity(new StructureHex(register, new Hex(0, 1, -1)));
-        this.getScene().addEntity(new ShieldHex(register, new Hex(0, 2, -2)));
+        this.getScene().addEntity(new ShieldHex(register, new Hex(0, 1, -1)));
+        // this.getScene().addEntity(new ShieldHex(register, new Hex(0, 2, -2)));
         this.getScene().addEntity(new LaserTurretHex(register, new Hex(0, -1, 1)));
-        this.getScene().addEntity(new ThrusterHex(register, new Hex(-1, 1, 0)));
-        this.getScene().addEntity(new PlasmaCannonHex(register, new Hex(-1, 0, 1)));
+        // this.getScene().addEntity(new ThrusterHex(register, new Hex(-1, 1, 0)));
+        // this.getScene().addEntity(new PlasmaCannonHex(register, new Hex(-1, 0, 1)));
     }
 }
 

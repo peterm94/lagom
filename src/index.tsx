@@ -17,7 +17,7 @@ serviceWorker.unregister();
 const game = new HexGame();
 
 ReactDOM.render(
-    <Container>
+    <Container fluid={true}>
         <Row>
             <Col><LagomGameComponent game={game}/></Col>
             {/*<Col><InspectorComponent game={game}/></Col>*/}
