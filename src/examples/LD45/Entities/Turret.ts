@@ -27,7 +27,11 @@ export class TurretTag extends Component
 {
     canShoot: boolean = true;
 
-    constructor(public bulletSprite: Component, public shootingTime: number, public cooldownTime: number) { super() }
+    constructor(public bulletSprite: Component,
+                public shootingTime: number,
+                public cooldownTime: number,
+                public bulletSpeed: number,
+                public bulletDamage: number) { super() }
 
     public getMovement(): Movement | null
     {
@@ -88,7 +92,9 @@ export class TurretShooter extends System
                                    entity.transform.x,
                                    entity.transform.y,
                                    spr.sprite!.pixiObj.rotation + entity.transform.rotation,
-                                   tag.bulletSprite));
+                                   tag.bulletSprite,
+                                   tag.bulletSpeed,
+                                   tag.bulletDamage));
 
                     spr.setAnimation(TurretAnimationStates.COOLING);
 
@@ -104,7 +110,11 @@ export class TurretShooter extends System
 
 export class Bullet extends Entity
 {
-    constructor(layer: Layers, x: number, y: number, private targRotation: number, private sprite: Component)
+    constructor(layer: Layers, x: number, y: number,
+                private targRotation: number,
+                private sprite: Component,
+                private speed: number,
+                private damage: number)
     {
         super("bullet", x, y, DrawLayer.BULLET);
 
@@ -118,7 +128,7 @@ export class Bullet extends Entity
 
         this.addComponent(this.sprite);
 
-        this.addComponent(new ConstantMotion(this.targRotation, 0.4));
+        this.addComponent(new ConstantMotion(this.targRotation, this.speed));
         const coll = this.addComponent(new CircleCollider(0, 0, 4, this.layer, true));
 
         coll.onTriggerEnter.register((coll: DetectCollider, res: { other: DetectCollider, result: Result }) => {
@@ -126,7 +136,7 @@ export class Bullet extends Entity
             if ((res.other.layer === Layers.PLAYER && coll.layer === Layers.ENEMY_PROJECTILE)
                 || (res.other.layer === Layers.ENEMY && coll.layer === Layers.PLAYER_PROJECTILE))
             {
-                res.other.getEntity().addComponent(new Damage());
+                res.other.getEntity().addComponent(new Damage(this.damage));
                 coll.getEntity().destroy();
             }
         });

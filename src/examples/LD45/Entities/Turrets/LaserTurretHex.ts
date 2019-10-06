@@ -38,7 +38,9 @@ export class LaserTurretHex extends HexEntity
                                                  animationSpeed: 24
                                              }),
                           LaserTurretHex.shootingTime,
-                          LaserTurretHex.cooldownTime));
+                          LaserTurretHex.cooldownTime,
+                          0.5,
+                          1));
 
         this.addComponent(new Sprite(turretBaseSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
         this.addComponent(new AnimatedSpriteController(0, [

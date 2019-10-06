@@ -6,7 +6,7 @@ import {SpriteSheet} from "../../../../Common/Sprite/SpriteSheet";
 
 import turretSpr from "../../art/plasma_cannon.png";
 import turretBaseSpr from "../../art/plasma_cannon_base.png"
-import turretBulletSpr from "../../art/turret_bullet.png"
+import turretBulletSpr from "../../art/plasma_cannon_bullet.png"
 import {AnimatedSpriteController} from "../../../../Common/Sprite/AnimatedSpriteController";
 import {Sprite} from "../../../../Common/Sprite/Sprite";
 
@@ -34,13 +34,15 @@ export class PlasmaCannonHex extends HexEntity
     {
         super.onAdded();
         this.addComponent(
-            new TurretTag(new AnimatedSprite(turretBulletSheet.textureSliceFromRow(0, 0, 14),
+            new TurretTag(new AnimatedSprite(turretBulletSheet.textureSliceFromRow(0, 0, 10),
                                              {
                                                  xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP,
-                                                 animationSpeed: 24
+                                                 animationSpeed: 96
                                              }),
                           PlasmaCannonHex.shootingTime,
-                          PlasmaCannonHex.cooldownTime));
+                          PlasmaCannonHex.cooldownTime,
+                          0.3,
+                          3));
 
         this.addComponent(new Sprite(turretBaseSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
         this.addComponent(new AnimatedSpriteController(0, [
