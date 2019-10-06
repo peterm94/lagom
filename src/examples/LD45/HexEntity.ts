@@ -16,19 +16,22 @@ export class HexRegister extends Component
 {
     readonly register: Map<String, HexEntity> = new Map();
 
-    findUnattached(explored: HexEntity[], hexEntity: HexEntity): boolean
+    findUnattached(explored: Set<HexEntity>, hexEntity: HexEntity): boolean
     {
+        // We found the root
         if (hexEntity.hex.toString() === new Hex(0, 0, 0).toString())
         {
             return true;
         }
 
-        explored.push(hexEntity);
+        explored.add(hexEntity);
         for (const neighbour of neighbours)
         {
             const nextNodeKey = add(neighbour, hexEntity.hex).toString();
             const nextNode = this.register.get(nextNodeKey);
-            if (nextNode !== undefined && explored.find(value1 => value1.hex == nextNode.hex) === undefined)
+
+            // If we haven't explored this node yet, traverse
+            if (nextNode !== undefined && !explored.has(nextNode))
             {
                 if (this.findUnattached(explored, nextNode))
                 {
@@ -36,27 +39,6 @@ export class HexRegister extends Component
                 }
             }
         }
-
-        // remove all visited nodes, no way to the core
-        explored.forEach(value => {
-
-            if (value.layer !== Layers.FREE_FLOAT)
-            {
-                this.register.delete(value.toString());
-
-                const moveMe = value.getComponent<MoveMe>(MoveMe);
-                if (moveMe) moveMe.destroy();
-                const coll = value.getComponent<CircleCollider>(CircleCollider);
-                if (coll) coll.destroy();
-
-                value.layer = Layers.FREE_FLOAT;
-
-                value.addComponent(new Timer(1000, undefined)).onTrigger.register(() => {
-                    value.addComponent(new CircleCollider(0, 0, 16, Layers.FREE_FLOAT, true));
-                });
-            }
-        });
-
         return false;
     }
 
@@ -65,10 +47,37 @@ export class HexRegister extends Component
         // Remove the hex from the map.
         this.register.delete(hexEntity.hex.toString());
 
-        // Delete any node that can't reach the core any more
-        this.register.forEach((value, key) => {
-            this.findUnattached([], value);
-        })
+        const visited = new Set();
+
+        // Find any node that can't reach the core any more
+        this.register.forEach((potential, _) => {
+            const attached = this.findUnattached(visited, potential);
+
+            if (!attached)
+            {
+                visited.forEach((value: HexEntity) => {
+                    if (value.layer !== Layers.FREE_FLOAT)
+                    {
+                        // Remove the node from the register
+                        this.register.delete(value.toString());
+
+                        // Reset any specific components
+                        const moveMe = value.getComponent<MoveMe>(MoveMe);
+                        if (moveMe) moveMe.destroy();
+                        const coll = value.getComponent<CircleCollider>(CircleCollider);
+                        if (coll) coll.destroy();
+
+                        value.layer = Layers.FREE_FLOAT;
+
+                        // After a delay, allow to be reattached
+                        value.addComponent(new Timer(1000, undefined)).onTrigger.register(() => {
+                            value.addComponent(new CircleCollider(0, 0, 16, Layers.FREE_FLOAT, true));
+                        });
+                    }
+                });
+            }
+            visited.clear();
+        });
     }
 }
 
