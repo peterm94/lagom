@@ -5,10 +5,11 @@ import {hexToWorld} from "./Hexagons/HexUtil";
 import {System} from "../../ECS/System";
 import {LagomType} from "../../ECS/LifecycleObject";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
-import {MathUtil} from "../../Common/Util";
+import {Log, MathUtil} from "../../Common/Util";
 import {FollowCamera} from "../../Common/CameraUtil";
 import {Game} from "../../ECS/Game";
 import {Key} from "../../Input/Key";
+import {Button} from "../../Input/Button";
 
 
 export class PlayerControlled extends Component
@@ -62,6 +63,7 @@ export class Movement extends Component
     rotation = 0;
     aimX = 0;
     aimY = 0;
+    shooting = false;
 
     move(x: number = 0, y: number = 0,)
     {
@@ -83,12 +85,13 @@ export class Movement extends Component
         this.x = 0;
         this.y = 0;
         this.rotation = 0;
+        this.shooting = false;
     }
 
-    setAim(x: number, y: number)
+    setAim(point: PIXI.Point)
     {
-        this.aimX = x;
-        this.aimY = y;
+        this.aimX = point.x;
+        this.aimY = point.y;
     }
 }
 
@@ -158,7 +161,10 @@ export class PlayerControls extends System
             }
 
             // Mouse aim
-            movement.setAim(Game.mouse.getPosX(), Game.mouse.getPosY());
+            movement.setAim(this.getScene().camera.viewToWorld(Game.mouse.getPosX(), Game.mouse.getPosY()));
+
+            // Mouse shoot
+            movement.shooting = Game.mouse.isButtonDown(Button.LEFT);
         });
     }
 }
