@@ -10,77 +10,28 @@ import {Entity} from "../../../ECS/Entity";
 import {MathUtil} from "../../../Common/Util";
 import {DrawLayer, Layers} from "../HexGame";
 import {DetectRigidbody} from "../../../DetectCollisions/DetectRigidbody";
-import {RenderCircle} from "../../../Common/PIXIComponents";
 import {CircleCollider, DetectCollider} from "../../../DetectCollisions/DetectColliders";
 import {Garbage} from "../Systems/OffScreenGarbageGuy";
 import {Result} from "detect-collisions";
 import {Timer} from "../../../Common/Timer";
 import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteController";
-import turretSpr from "../art/turret.png";
-import turretBaseSpr from "../art/turret_base.png"
-import turretBulletSpr from "../art/turret_bullet.png"
 
-const turretBaseSheet = new SpriteSheet(turretBaseSpr, 32, 32);
-const turretSheet = new SpriteSheet(turretSpr, 32, 32);
-const turretBulletSheet = new SpriteSheet(turretBulletSpr, 32, 32);
-
-enum TurretAnimationStates
+export enum TurretAnimationStates
 {
     OFF,
     SHOOTING,
     COOLING
 }
 
-export class TurretHex extends HexEntity
-{
-    public static shootingSprites = turretSheet.textureSliceFromRow(0, 0, 12);
-    public static shootingFrameSpeed = 24;
-    public static shootingTime = TurretHex.shootingSprites.length * TurretHex.shootingFrameSpeed;
-    public static cooldownSprites = turretSheet.textureSliceFromRow(0, 12, 12);
-    public static cooldownFrameSpeed = 240;
-    public static cooldownTime = TurretHex.cooldownSprites.length * TurretHex.cooldownFrameSpeed;
-
-    constructor(public owner: HexRegister, public hex: Hex)
-    {
-        super("turret", owner, hex, 4);
-    }
-
-    onAdded()
-    {
-        super.onAdded();
-        this.addComponent(new TurretTag());
-        this.addComponent(new Sprite(turretBaseSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
-        // this.addComponent(new AnimatedSprite(turretSheet.textures([[0, 0]]), {xAnchor: 0.5, yAnchor: 0.5}));
-
-        const turret = new AnimatedSpriteController(0, [
-            {
-                id: TurretAnimationStates.OFF,
-                textures: [turretSheet.texture(0, 0)],
-                config: {xAnchor: 0.5, yAnchor: 0.5}
-            },
-            {
-                id: TurretAnimationStates.SHOOTING,
-                textures: TurretHex.shootingSprites,
-                config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: TurretHex.shootingFrameSpeed}
-            },
-            {
-                id: TurretAnimationStates.COOLING,
-                textures: TurretHex.cooldownSprites,
-                config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: TurretHex.cooldownFrameSpeed}
-            }
-        ]);
-
-        this.addComponent(turret);
-    }
-}
-
-class TurretTag extends Component
+export class TurretTag extends Component
 {
     canShoot: boolean = true;
 
+    constructor(public bulletSprite: Component, public shootingTime: number, public cooldownTime: number) { super() }
+
     public getMovement(): Movement | null
     {
-        const entity = this.getEntity() as TurretHex;
+        const entity = this.getEntity() as HexEntity;
         const owner = entity.owner;
         if (owner)
         {
@@ -130,15 +81,18 @@ export class TurretShooter extends System
 
                 spr.setAnimation(TurretAnimationStates.SHOOTING);
 
-                entity.addComponent(new Timer(TurretHex.shootingTime, null)).onTrigger.register(() => {
+                entity.addComponent(new Timer(tag.shootingTime, null)).onTrigger.register(() => {
 
                     entity.getScene().addEntity(
-                        new Bullet(Layers.PLAYER_PROJECTILE, entity.transform.x, entity.transform.y,
-                                   spr.sprite!.pixiObj.rotation + (entity.transform.rotation)));
+                        new Bullet(Layers.PLAYER_PROJECTILE,
+                                   entity.transform.x,
+                                   entity.transform.y,
+                                   spr.sprite!.pixiObj.rotation + entity.transform.rotation,
+                                   tag.bulletSprite));
 
                     spr.setAnimation(TurretAnimationStates.COOLING);
 
-                    entity.addComponent(new Timer(TurretHex.cooldownTime, null)).onTrigger.register(() => {
+                    entity.addComponent(new Timer(tag.cooldownTime, null)).onTrigger.register(() => {
                         tag.canShoot = true;
                         spr.setAnimation(TurretAnimationStates.OFF);
                     })
@@ -150,7 +104,7 @@ export class TurretShooter extends System
 
 export class Bullet extends Entity
 {
-    constructor(layer: Layers, x: number, y: number, private targRotation: number)
+    constructor(layer: Layers, x: number, y: number, private targRotation: number, private sprite: Component)
     {
         super("bullet", x, y, DrawLayer.BULLET);
 
@@ -162,9 +116,7 @@ export class Bullet extends Entity
         super.onAdded();
         this.addComponent(new Garbage());
 
-        this.addComponent(new AnimatedSprite(
-            turretBulletSheet.textureSliceFromRow(0, 0, 14),
-            {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 24}));
+        this.addComponent(this.sprite);
 
         this.addComponent(new ConstantMotion(this.targRotation, 0.4));
         const coll = this.addComponent(new CircleCollider(0, 0, 4, this.layer, true));
