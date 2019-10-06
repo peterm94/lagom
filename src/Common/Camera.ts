@@ -29,6 +29,22 @@ export class Camera
     }
 
     /**
+     * Translate a view position to a world position.
+     * @param x The x position on the view.
+     * @param y The y position on the view.
+     */
+    viewToWorld(x: number, y: number): PIXI.Point
+    {
+        const point = new PIXI.Point();
+        this.scene.getGame().manager.mapPositionToPoint(point, x, y);
+
+        point.x -= this.scene.sceneNode.position.x;
+        point.y -= this.scene.sceneNode.position.y;
+
+        return point;
+    }
+
+    /**
      * Position of the camera in the world.
      * @returns A Point for the position of the camera.
      */
