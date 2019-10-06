@@ -26,7 +26,17 @@ export class EnemyAI extends System
             movement.move(x * delta * this.moveSpeed, y * delta * this.moveSpeed);
 
             // TODO why don't their thrusters angle correctly??
-        })
+
+            // Aim at player
+            movement.setAim(player.transform.position);
+
+            const playerDist = MathUtil.pointDistance(player.transform.x, player.transform.y,
+                                                      entity.transform.x, entity.transform.y);
+            if (playerDist < 600)
+            {
+                movement.shooting = true;
+            }
+        });
     }
 
 }

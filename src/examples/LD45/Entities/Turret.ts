@@ -31,7 +31,10 @@ export class TurretTag extends Component
                 public shootingTime: number,
                 public cooldownTime: number,
                 public bulletSpeed: number,
-                public bulletDamage: number) { super() }
+                public bulletDamage: number)
+    {
+        super()
+    }
 
     public getMovement(): Movement | null
     {
@@ -87,8 +90,19 @@ export class TurretShooter extends System
 
                 entity.addComponent(new Timer(tag.shootingTime, null)).onTrigger.register(() => {
 
+                    let bulletLayer: Layers;
+                    if (entity.layer === Layers.PLAYER)
+                    {
+                        bulletLayer = Layers.PLAYER_PROJECTILE;
+                    }
+                    else
+                    {
+                        bulletLayer = Layers.ENEMY_PROJECTILE;
+                    }
+
+
                     entity.getScene().addEntity(
-                        new Bullet(Layers.PLAYER_PROJECTILE,
+                        new Bullet(bulletLayer,
                                    entity.transform.x,
                                    entity.transform.y,
                                    spr.sprite!.pixiObj.rotation + entity.transform.rotation,
