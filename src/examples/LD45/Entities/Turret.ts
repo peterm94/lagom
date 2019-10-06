@@ -118,7 +118,6 @@ export class Bullet extends Entity
     {
         super.onAdded();
         this.addComponent(new Garbage());
-        this.addComponent(new DetectRigidbody());
         this.addComponent(new RenderCircle(0, 0, 5));
         this.addComponent(new ConstantMotion(this.targRotation));
         const coll = this.addComponent(new CircleCollider(0, 0, 5, this.layer, true));
@@ -132,6 +131,7 @@ export class Bullet extends Entity
                 coll.getEntity().destroy();
             }
         });
+        this.addComponent(new DetectRigidbody());
     }
 }
 

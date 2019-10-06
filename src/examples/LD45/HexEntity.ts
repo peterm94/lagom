@@ -3,7 +3,7 @@ import {Hex} from "./Hexagons/Hex";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {CircleCollider, DetectCollider} from "../../DetectCollisions/DetectColliders";
 import {Component} from "../../ECS/Component";
-import {MoveMe, Movement} from "./Movement";
+import {MoveMe} from "./Movement";
 import {MathUtil} from "../../Common/Util";
 import {add, neighbours} from "./Hexagons/HexUtil";
 import {Layers} from "./HexGame";
@@ -169,5 +169,11 @@ export class DamageSystem extends System
                 entity.destroy();
             }
         });
+    }
+
+    onRemoved()
+    {
+        super.onRemoved();
+        this.entity.destroy();
     }
 }
