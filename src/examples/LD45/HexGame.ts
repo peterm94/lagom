@@ -5,7 +5,7 @@ import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {FollowCamera} from "../../Common/CameraUtil";
 import {Diagnostics} from "../../Common/Debug";
-import {Enemy} from "./Entities/Enemy";
+import {Enemy, EnemyMarkerSystem} from "./Entities/Enemy";
 import {ClearMovement, ConstantMotionMover, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
 import {ThrusterAnimationSystem} from "./Systems/ThrusterAnimationSystem";
 import {TimerSystem} from "../../Common/Timer";
@@ -15,6 +15,7 @@ import {ScreenShaker} from "../../Common/Screenshake";
 import {TurretShooter, TurretSystem} from "./Entities/Turret";
 import {DamageSystem} from "./HexEntity";
 import {Background, TileMover} from "./Background";
+import {GameDirector} from "./Systems/GameDirector";
 
 export enum Layers
 {
@@ -28,6 +29,7 @@ export enum Layers
 
 export enum DrawLayer
 {
+    GUI = 1000,
     BLOCK = 0,
     SHIELD = 50,
     BULLET = 100,
@@ -44,9 +46,9 @@ export class HexGame extends Game
     constructor()
     {
         super(new MainScene(), {
-            width: 640,
-            height: 360,
-            resolution: 2,
+            width: 802,
+            height: 480,
+            resolution: 1.5,
             backgroundColor: 0xfff9ba,
             antialias: false
         })
@@ -63,7 +65,8 @@ class MainScene extends Scene
         this.addEntity(new Background());
         this.addEntity(new Diagnostics("white", 10, false));
         this.addEntity(new Player());
-        this.addEntity(new Enemy(Enemy.greenAlien));
+
+        this.addEntity(new GameDirector());
 
         this.addSystem(new PlayerControls());
         this.addSystem(new Mover());
@@ -76,6 +79,7 @@ class MainScene extends Scene
         this.addSystem(new TurretShooter());
         this.addSystem(new ConstantMotionMover());
         this.addSystem(new DamageSystem());
+        this.addSystem(new EnemyMarkerSystem());
 
         // Make sure this is declared last if you want to actually make use of the movement...
         this.addSystem(new ClearMovement());

@@ -34,6 +34,11 @@ export class Util
         container.sortDirty = true;
         return container;
     }
+
+    static choose<T>(...options: T[]): T
+    {
+        return options[MathUtil.randomRange(0, options.length)];
+    }
 }
 
 export class MathUtil

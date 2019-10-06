@@ -16,6 +16,17 @@ export class HexRegister extends Component
 {
     readonly register: Map<String, HexEntity> = new Map();
 
+    computeValue(): number
+    {
+        let val = 0;
+
+        this.register.forEach((hex, _) => {
+            val += hex.value;
+        });
+
+        return val;
+    }
+
     findUnattached(explored: Set<HexEntity>, hexEntity: HexEntity): boolean
     {
         // We found the root
