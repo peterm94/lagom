@@ -130,7 +130,7 @@ export class PlayerControls extends System
 
     update(delta: number): void
     {
-        this.runOnEntitiesWithSystem((system: FollowCamera, entity: Entity, movement: Movement) => {
+        this.runOnEntities((entity: Entity, movement: Movement) => {
 
             let moveVec = new Vector(0, 0);
 

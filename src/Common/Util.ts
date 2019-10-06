@@ -143,7 +143,7 @@ export class MathUtil
     }
 
     /**
-     * Calculate the direction of a vector descibed by two points on the line.
+     * Calculate the direction of a vector described by two points on the line.
      * @param x1 Point 1 x.
      * @param y1 Point 1 y.
      * @param x2 Point 2 x.
