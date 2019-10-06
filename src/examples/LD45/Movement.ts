@@ -10,6 +10,7 @@ import {FollowCamera} from "../../Common/CameraUtil";
 import {Game} from "../../ECS/Game";
 import {Key} from "../../Input/Key";
 import {Button} from "../../Input/Button";
+import {Vector} from "../../LagomPhysics/Physics";
 
 
 export class PlayerControlled extends Component
@@ -122,8 +123,8 @@ export class ClearMovement extends System
 
 export class PlayerControls extends System
 {
-    readonly moveSpeed = 0.2;
-    readonly rotSpeed = 0.002;
+    readonly moveSpeed = 0.1;
+    readonly rotSpeed = 0.001;
 
     types = () => [Movement, PlayerControlled];
 
@@ -131,22 +132,30 @@ export class PlayerControls extends System
     {
         this.runOnEntitiesWithSystem((system: FollowCamera, entity: Entity, movement: Movement) => {
 
+            let moveVec = new Vector(0, 0);
+
+
             if (Game.keyboard.isKeyDown(Key.ArrowLeft, Key.KeyA))
             {
-                movement.move(-this.moveSpeed * delta, 0);
+                moveVec.x -= 1;
             }
             if (Game.keyboard.isKeyDown(Key.ArrowRight, Key.KeyD))
             {
-                movement.move(this.moveSpeed * delta, 0);
+                moveVec.x += 1;
             }
             if (Game.keyboard.isKeyDown(Key.ArrowUp, Key.KeyW))
             {
-                movement.move(0, -this.moveSpeed * delta);
+                moveVec.y -= 1;
             }
             if (Game.keyboard.isKeyDown(Key.ArrowDown, Key.KeyS))
             {
-                movement.move(0, this.moveSpeed * delta);
+                moveVec.y += 1;
             }
+
+            moveVec.normalize();
+            moveVec.multiply(delta * this.moveSpeed);
+            movement.move(moveVec.x, moveVec.y);
+
 
             // TODO this will break collisions?? something needs to update the body position
             if (Game.keyboard.isKeyDown(Key.KeyQ))
