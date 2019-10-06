@@ -29,8 +29,8 @@ export enum AnimationEnd
 export interface AnimatedSpriteConfig extends SpriteConfig
 {
     /**
-     * Speed at which the animation will play.
-     */
+    * Speed at which the animation will play.
+    */
     animationSpeed?: number;
 
     /**
@@ -46,7 +46,7 @@ export class AnimatedSprite extends FrameTrigger<number>
 {
     animationEndAction: AnimationEnd = AnimationEnd.LOOP;
 
-    private frameIndex: number = 0;
+    private frameIndex: number = -1;
     private frameAdvancer: number = 1;
     public sprite: Sprite | null = null;
 
@@ -70,7 +70,7 @@ export class AnimatedSprite extends FrameTrigger<number>
     {
         super.reset();
 
-        this.frameIndex = 0;
+        this.frameIndex = -1;
         this.frameAdvancer = 1;
     }
 

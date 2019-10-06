@@ -65,4 +65,23 @@ export class SpriteSheet
         }
         return textures;
     }
+
+    /**
+     * Slices a row of textures with. Starting at [start] and ending at [end], inclusively.
+     * @param row The row of textures to slice.
+     * @param start The start index of the slice. Inclusive.
+     * @param end The end index of the slice. Inclusive.
+     * @param width Optional override for the texture width.
+     * @param height Optional override for the texture height.
+     */
+    textureSliceFromRow(row: number, start: number, end: number, width?: number, height?: number): PIXI.Texture[]
+    {
+        const textures = [];
+
+        for (let i = start; i <= end; i++) {
+            textures.push(this.texture(i, row, width, height))
+        }
+
+        return textures;
+    }
 }

@@ -1,7 +1,7 @@
 import {Damage, HexEntity, HexRegister} from "../HexEntity";
 import {Hex} from "../Hexagons/Hex";
 import {Sprite} from "../../../Common/Sprite/Sprite";
-import {AnimatedSprite} from "../../../Common/Sprite/AnimatedSprite";
+import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {System} from "../../../ECS/System";
 import {Component} from "../../../ECS/Component";
@@ -17,12 +17,27 @@ import {CircleCollider, DetectCollider} from "../../../DetectCollisions/DetectCo
 import {Garbage} from "../Systems/OffScreenGarbageGuy";
 import {Result} from "detect-collisions";
 import {Timer} from "../../../Common/Timer";
+import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteController";
 
 const turretBaseSheet = new SpriteSheet(turretBaseSpr, 32, 32);
 const turretSheet = new SpriteSheet(turretSpr, 32, 32);
 
+enum TurretAnimationStates
+{
+    OFF,
+    SHOOTING,
+    COOLING
+}
+
 export class TurretHex extends HexEntity
 {
+    public static shootingSprites = turretSheet.textureSliceFromRow(0, 0, 12);
+    public static shootingFrameSpeed = 24;
+    public static shootingTime = TurretHex.shootingSprites.length * TurretHex.shootingFrameSpeed;
+    public static cooldownSprites = turretSheet.textureSliceFromRow(0, 12, 12);
+    public static cooldownFrameSpeed = 240;
+    public static cooldownTime = TurretHex.cooldownSprites.length * TurretHex.cooldownFrameSpeed;
+
     constructor(public owner: HexRegister, public hex: Hex)
     {
         super("turret", owner, hex, 4);
@@ -33,7 +48,27 @@ export class TurretHex extends HexEntity
         super.onAdded();
         this.addComponent(new TurretTag());
         this.addComponent(new Sprite(turretBaseSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
-        this.addComponent(new AnimatedSprite(turretSheet.textures([[0, 0]]), {xAnchor: 0.5, yAnchor: 0.5}));
+        // this.addComponent(new AnimatedSprite(turretSheet.textures([[0, 0]]), {xAnchor: 0.5, yAnchor: 0.5}));
+
+        const turret = new AnimatedSpriteController(0, [
+            {
+                id: TurretAnimationStates.OFF,
+                textures: [turretSheet.texture(0, 0)],
+                config: {xAnchor: 0.5, yAnchor: 0.5}
+            },
+            {
+                id: TurretAnimationStates.SHOOTING,
+                textures: TurretHex.shootingSprites,
+                config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: TurretHex.shootingFrameSpeed, animationEndAction: AnimationEnd.LOOP}
+            },
+            {
+                id: TurretAnimationStates.COOLING,
+                textures: TurretHex.cooldownSprites,
+                config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: TurretHex.cooldownFrameSpeed, animationEndAction: AnimationEnd.LOOP}
+            }
+        ]);
+
+        this.addComponent(turret);
     }
 }
 
@@ -76,11 +111,11 @@ export class TurretSystem extends System
 
 export class TurretShooter extends System
 {
-    types = () => [TurretTag, AnimatedSprite];
+    types = () => [TurretTag, AnimatedSpriteController];
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, tag: TurretTag, spr: AnimatedSprite) => {
+        this.runOnEntities((entity: Entity, tag: TurretTag, spr: AnimatedSpriteController) => {
             if (!tag.canShoot) return;
 
             const movement = tag.getMovement();
@@ -90,13 +125,30 @@ export class TurretShooter extends System
             if (movement.shooting)
             {
                 tag.canShoot = false;
-                // TODO projectile type passthrough
-                entity.getScene().addEntity(
-                    new Bullet(Layers.PLAYER_PROJECTILE, entity.transform.x, entity.transform.y,
-                               spr.sprite!.pixiObj.rotation + (entity.transform.rotation)));
-                entity.addComponent(new Timer(100, tag)).onTrigger.register((caller, data) => {
-                    data.canShoot = true;
-                })
+
+                spr.setAnimation(TurretAnimationStates.SHOOTING);
+
+                entity.addComponent(new Timer(TurretHex.shootingTime, null)).onTrigger.register(() => {
+
+                    entity.getScene().addEntity(
+                        new Bullet(Layers.PLAYER_PROJECTILE, entity.transform.x, entity.transform.y,
+                                   spr.sprite!.pixiObj.rotation + (entity.transform.rotation)));
+
+                    spr.setAnimation(TurretAnimationStates.COOLING);
+
+                    entity.addComponent(new Timer(TurretHex.cooldownTime, null)).onTrigger.register(() => {
+                        tag.canShoot = true;
+                        spr.setAnimation(TurretAnimationStates.OFF);
+                    })
+                });
+
+                // TODO projectile type passt\hrough
+                // entity.getScene().addEntity(
+                //     new Bullet(Layers.PLAYER_PROJECTILE, entity.transform.x, entity.transform.y,
+                //                spr.sprite!.pixiObj.rotation + (entity.transform.rotation)));
+                // entity.addComponent(new Timer(100, tag)).onTrigger.register((caller, data) => {
+                //     data.canShoot = true;
+                // })
             }
         });
     }
