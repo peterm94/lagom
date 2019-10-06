@@ -20,6 +20,7 @@ import {LaserTurretHex} from "./Turrets/LaserTurretHex";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {System} from "../../../ECS/System";
 import {PlasmaCannonHex} from "./Turrets/PlasmaCannonHex";
+import {Movement} from "../Movement";
 
 const purpleAlienSheet = new SpriteSheet(purpleAlienSpr, 32, 32);
 const greenAlienSheet = new SpriteSheet(greenAlienSpr, 32, 32);
@@ -82,6 +83,7 @@ export class Enemy extends Entity
         this.addComponent(new DetectRigidbody());
         this.addComponent(new CircleCollider(0, 0, 1, Layers.NONE, true));
 
+        this.addComponent(new Movement());
         this.addComponent(new EnemyMarker());
 
         const register = this.addComponent(new HexRegister());

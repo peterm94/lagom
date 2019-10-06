@@ -16,6 +16,7 @@ import {TurretShooter, TurretSystem} from "./Entities/Turret";
 import {DamageSystem} from "./HexEntity";
 import {Background, TileMover} from "./Background";
 import {GameDirector} from "./Systems/GameDirector";
+import {EnemyAI} from "./Systems/EnemyAI";
 
 export enum Layers
 {
@@ -68,6 +69,7 @@ class MainScene extends Scene
 
         this.addEntity(new GameDirector());
 
+        this.addSystem(new EnemyAI());
         this.addSystem(new PlayerControls());
         this.addSystem(new Mover());
         this.addSystem(new FollowCamera({centre: true, lerpSpeed: 0.8}));
