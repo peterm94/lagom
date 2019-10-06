@@ -47,9 +47,9 @@ export class HexGame extends Game
     constructor()
     {
         super(new MainScene(), {
-            width: 802,
-            height: 480,
-            resolution: 1.5,
+            width: 1280,
+            height: 720,
+            resolution: 1,
             backgroundColor: 0xfff9ba,
             antialias: false
         })
