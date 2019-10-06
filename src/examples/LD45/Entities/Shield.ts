@@ -20,7 +20,7 @@ export class ShieldHex extends HexEntity
         super.onAdded();
 
         this.addComponent(new AnimatedSprite(
-            shieldSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0]]),
+            shieldSheet.textureSliceFromRow(0, 0, 7),
             {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 125}));
 
         this.addComponent(new Sprite(shieldSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));

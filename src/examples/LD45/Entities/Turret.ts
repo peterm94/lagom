@@ -5,7 +5,7 @@ import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprit
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {System} from "../../../ECS/System";
 import {Component} from "../../../ECS/Component";
-import {Movement} from "../Movement";
+import {ConstantMotion, Movement} from "../Movement";
 import {Entity} from "../../../ECS/Entity";
 import {MathUtil} from "../../../Common/Util";
 import {DrawLayer, Layers} from "../HexGame";
@@ -148,7 +148,6 @@ export class TurretShooter extends System
     }
 }
 
-
 export class Bullet extends Entity
 {
     constructor(layer: Layers, x: number, y: number, private targRotation: number)
@@ -162,9 +161,13 @@ export class Bullet extends Entity
     {
         super.onAdded();
         this.addComponent(new Garbage());
-        this.addComponent(new RenderCircle(0, 0, 5));
-        this.addComponent(new ConstantMotion(this.targRotation));
-        const coll = this.addComponent(new CircleCollider(0, 0, 5, this.layer, true));
+
+        this.addComponent(new AnimatedSprite(
+            turretBulletSheet.textureSliceFromRow(0, 0, 14),
+            {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 24}));
+
+        this.addComponent(new ConstantMotion(this.targRotation, 0.4));
+        const coll = this.addComponent(new CircleCollider(0, 0, 4, this.layer, true));
 
         coll.onTriggerEnter.register((coll: DetectCollider, res: { other: DetectCollider, result: Result }) => {
 
@@ -176,32 +179,5 @@ export class Bullet extends Entity
             }
         });
         this.addComponent(new DetectRigidbody());
-    }
-}
-
-export class ConstantMotion extends Component
-{
-    readonly speed = 0.7;
-
-    constructor(readonly targRotation: number)
-    {
-        super();
-    }
-}
-
-
-export class ConstantMotionMover extends System
-{
-    types = () => [ConstantMotion, DetectRigidbody];
-
-    update(delta: number): void
-    {
-        this.runOnEntities((entity: Entity, motion: ConstantMotion, body: DetectRigidbody) => {
-
-            const xComp = MathUtil.lengthDirX(motion.speed * delta, motion.targRotation);
-            const yComp = MathUtil.lengthDirY(motion.speed * delta, motion.targRotation);
-
-            body.move(xComp, yComp);
-        });
     }
 }

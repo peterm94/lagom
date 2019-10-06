@@ -3,14 +3,15 @@ import {Hex} from "./Hexagons/Hex";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {CircleCollider, DetectCollider} from "../../DetectCollisions/DetectColliders";
 import {Component} from "../../ECS/Component";
-import {MoveMe} from "./Movement";
+import {ConstantMotion, MoveMe} from "./Movement";
 import {MathUtil} from "../../Common/Util";
-import {add, neighbours} from "./Hexagons/HexUtil";
+import {add, hexToWorld, neighbours} from "./Hexagons/HexUtil";
 import {Layers} from "./HexGame";
 import {Timer} from "../../Common/Timer";
 import {Result} from "detect-collisions";
 import {ScreenShake} from "../../Common/Screenshake";
 import {System} from "../../ECS/System";
+import {isValidElement} from "react";
 
 export class HexRegister extends Component
 {
@@ -44,33 +45,45 @@ export class HexRegister extends Component
 
     removeHex(hexEntity: HexEntity)
     {
+        const remPos = hexToWorld(hexEntity.hex);
+
         // Remove the hex from the map.
         this.register.delete(hexEntity.hex.toString());
 
         const visited = new Set();
 
         // Find any node that can't reach the core any more
-        this.register.forEach((potential, _) => {
+        this.register.forEach((potential: HexEntity, _) => {
             const attached = this.findUnattached(visited, potential);
 
             if (!attached)
             {
+                const mePos = hexToWorld(potential.hex);
+
+                const dir = -MathUtil.pointDirection(remPos.x, remPos.y, mePos.x, mePos.y);
+                const chunkDir = MathUtil.degToRad(MathUtil.randomRange(-45, 45)) + dir;
+                const chunkSpd = MathUtil.randomRange(1, 5) / 100;
+
                 visited.forEach((value: HexEntity) => {
                     if (value.layer !== Layers.FREE_FLOAT)
                     {
+                        value.layer = Layers.FREE_FLOAT;
+
                         // Remove the node from the register
                         this.register.delete(value.toString());
 
                         // Reset any specific components
-                        const moveMe = value.getComponent<MoveMe>(MoveMe);
-                        if (moveMe) moveMe.destroy();
-                        const coll = value.getComponent<CircleCollider>(CircleCollider);
-                        if (coll) coll.destroy();
+                        value.getComponentsOfType<MoveMe>(MoveMe).forEach(value1 => value1.destroy());
+                        value.getComponentsOfType<CircleCollider>(CircleCollider).forEach(value1 => value1.destroy());
 
-                        value.layer = Layers.FREE_FLOAT;
+                        // Float away in a random direction
+                        value.addComponent(new ConstantMotion(chunkDir, chunkSpd));
+                        value.addComponent(new CircleCollider(0, 0, 1, Layers.NONE, true));
 
                         // After a delay, allow to be reattached
                         value.addComponent(new Timer(1000, undefined)).onTrigger.register(() => {
+                            value.getComponentsOfType<CircleCollider>(CircleCollider)
+                                 .forEach(value1 => value1.destroy());
                             value.addComponent(new CircleCollider(0, 0, 16, Layers.FREE_FLOAT, true));
                         });
                     }
@@ -97,6 +110,9 @@ export abstract class HexEntity extends Entity
 
         owner.register.set(hex.toString(), this);
         this.addComponent(new MoveMe(this.owner.getEntity(), this.hex));
+
+        // Remove any movement applied
+        this.getComponentsOfType<ConstantMotion>(ConstantMotion).forEach(value1 => value1.destroy());
 
 
         const col = this.addComponent(new CircleCollider(0, 0, 16, this.layer, true));
