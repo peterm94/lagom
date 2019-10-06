@@ -168,3 +168,28 @@ export class PlayerControls extends System
         });
     }
 }
+
+export class ConstantMotion extends Component
+{
+    constructor(readonly directionRad: number, readonly speed = 0.7)
+    {
+        super();
+    }
+}
+
+
+export class ConstantMotionMover extends System
+{
+    types = () => [ConstantMotion, DetectRigidbody];
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, motion: ConstantMotion, body: DetectRigidbody) => {
+
+            const xComp = MathUtil.lengthDirX(motion.speed * delta, motion.directionRad);
+            const yComp = MathUtil.lengthDirY(motion.speed * delta, motion.directionRad);
+
+            body.move(xComp, yComp);
+        });
+    }
+}

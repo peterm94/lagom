@@ -3,10 +3,9 @@ import {Hex} from "../Hexagons/Hex";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {AnimatedSprite} from "../../../Common/Sprite/AnimatedSprite";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
-import {block1Sheet} from "./Structure";
 import {System} from "../../../ECS/System";
 import {Component} from "../../../ECS/Component";
-import {Movement} from "../Movement";
+import {ConstantMotion, Movement} from "../Movement";
 import turretSpr from "../art/turret.png";
 import turretBaseSpr from "../art/turret_base.png"
 import {Entity} from "../../../ECS/Entity";
@@ -17,7 +16,6 @@ import {RenderCircle} from "../../../Common/PIXIComponents";
 import {CircleCollider, DetectCollider} from "../../../DetectCollisions/DetectColliders";
 import {Garbage} from "../Systems/OffScreenGarbageGuy";
 import {Result} from "detect-collisions";
-import {add, neighbours} from "../Hexagons/HexUtil";
 import {Timer} from "../../../Common/Timer";
 
 const turretBaseSheet = new SpriteSheet(turretBaseSpr, 32, 32);
@@ -132,32 +130,5 @@ export class Bullet extends Entity
             }
         });
         this.addComponent(new DetectRigidbody());
-    }
-}
-
-export class ConstantMotion extends Component
-{
-    readonly speed = 0.7;
-
-    constructor(readonly targRotation: number)
-    {
-        super();
-    }
-}
-
-
-export class ConstantMotionMover extends System
-{
-    types = () => [ConstantMotion, DetectRigidbody];
-
-    update(delta: number): void
-    {
-        this.runOnEntities((entity: Entity, motion: ConstantMotion, body: DetectRigidbody) => {
-
-            const xComp = MathUtil.lengthDirX(motion.speed * delta, motion.targRotation);
-            const yComp = MathUtil.lengthDirY(motion.speed * delta, motion.targRotation);
-
-            body.move(xComp, yComp);
-        });
     }
 }

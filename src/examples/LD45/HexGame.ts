@@ -7,7 +7,7 @@ import {FollowCamera} from "../../Common/CameraUtil";
 
 import {Diagnostics} from "../../Common/Debug";
 import {Enemy} from "./Entities/Enemy";
-import {ClearMovement, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
+import {ClearMovement, ConstantMotionMover, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
 import {Entity} from "../../ECS/Entity";
 import {RenderCircle} from "../../Common/PIXIComponents";
 import {CircleCollider} from "../../DetectCollisions/DetectColliders";
@@ -16,7 +16,7 @@ import {TimerSystem} from "../../Common/Timer";
 import {Player} from "./Entities/Player";
 import {OffScreenGarbageGuy} from "./Systems/OffScreenGarbageGuy";
 import {ScreenShaker} from "../../Common/Screenshake";
-import {ConstantMotionMover, TurretShooter, TurretSystem} from "./Entities/Turret";
+import {TurretShooter, TurretSystem} from "./Entities/Turret";
 import {DamageSystem} from "./HexEntity";
 
 export enum Layers
