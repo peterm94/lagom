@@ -11,7 +11,7 @@ import turretSpr from "../art/turret.png";
 import turretBaseSpr from "../art/turret_base.png"
 import {Entity} from "../../../ECS/Entity";
 import {MathUtil} from "../../../Common/Util";
-import {Layers} from "../HexGame";
+import {DrawLayer, Layers} from "../HexGame";
 import {DetectRigidbody} from "../../../DetectCollisions/DetectRigidbody";
 import {RenderCircle} from "../../../Common/PIXIComponents";
 import {CircleCollider} from "../../../DetectCollisions/DetectColliders";
@@ -63,7 +63,7 @@ export class TurretSystem extends System
             let targetDir = -MathUtil.pointDirection(entity.transform.position.x, entity.transform.position.y,
                                                      movement.aimX, movement.aimY);
 
-            targetDir -= entity.transform.rotation + (Math.PI / 2);
+            targetDir -= entity.transform.rotation;
 
             spr.applyConfig(
                 {rotation: MathUtil.angleLerp(spr.sprite!.pixiObj.rotation, targetDir, (delta / 1000) * 4)});
@@ -87,7 +87,7 @@ export class TurretShooter extends System
                 // TODO projectile type passthrough
                 entity.getScene().addEntity(
                     new Bullet(Layers.PLAYER_PROJECTILE, entity.transform.x, entity.transform.y,
-                               spr.sprite!.pixiObj.rotation + (entity.transform.rotation + Math.PI / 2)));
+                               spr.sprite!.pixiObj.rotation + (entity.transform.rotation)));
             }
         });
     }
@@ -98,7 +98,7 @@ export class Bullet extends Entity
 {
     constructor(layer: Layers, x: number, y: number, private targRotation: number)
     {
-        super("bullet", x, y);
+        super("bullet", x, y, DrawLayer.BULLET);
 
         this.layer = layer;
     }

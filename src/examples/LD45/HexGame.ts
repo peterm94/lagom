@@ -30,9 +30,9 @@ export enum Layers
 
 export enum DrawLayer
 {
-    BLOCK,
-    BULLET,
-    BACKGROUND
+    BLOCK = 0,
+    BULLET = 100,
+    BACKGROUND = -100
 }
 
 const collisionMatrix = new CollisionMatrix();
