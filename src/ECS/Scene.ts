@@ -7,7 +7,7 @@ import {Observable} from "../Common/Observer";
 import {Game} from "./Game";
 import {LagomType} from "./LifecycleObject";
 import {Camera} from "../Common/Camera";
-import {Util} from "../Common/Util";
+import {Log, Util} from "../Common/Util";
 
 /**
  * Scene object type. Should be the main interface used for games using the framework.
@@ -32,6 +32,9 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     readonly entities: Entity[] = [];
     readonly systems: System[] = [];
     readonly globalSystems: GlobalSystem[] = [];
+
+    // Milliseconds
+    readonly updateWarnThreshold = 5;
 
     camera!: Camera;
 
@@ -59,13 +62,30 @@ export class Scene extends ContainerLifecycleObject implements Updatable
         super.update(delta);
 
         // Update global systems
-        this.globalSystems.forEach(system => system.update(delta));
+        this.globalSystems.forEach(system => {
+            const now = Date.now();
+            system.update(delta);
+            const time = Date.now() - now;
+            if (time > this.updateWarnThreshold)
+            {
+                Log.warn(`GlobalSystem update took ${time}ms`, system);
+            }
+        });
 
         // Resolve updates for entities
         this.entities.forEach(entity => entity.update(delta));
 
         // Update normal systems
-        this.systems.forEach(system => system.update(delta));
+        this.systems.forEach(system => {
+            const now = Date.now();
+            system.update(delta);
+            const time = Date.now() - now;
+            if (time > this.updateWarnThreshold)
+            {
+                Log.warn(`System update took ${time}ms`, system);
+            }
+        });
+
     }
 
     fixedUpdate(delta: number): void
