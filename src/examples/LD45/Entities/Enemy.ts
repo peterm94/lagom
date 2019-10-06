@@ -19,6 +19,7 @@ import {ShieldHex} from "./Shield";
 import {LaserTurretHex} from "./Turrets/LaserTurretHex";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {System} from "../../../ECS/System";
+import {PlasmaCannonHex} from "./Turrets/PlasmaCannonHex";
 
 const purpleAlienSheet = new SpriteSheet(purpleAlienSpr, 32, 32);
 const greenAlienSheet = new SpriteSheet(greenAlienSpr, 32, 32);
@@ -132,16 +133,12 @@ export class Enemy extends Entity
     {
         switch (MathUtil.randomRange(0, 10))
         {
-            case 0:
-                return new StructureHex(register, location);
-            case 1:
-                return new ThrusterHex(register, location);
-            case 2:
-                return new LaserTurretHex(register, location);
-            case 3:
-                return new ShieldHex(register, location);
-            default:
-                return new StructureHex(register, location);
+            case 0: return new StructureHex(register, location);
+            case 1: return new ThrusterHex(register, location);
+            case 2: return new LaserTurretHex(register, location);
+            case 3: return new ShieldHex(register, location);
+            case 4: return new PlasmaCannonHex(register, location);
+            default: return new StructureHex(register, location);
         }
     }
 }
