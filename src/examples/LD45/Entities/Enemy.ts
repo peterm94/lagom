@@ -1,5 +1,4 @@
 import {Entity} from "../../../ECS/Entity";
-import {FollowMe} from "../../../Common/CameraUtil";
 import {DetectRigidbody} from "../../../DetectCollisions/DetectRigidbody";
 import {CircleCollider} from "../../../DetectCollisions/DetectColliders";
 import {Hex} from "../Hexagons/Hex";
@@ -12,11 +11,12 @@ import {StructureHex} from "./Structure";
 
 import purpleAlienSpr from '../art/purple_alien.png';
 import greenAlienSpr from '../art/green_alien.png';
-import { MathUtil } from "../../../Common/Util";
-import { neighbours, add } from "../Hexagons/HexUtil";
-import { ThrusterHex } from "./Thruster";
-import { TurretHex } from "./Turret";
-import { ShieldHex } from "./Shield";
+import {MathUtil} from "../../../Common/Util";
+import {neighbours, add} from "../Hexagons/HexUtil";
+import {ThrusterHex} from "./Thruster";
+import {TurretHex} from "./Turret";
+import {ShieldHex} from "./Shield";
+
 const purpleAlienSheet = new SpriteSheet(purpleAlienSpr, 32, 32);
 const greenAlienSheet = new SpriteSheet(greenAlienSpr, 32, 32);
 
@@ -39,8 +39,6 @@ export class Enemy extends Entity
     onAdded()
     {
         super.onAdded();
-
-        this.addComponent(new FollowMe());
 
         this.addComponent(new DetectRigidbody());
         this.addComponent(new CircleCollider(0, 0, 1, Layers.NONE, true));
@@ -69,7 +67,7 @@ export class Enemy extends Entity
 
     private chooseHexLocation(register: HexRegister): Hex
     {
-        while(true)
+        while (true)
         {
             // Choose an entity to add a neighbour to
             const rando = MathUtil.randomRange(0, register.register.size);
@@ -92,13 +90,18 @@ export class Enemy extends Entity
 
     private buildRandomHexType(register: HexRegister, location: Hex): HexEntity
     {
-        switch(MathUtil.randomRange(0,10))
+        switch (MathUtil.randomRange(0, 10))
         {
-            case 0: return new StructureHex(register, location);
-            case 1: return new ThrusterHex(register, location);
-            case 2: return new TurretHex(register, location);
-            case 3: return new ShieldHex(register, location);
-            default: return new StructureHex(register, location);
+            case 0:
+                return new StructureHex(register, location);
+            case 1:
+                return new ThrusterHex(register, location);
+            case 2:
+                return new TurretHex(register, location);
+            case 3:
+                return new ShieldHex(register, location);
+            default:
+                return new StructureHex(register, location);
         }
     }
 }

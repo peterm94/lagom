@@ -13,6 +13,8 @@ export class ThrusterAnimationSystem extends System
     {
         this.runOnEntities((entity: HexEntity, sprite: AnimatedSpriteController) => {
 
+            if (!entity.owner) return;
+
             const movement = entity.owner.getEntity().getComponent<Movement>(Movement);
 
             if (movement && movement.isMoving())

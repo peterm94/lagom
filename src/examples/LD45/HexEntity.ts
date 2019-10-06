@@ -11,7 +11,6 @@ import {Timer} from "../../Common/Timer";
 import {Result} from "detect-collisions";
 import {ScreenShake} from "../../Common/Screenshake";
 import {System} from "../../ECS/System";
-import {isValidElement} from "react";
 
 export class HexRegister extends Component
 {
@@ -75,6 +74,7 @@ export class HexRegister extends Component
                         // Reset any specific components
                         value.getComponentsOfType<MoveMe>(MoveMe).forEach(value1 => value1.destroy());
                         value.getComponentsOfType<CircleCollider>(CircleCollider).forEach(value1 => value1.destroy());
+                        value.owner = null;
 
                         // Float away in a random direction
                         value.addComponent(new ConstantMotion(chunkDir, chunkSpd));
@@ -96,10 +96,10 @@ export class HexRegister extends Component
 
 export abstract class HexEntity extends Entity
 {
-    protected constructor(name: string, public owner: HexRegister, public hex: Hex, public value: number)
+    protected constructor(name: string, public owner: HexRegister | null, public hex: Hex, public value: number)
     {
         super(name, -999, -999, 0);
-        owner.register.set(hex.toString(), this);
+        if (owner) owner.register.set(hex.toString(), this);
     }
 
     addFor(owner: HexRegister, hex: Hex)
@@ -133,10 +133,10 @@ export abstract class HexEntity extends Entity
                     + 780) % 360) / 60) % 6; // what the fuck?
 
                 const dest = add(me.hex, neighbours[neighbour]);
-                if (this.owner.register.get(dest.toString()) === undefined)
+                if (this.owner && this.owner.register.get(dest.toString()) === undefined)
                 {
                     res.other.destroy();
-                    other.addFor(me.owner, dest);
+                    if (me.owner) other.addFor(me.owner, dest);
                 }
             }
         });
@@ -146,7 +146,7 @@ export abstract class HexEntity extends Entity
     {
         super.onAdded();
 
-        this.addFor(this.owner, this.hex);
+        if (this.owner) this.addFor(this.owner, this.hex);
         this.addComponent(new DetectRigidbody());
         this.addComponent(new HexHP());
     }
@@ -154,7 +154,7 @@ export abstract class HexEntity extends Entity
     destroy()
     {
         super.destroy();
-        this.owner.removeHex(this);
+        if (this.owner) this.owner.removeHex(this);
     }
 }
 

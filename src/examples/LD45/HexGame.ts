@@ -4,13 +4,9 @@ import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {FollowCamera} from "../../Common/CameraUtil";
-
 import {Diagnostics} from "../../Common/Debug";
 import {Enemy} from "./Entities/Enemy";
 import {ClearMovement, ConstantMotionMover, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
-import {Entity} from "../../ECS/Entity";
-import {RenderCircle} from "../../Common/PIXIComponents";
-import {CircleCollider} from "../../DetectCollisions/DetectColliders";
 import {ThrusterAnimationSystem} from "./Systems/ThrusterAnimationSystem";
 import {TimerSystem} from "../../Common/Timer";
 import {Player} from "./Entities/Player";
@@ -18,6 +14,7 @@ import {OffScreenGarbageGuy} from "./Systems/OffScreenGarbageGuy";
 import {ScreenShaker} from "../../Common/Screenshake";
 import {TurretShooter, TurretSystem} from "./Entities/Turret";
 import {DamageSystem} from "./HexEntity";
+import {Background, TileMover} from "./Background";
 
 export enum Layers
 {
@@ -49,7 +46,7 @@ export class HexGame extends Game
             width: 640,
             height: 360,
             resolution: 2,
-            backgroundColor: 0x2e2c3b,
+            backgroundColor: 0xfff9ba,
             antialias: false
         })
     }
@@ -62,13 +59,14 @@ class MainScene extends Scene
     {
         super.onAdded();
 
-        this.addEntity(new Diagnostics("white", 10, true));
+        this.addEntity(new Background());
+        this.addEntity(new Diagnostics("white", 10, false));
         this.addEntity(new Player());
         this.addEntity(new Enemy(Enemy.greenAlien));
 
         this.addSystem(new PlayerControls());
         this.addSystem(new Mover());
-        this.addSystem(new FollowCamera({centre: true}));
+        this.addSystem(new FollowCamera({centre: true, lerpSpeed: 0.8}));
         this.addSystem(new MoveWithPlayer());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
 
@@ -80,7 +78,7 @@ class MainScene extends Scene
 
         // Make sure this is declared last if you want to actually make use of the movement...
         this.addSystem(new ClearMovement());
-
+        this.addSystem(new TileMover());
         this.addSystem(new OffScreenGarbageGuy());
 
         this.addGlobalSystem(new ScreenShaker());
