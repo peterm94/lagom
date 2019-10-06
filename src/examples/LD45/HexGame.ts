@@ -17,6 +17,7 @@ import {Player} from "./Entities/Player";
 import {OffScreenGarbageGuy} from "./Systems/OffScreenGarbageGuy";
 import {ScreenShaker} from "../../Common/Screenshake";
 import {ConstantMotionMover, TurretShooter, TurretSystem} from "./Entities/Turret";
+import {DamageSystem} from "./HexEntity";
 
 export enum Layers
 {
@@ -71,11 +72,11 @@ class MainScene extends Scene
         this.addSystem(new MoveWithPlayer());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
 
-        this.addEntity(new MouseGuy("mouse", 300, 300));
         this.addSystem(new ThrusterAnimationSystem());
         this.addSystem(new TurretSystem());
         this.addSystem(new TurretShooter());
         this.addSystem(new ConstantMotionMover());
+        this.addSystem(new DamageSystem());
 
         // Make sure this is declared last if you want to actually make use of the movement...
         this.addSystem(new ClearMovement());
@@ -85,16 +86,5 @@ class MainScene extends Scene
         this.addGlobalSystem(new ScreenShaker());
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new FrameTriggerSystem());
-    }
-}
-
-class MouseGuy extends Entity
-{
-    onAdded()
-    {
-        super.onAdded();
-
-        this.addComponent(new RenderCircle(0, 0, 8));
-        this.addComponent(new CircleCollider(0, 0, 8, Layers.ENEMY_PROJECTILE, true));
     }
 }

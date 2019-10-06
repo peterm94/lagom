@@ -3,19 +3,20 @@ import {Hex} from "./Hexagons/Hex";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {CircleCollider, DetectCollider} from "../../DetectCollisions/DetectColliders";
 import {Component} from "../../ECS/Component";
-import {MoveMe} from "./Movement";
+import {MoveMe, Movement} from "./Movement";
 import {MathUtil} from "../../Common/Util";
 import {add, neighbours} from "./Hexagons/HexUtil";
 import {Layers} from "./HexGame";
 import {Timer} from "../../Common/Timer";
 import {Result} from "detect-collisions";
 import {ScreenShake} from "../../Common/Screenshake";
+import {System} from "../../ECS/System";
 
 export class HexRegister extends Component
 {
     readonly register: Map<String, HexEntity> = new Map();
 
-    DFS(explored: HexEntity[], hexEntity: HexEntity): boolean
+    findUnattached(explored: HexEntity[], hexEntity: HexEntity): boolean
     {
         if (hexEntity.hex.toString() === new Hex(0, 0, 0).toString())
         {
@@ -29,7 +30,7 @@ export class HexRegister extends Component
             const nextNode = this.register.get(nextNodeKey);
             if (nextNode !== undefined && explored.find(value1 => value1.hex == nextNode.hex) === undefined)
             {
-                if (this.DFS(explored, nextNode))
+                if (this.findUnattached(explored, nextNode))
                 {
                     return true;
                 }
@@ -66,7 +67,7 @@ export class HexRegister extends Component
 
         // Delete any node that can't reach the core any more
         this.register.forEach((value, key) => {
-            this.DFS([], value);
+            this.findUnattached([], value);
         })
     }
 }
@@ -113,12 +114,6 @@ export abstract class HexEntity extends Entity
                     other.addFor(me.owner, dest);
                 }
             }
-            else if ((res.other.layer === Layers.ENEMY_PROJECTILE && coll.layer === Layers.PLAYER)
-                || (res.other.layer === Layers.PLAYER_PROJECTILE && coll.layer === Layers.ENEMY))
-            {
-                me.owner.getEntity().addComponent(new ScreenShake(0.8, 80));
-                this.destroy();
-            }
         });
     }
 
@@ -128,11 +123,51 @@ export abstract class HexEntity extends Entity
 
         this.addFor(this.owner, this.hex);
         this.addComponent(new DetectRigidbody());
+        this.addComponent(new HexHP());
     }
 
     destroy()
     {
         super.destroy();
         this.owner.removeHex(this);
+    }
+}
+
+export class HexHP extends Component
+{
+    current: number = 10;
+}
+
+export class Damage extends Component
+{
+    constructor(readonly amt: number = 1)
+    {
+        super()
+    }
+}
+
+export class DamageSystem extends System
+{
+    types = () => [HexHP, Damage];
+    private entity!: Entity;
+
+    onAdded()
+    {
+        super.onAdded();
+        this.entity = this.getScene().addEntity(new Entity("damagehook"));
+    }
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, hp: HexHP) => {
+
+            entity.getComponentsOfType<Damage>(Damage).forEach(value => hp.current -= value.amt);
+
+            if (hp.current <= 0)
+            {
+                this.entity.addComponent(new ScreenShake(0.8, 80));
+                entity.destroy();
+            }
+        });
     }
 }

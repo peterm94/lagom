@@ -1,4 +1,4 @@
-import {HexEntity, HexRegister} from "../HexEntity";
+import {Damage, HexEntity, HexRegister} from "../HexEntity";
 import {Hex} from "../Hexagons/Hex";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {AnimatedSprite} from "../../../Common/Sprite/AnimatedSprite";
@@ -14,8 +14,11 @@ import {MathUtil} from "../../../Common/Util";
 import {DrawLayer, Layers} from "../HexGame";
 import {DetectRigidbody} from "../../../DetectCollisions/DetectRigidbody";
 import {RenderCircle} from "../../../Common/PIXIComponents";
-import {CircleCollider} from "../../../DetectCollisions/DetectColliders";
+import {CircleCollider, DetectCollider} from "../../../DetectCollisions/DetectColliders";
 import {Garbage} from "../Systems/OffScreenGarbageGuy";
+import {Result} from "detect-collisions";
+import {add, neighbours} from "../Hexagons/HexUtil";
+import {Timer} from "../../../Common/Timer";
 
 const turretBaseSheet = new SpriteSheet(turretBaseSpr, 32, 32);
 const turretSheet = new SpriteSheet(turretSpr, 32, 32);
@@ -38,6 +41,8 @@ export class TurretHex extends HexEntity
 
 class TurretTag extends Component
 {
+    canShoot: boolean = true;
+
     public getMovement(): Movement | null
     {
         const entity = this.getEntity() as TurretHex;
@@ -78,16 +83,22 @@ export class TurretShooter extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity, tag: TurretTag, spr: AnimatedSprite) => {
+            if (!tag.canShoot) return;
+
             const movement = tag.getMovement();
             if (!movement) return;
 
             // pew pew
             if (movement.shooting)
             {
+                tag.canShoot = false;
                 // TODO projectile type passthrough
                 entity.getScene().addEntity(
                     new Bullet(Layers.PLAYER_PROJECTILE, entity.transform.x, entity.transform.y,
                                spr.sprite!.pixiObj.rotation + (entity.transform.rotation)));
+                entity.addComponent(new Timer(100, tag)).onTrigger.register((caller, data) => {
+                    data.canShoot = true;
+                })
             }
         });
     }
@@ -109,8 +120,18 @@ export class Bullet extends Entity
         this.addComponent(new Garbage());
         this.addComponent(new DetectRigidbody());
         this.addComponent(new RenderCircle(0, 0, 5));
-        this.addComponent(new CircleCollider(0, 0, 5, this.layer, true));
         this.addComponent(new ConstantMotion(this.targRotation));
+        const coll = this.addComponent(new CircleCollider(0, 0, 5, this.layer, true));
+
+        coll.onTriggerEnter.register((coll: DetectCollider, res: { other: DetectCollider, result: Result }) => {
+
+            if ((res.other.layer === Layers.PLAYER && coll.layer === Layers.ENEMY_PROJECTILE)
+                || (res.other.layer === Layers.ENEMY && coll.layer === Layers.PLAYER_PROJECTILE))
+            {
+                res.other.getEntity().addComponent(new Damage());
+                coll.getEntity().destroy();
+            }
+        });
     }
 }
 
