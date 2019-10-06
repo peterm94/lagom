@@ -2,12 +2,13 @@ import {HexEntity, HexRegister} from "../HexEntity";
 import {Hex} from "../Hexagons/Hex";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {AnimatedSprite} from "../../../Common/Sprite/AnimatedSprite";
-import turretSpr from "../art/turret.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {block1Sheet} from "./Structure";
 import {System} from "../../../ECS/System";
 import {Component} from "../../../ECS/Component";
 import {Movement} from "../Movement";
+import turretSpr from "../art/turret.png";
+import turretBaseSpr from "../art/turret_base.png"
 import {Entity} from "../../../ECS/Entity";
 import {MathUtil} from "../../../Common/Util";
 import {Layers} from "../HexGame";
@@ -16,6 +17,7 @@ import {RenderCircle} from "../../../Common/PIXIComponents";
 import {CircleCollider} from "../../../DetectCollisions/DetectColliders";
 import {Garbage} from "../Systems/OffScreenGarbageGuy";
 
+const turretBaseSheet = new SpriteSheet(turretBaseSpr, 32, 32);
 const turretSheet = new SpriteSheet(turretSpr, 32, 32);
 
 export class TurretHex extends HexEntity
@@ -28,9 +30,8 @@ export class TurretHex extends HexEntity
     onAdded()
     {
         super.onAdded();
-
         this.addComponent(new TurretTag());
-        this.addComponent(new Sprite(block1Sheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new Sprite(turretBaseSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
         this.addComponent(new AnimatedSprite(turretSheet.textures([[0, 0]]), {xAnchor: 0.5, yAnchor: 0.5}));
     }
 }
