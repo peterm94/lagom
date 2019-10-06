@@ -99,13 +99,13 @@ export abstract class HexEntity extends Entity
                 const other = res.other.getEntity() as HexEntity;
 
                 // Figure out which side is closest
-                // TODO I think rotation makes this incorrect
                 const dir = MathUtil.pointDirection(me.transform.x,
                                                     me.transform.y,
                                                     other.transform.x,
                                                     other.transform.y);
 
-                const neighbour = Math.floor(((MathUtil.radToDeg(dir) + 780) % 360) / 60) % 6; // what the fuck?
+                const neighbour = Math.floor(((MathUtil.radToDeg(dir + me.transform.rotation)
+                    + 780) % 360) / 60) % 6; // what the fuck?
 
                 const dest = add(me.hex, neighbours[neighbour]);
                 if (this.owner.register.get(dest.toString()) === undefined)
