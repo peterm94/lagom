@@ -40,7 +40,9 @@ export class GameDirector extends Entity
             const enemyY = MathUtil.lengthDirY(enemyDist, enemyDir);
 
             Log.info("Spawning enemy at ", enemyX, enemyY);
-            this.getScene().addEntity(new Enemy(currValue + 4, enemyX, enemyY));
+            this.getScene().addEntity(new Enemy(currValue + 4,
+                                                player.transform.x + enemyX,
+                                                player.transform.y + enemyY));
         }
     }
 }
