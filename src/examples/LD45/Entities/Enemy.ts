@@ -16,6 +16,7 @@ import { neighbours, add } from "../Hexagons/HexUtil";
 import { ThrusterHex } from "./Thruster";
 import { ShieldHex } from "./Shield";
 import {LaserTurretHex} from "./Turrets/LaserTurretHex";
+import {PlasmaCannonHex} from "./Turrets/PlasmaCannonHex";
 
 const purpleAlienSheet = new SpriteSheet(purpleAlienSpr, 32, 32);
 const greenAlienSheet = new SpriteSheet(greenAlienSpr, 32, 32);
@@ -96,6 +97,7 @@ export class Enemy extends Entity
             case 1: return new ThrusterHex(register, location);
             case 2: return new LaserTurretHex(register, location);
             case 3: return new ShieldHex(register, location);
+            case 4: return new PlasmaCannonHex(register, location);
             default: return new StructureHex(register, location);
         }
     }

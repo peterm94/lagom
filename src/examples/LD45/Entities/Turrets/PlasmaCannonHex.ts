@@ -21,13 +21,13 @@ export class PlasmaCannonHex extends HexEntity
     public static shootingSprites = turretSheet.textureSliceFromRow(0, 5, 23);
     public static shootingFrameSpeed = 48;
     public static shootingTime = PlasmaCannonHex.shootingSprites.length * PlasmaCannonHex.shootingFrameSpeed;
-    public static cooldownSprites = turretSheet.textureSliceFromRow(0, 23, 29);
+    public static cooldownSprites = turretSheet.textureSliceFromRow(0, 23, 28);
     public static cooldownFrameSpeed = 240;
     public static cooldownTime = PlasmaCannonHex.cooldownSprites.length * PlasmaCannonHex.cooldownFrameSpeed;
 
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("laserTurret", owner, hex, 4);
+        super("laserTurret", owner, hex, 8);
     }
 
     onAdded()
