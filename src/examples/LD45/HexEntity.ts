@@ -6,7 +6,7 @@ import {Component} from "../../ECS/Component";
 import {ConstantMotion, MoveMe} from "./Movement";
 import {MathUtil} from "../../Common/Util";
 import {add, hexToWorld, neighbours} from "./Hexagons/HexUtil";
-import {Layers} from "./HexGame";
+import {DrawLayer, Layers} from "./HexGame";
 import {Timer} from "../../Common/Timer";
 import {Result} from "detect-collisions";
 import {ScreenShake} from "../../Common/Screenshake";
@@ -96,9 +96,13 @@ export class HexRegister extends Component
 
 export abstract class HexEntity extends Entity
 {
-    protected constructor(name: string, public owner: HexRegister, public hex: Hex, public value: number)
+    protected constructor(name: string,
+                          public owner: HexRegister,
+                          public hex: Hex,
+                          public value: number,
+                          depth?: DrawLayer)
     {
-        super(name, -999, -999, 0);
+        super(name, -999, -999, (depth === undefined ? DrawLayer.BLOCK : depth));
         owner.register.set(hex.toString(), this);
     }
 

@@ -32,6 +32,7 @@ export enum Layers
 export enum DrawLayer
 {
     BLOCK = 0,
+    SHIELD = 50,
     BULLET = 100,
     BACKGROUND = -100
 }
