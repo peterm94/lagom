@@ -9,10 +9,12 @@ export class OffScreenGarbageGuy extends System
 
     update(delta: number): void
     {
-        const camera = this.getScene().camera.position();
+        const camera = this.getScene().camera;
+        const cameraPos = camera.position();
         this.runOnEntities((entity: Entity) => {
 
-            if (MathUtil.pointDistance(camera.x, camera.y, entity.transform.x, entity.transform.y) > 1000)
+            if (MathUtil.pointDistance(cameraPos.x + camera.halfWidth, cameraPos.y + camera.halfHeight,
+                                       entity.transform.x, entity.transform.y) > 5000)
             {
                 entity.destroy();
             }

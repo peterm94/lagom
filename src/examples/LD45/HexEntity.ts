@@ -130,7 +130,7 @@ export abstract class HexEntity extends Entity
         this.getComponentsOfType<ConstantMotion>(ConstantMotion).forEach(value1 => value1.destroy());
 
 
-        const col = this.addComponent(new CircleCollider(0, 0, 16, this.layer, true));
+        const col = this.addComponent(new CircleCollider(0, 0, 14, this.layer, true));
         col.onTriggerEnter.register((coll: DetectCollider, res: { other: DetectCollider, result: Result }) => {
             const me = coll.getEntity() as HexEntity;
 

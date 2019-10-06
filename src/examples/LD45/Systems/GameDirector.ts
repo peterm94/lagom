@@ -34,7 +34,7 @@ export class GameDirector extends Entity
 
             const currValue = reg.computeValue();
 
-            const enemyDist = MathUtil.randomRange(200, 1000);
+            const enemyDist = MathUtil.randomRange(400, 1200);
             const enemyDir = MathUtil.degToRad(MathUtil.randomRange(0, 360));
             const enemyX = MathUtil.lengthDirX(enemyDist, enemyDir);
             const enemyY = MathUtil.lengthDirY(enemyDist, enemyDir);

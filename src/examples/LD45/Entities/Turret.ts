@@ -143,7 +143,7 @@ export class Bullet extends Entity
         this.addComponent(this.sprite);
 
         this.addComponent(new ConstantMotion(this.targRotation, this.speed));
-        const coll = this.addComponent(new CircleCollider(0, 0, 4, this.layer, true));
+        const coll = this.addComponent(new CircleCollider(0, 0, 2, this.layer, true));
 
         coll.onTriggerEnter.register((coll: DetectCollider, res: { other: DetectCollider, result: Result }) => {
 
