@@ -6,8 +6,6 @@ import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {System} from "../../../ECS/System";
 import {Component} from "../../../ECS/Component";
 import {Movement} from "../Movement";
-import turretSpr from "../art/turret.png";
-import turretBaseSpr from "../art/turret_base.png"
 import {Entity} from "../../../ECS/Entity";
 import {MathUtil} from "../../../Common/Util";
 import {DrawLayer, Layers} from "../HexGame";
@@ -18,9 +16,13 @@ import {Garbage} from "../Systems/OffScreenGarbageGuy";
 import {Result} from "detect-collisions";
 import {Timer} from "../../../Common/Timer";
 import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteController";
+import turretSpr from "../art/turret.png";
+import turretBaseSpr from "../art/turret_base.png"
+import turretBulletSpr from "../art/turret_bullet.png"
 
 const turretBaseSheet = new SpriteSheet(turretBaseSpr, 32, 32);
 const turretSheet = new SpriteSheet(turretSpr, 32, 32);
+const turretBulletSheet = new SpriteSheet(turretBulletSpr, 32, 32);
 
 enum TurretAnimationStates
 {
@@ -59,12 +61,12 @@ export class TurretHex extends HexEntity
             {
                 id: TurretAnimationStates.SHOOTING,
                 textures: TurretHex.shootingSprites,
-                config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: TurretHex.shootingFrameSpeed, animationEndAction: AnimationEnd.LOOP}
+                config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: TurretHex.shootingFrameSpeed}
             },
             {
                 id: TurretAnimationStates.COOLING,
                 textures: TurretHex.cooldownSprites,
-                config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: TurretHex.cooldownFrameSpeed, animationEndAction: AnimationEnd.LOOP}
+                config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: TurretHex.cooldownFrameSpeed}
             }
         ]);
 
@@ -141,14 +143,6 @@ export class TurretShooter extends System
                         spr.setAnimation(TurretAnimationStates.OFF);
                     })
                 });
-
-                // TODO projectile type passt\hrough
-                // entity.getScene().addEntity(
-                //     new Bullet(Layers.PLAYER_PROJECTILE, entity.transform.x, entity.transform.y,
-                //                spr.sprite!.pixiObj.rotation + (entity.transform.rotation)));
-                // entity.addComponent(new Timer(100, tag)).onTrigger.register((caller, data) => {
-                //     data.canShoot = true;
-                // })
             }
         });
     }
