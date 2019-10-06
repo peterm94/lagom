@@ -180,7 +180,7 @@ export class HexHP extends Component
 
 export class Damage extends Component
 {
-    constructor(readonly amt: number = 1)
+    constructor(readonly amt: number = 3)
     {
         super()
     }
@@ -201,7 +201,10 @@ export class DamageSystem extends System
     {
         this.runOnEntities((entity: Entity, hp: HexHP) => {
 
-            entity.getComponentsOfType<Damage>(Damage).forEach(value => hp.current -= value.amt);
+            entity.getComponentsOfType<Damage>(Damage).forEach(value => {
+                hp.current -= value.amt;
+                value.destroy();
+            });
 
             if (hp.current <= 0)
             {
