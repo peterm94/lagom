@@ -4,6 +4,7 @@ import {Movement} from "../Movement";
 import {Entity} from "../../../ECS/Entity";
 import {MathUtil} from "../../../Common/Util";
 import {Player} from "../Entities/Player";
+import {Timer} from "../../../Common/Timer";
 
 export class EnemyAI extends System
 {
@@ -32,9 +33,17 @@ export class EnemyAI extends System
             movement.setAim(player.transform.position);
 
             // Shoot if in range
-            if (targetDist < 450)
+            if (tag.canShoot && targetDist < 450)
             {
-                movement.shooting = true;
+                if (MathUtil.randomRange(0, 100) > 50)
+                {
+                    movement.shooting = true;
+                }
+
+                // Cool off a bit
+                const timer = entity.addComponent(new Timer(MathUtil.randomRange(300, 1000), tag));
+                timer.onTrigger.register((caller, data) => data.canShoot = true);
+                tag.canShoot = false;
             }
 
             // Move towards player if not too close
