@@ -17,25 +17,34 @@ export class EnemyAI extends System
 
             const player = this.getScene().getEntityWithName("player") as Player;
 
-            const dir = MathUtil.pointDirection(entity.transform.x, entity.transform.y,
-                                                player.transform.x, player.transform.y);
+            const playerDir = MathUtil.pointDirection(entity.transform.x, entity.transform.y,
+                                                      player.transform.x, player.transform.y);
 
-            const x = MathUtil.lengthDirX(1, dir);
-            const y = -MathUtil.lengthDirY(1, dir);
 
-            movement.move(x * delta * this.moveSpeed, y * delta * this.moveSpeed);
+            const playerDist = MathUtil.pointDistance(player.transform.x, player.transform.y,
+                                                      entity.transform.x, entity.transform.y);
 
             // TODO why don't their thrusters angle correctly??
 
             // Aim at player
             movement.setAim(player.transform.position);
 
-            const playerDist = MathUtil.pointDistance(player.transform.x, player.transform.y,
-                                                      entity.transform.x, entity.transform.y);
+            // Shoot if in range
             if (playerDist < 600)
             {
                 movement.shooting = true;
             }
+
+            // Move towards player if not too close
+            if (playerDist > 200)
+            {
+                const x = MathUtil.lengthDirX(1, playerDir);
+                const y = -MathUtil.lengthDirY(1, playerDir); // negative why?!?
+
+                movement.move(x * delta * this.moveSpeed, y * delta * this.moveSpeed);
+            }
+            // rotate towards player
+            entity.transform.rotation = MathUtil.angleLerp(entity.transform.rotation, playerDir, 0.1 * delta);
         });
     }
 

@@ -138,8 +138,10 @@ export class Bullet extends Entity
     onAdded()
     {
         super.onAdded();
-        this.addComponent(new Garbage());
 
+        this.addComponent(new Timer(5000, undefined)).onTrigger.register(caller => {
+            caller.getEntity().destroy()
+        });
         this.addComponent(this.sprite);
 
         this.addComponent(new ConstantMotion(this.targRotation, this.speed));

@@ -86,7 +86,7 @@ class MainScene extends Scene
         // Make sure this is declared last if you want to actually make use of the movement...
         this.addSystem(new ClearMovement());
         this.addSystem(new TileMover());
-        this.addSystem(new OffScreenGarbageGuy());
+        // this.addSystem(new OffScreenGarbageGuy());
 
         this.addGlobalSystem(new ScreenShaker());
         this.addGlobalSystem(new TimerSystem());
