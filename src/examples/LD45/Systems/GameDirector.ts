@@ -52,7 +52,7 @@ export class GameDirector extends Entity
                 this.overThreshold = true;
             }
 
-            const enemyDist = MathUtil.randomRange(400, 1200);
+            const enemyDist = MathUtil.randomRange(800, 1800);
             const enemyDir = MathUtil.degToRad(MathUtil.randomRange(0, 360));
             const enemyX = MathUtil.lengthDirX(enemyDist, enemyDir);
             const enemyY = MathUtil.lengthDirY(enemyDist, enemyDir);

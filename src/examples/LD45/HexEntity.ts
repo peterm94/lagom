@@ -146,8 +146,10 @@ export abstract class HexEntity extends Entity
                                                     other.transform.x,
                                                     other.transform.y);
 
-                const neighbour = Math.floor(((MathUtil.radToDeg(dir + me.transform.rotation)
-                    + 780) % 360) / 60) % 6; // what the fuck?
+                const neighbour = Math.abs(Math.floor(((MathUtil.radToDeg(dir + me.transform.rotation)
+                    + 780) % 360) / 60) % 6); // what the fuck?
+
+                if (!me.hex) return;
 
                 const dest = add(me.hex, neighbours[neighbour]);
                 if (this.owner && this.owner.register.get(dest.toString()) === undefined)
