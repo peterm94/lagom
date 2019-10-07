@@ -13,16 +13,18 @@ export class EnemyAI extends System
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, movement: Movement) => {
+        this.runOnEntities((entity: Entity, movement: Movement, tag: EnemyTag) => {
 
             const player = this.getScene().getEntityWithName("player") as Player;
 
-            const playerDir = MathUtil.pointDirection(entity.transform.x, entity.transform.y,
-                                                      player.transform.x, player.transform.y);
+            const targetDir = MathUtil.pointDirection(entity.transform.x, entity.transform.y,
+                                                      player.transform.x + tag.where.x,
+                                                      player.transform.y + tag.where.y);
 
 
-            const playerDist = MathUtil.pointDistance(player.transform.x, player.transform.y,
-                                                      entity.transform.x, entity.transform.y);
+            const targetDist = MathUtil.pointDistance(player.transform.x, player.transform.y,
+                                                      entity.transform.x + tag.where.x,
+                                                      entity.transform.y + tag.where.y);
 
             // TODO why don't their thrusters angle correctly??
 
@@ -30,21 +32,21 @@ export class EnemyAI extends System
             movement.setAim(player.transform.position);
 
             // Shoot if in range
-            if (playerDist < 450)
+            if (targetDist < 450)
             {
                 movement.shooting = true;
             }
 
             // Move towards player if not too close
-            if (playerDist > 350)
+            if (targetDist > 350)
             {
-                const x = MathUtil.lengthDirX(1, playerDir);
-                const y = -MathUtil.lengthDirY(1, playerDir); // negative why?!?
+                const x = MathUtil.lengthDirX(1, targetDir);
+                const y = -MathUtil.lengthDirY(1, targetDir); // negative why?!?
 
                 movement.move(x * delta * this.moveSpeed, y * delta * this.moveSpeed);
             }
             // rotate towards player
-            entity.transform.rotation = MathUtil.angleLerp(entity.transform.rotation, -playerDir, 0.1 * delta/1000);
+            entity.transform.rotation = MathUtil.angleLerp(entity.transform.rotation, -targetDir, 0.1 * delta / 1000);
         });
     }
 
