@@ -2,7 +2,9 @@ import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import loseSpr from "../art/lose.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
-import {DrawLayer} from "../HexGame";
+import {DrawLayer, HexMainScene} from "../HexGame";
+import {Key} from "../../../Input/Key";
+import {Game} from "../../../ECS/Game";
 const loseSheet = new SpriteSheet(loseSpr, 1280, 720);
 
 export class GameOver extends Entity
@@ -26,5 +28,10 @@ export class GameOver extends Entity
         super.update(delta);
 
         this.sprite.pixiObj.alpha += 0.0001 * delta;
+
+        if (Game.keyboard.isKeyDown(Key.Space))
+        {
+            this.getScene().getGame().setScene(new HexMainScene())
+        }
     }
 }

@@ -47,7 +47,7 @@ export class HexGame extends Game
 {
     constructor()
     {
-        super(new MainScene(), {
+        super(new HexMainScene(), {
             width: 1280,
             height: 720,
             resolution: 1,
@@ -58,7 +58,7 @@ export class HexGame extends Game
 }
 
 
-class MainScene extends Scene
+export class HexMainScene extends Scene
 {
     onAdded()
     {
