@@ -148,12 +148,12 @@ export class Enemy extends Entity
         {
             // Choose an entity to add a neighbour to
             const rando = MathUtil.randomRange(0, register.register.size);
-            let list = Array.from(register.register)
-            let hexEntity = list[rando][1]
+            let list = Array.from(register.register);
+            let hexEntity = list[rando][1];
 
             // choose which neighbour
             const randomFriend = MathUtil.randomRange(0, neighbours.length);
-            const newHex = add(hexEntity.hex, neighbours[randomFriend])
+            const newHex = add(hexEntity.hex, neighbours[randomFriend]);
 
             // Check if it already exists
             if (!register.register.has(newHex.toString()) && !newHex.equals(new Hex(0, 0, 0)))

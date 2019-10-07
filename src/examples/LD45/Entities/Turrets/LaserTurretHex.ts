@@ -20,7 +20,7 @@ export class LaserTurretHex extends HexEntity
     public static cooldownSprites = () => turretSheet.textureSliceFromRow(0, 12, 12);
 
     public static shootingFrameSpeed = 24;
-    public static shootingTime = LaserTurretHex.shootingSprites.length * LaserTurretHex.shootingFrameSpeed;
+    public static shootingTime = LaserTurretHex.shootingSprites().length * LaserTurretHex.shootingFrameSpeed;
 
     public static cooldownFrameSpeed = 240;
     public static cooldownTime = LaserTurretHex.cooldownSprites().length * LaserTurretHex.cooldownFrameSpeed;
@@ -34,14 +34,12 @@ export class LaserTurretHex extends HexEntity
     {
         super.onAdded();
         this.addComponent(
-            new TurretTag(new AnimatedSprite(turretBulletSheet.textureSliceFromRow(0, 0, 14),
-                                             {
-                                                 xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP,
-                                                 animationSpeed: 24
-                                             }),
-                          LaserTurretHex.shootingTime,
-                          LaserTurretHex.cooldownTime,
-                          0.5,
+            new TurretTag(() => new AnimatedSprite(turretBulletSheet.textureSliceFromRow(0, 0, 14),
+                                                   {
+                                                       xAnchor: 0.5, yAnchor: 0.5,
+                                                       animationEndAction: AnimationEnd.LOOP,
+                                                       animationSpeed: 24
+                                                   }), LaserTurretHex.shootingTime, LaserTurretHex.cooldownTime, 0.5,
                           1));
 
         this.addComponent(new Sprite(turretBaseSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));

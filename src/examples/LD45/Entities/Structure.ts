@@ -16,19 +16,22 @@ export class StructureHex extends HexEntity
         super("structure", owner, hex, 1);
     }
 
-    getSprite() {
-        switch(MathUtil.randomRange(0,10))
+    getSprite()
+    {
+        switch (MathUtil.randomRange(0, 10))
         {
             case 1:
             case 2:
-            case 3: return circuitsSheet;
-            default: return block1Sheet;
+            case 3:
+                return circuitsSheet;
+            default:
+                return block1Sheet;
         }
     }
 
     onAdded()
     {
         super.onAdded();
-        const spr = this.addComponent(new Sprite(this.getSprite().texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new Sprite(this.getSprite().texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
     }
 }

@@ -11,9 +11,6 @@ import {Timer} from "../../Common/Timer";
 import {Result} from "detect-collisions";
 import {ScreenShake} from "../../Common/Screenshake";
 import {System} from "../../ECS/System";
-import {Observer} from "../../Common/Observer";
-import {RenderCircle} from "../../Common/PIXIComponents";
-import {PlayerHex} from "./Entities/Player";
 import {GameOver} from "./Entities/GameOver";
 
 export class HexRegister extends Component

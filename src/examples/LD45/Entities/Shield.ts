@@ -25,11 +25,9 @@ export class ShieldHex extends HexEntity
             shieldSheet.textureSliceFromRow(0, 0, 7),
             {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 120}));
 
-        const bubbleShield = new AnimatedSprite(
+        this.addComponent(new AnimatedSprite(
             shieldBubbleSheet.textureSliceFromRow(0, 0, 7),
-            {xAnchor: 0.5, yAnchor: 0.5, alpha: 0.2, animationEndAction: AnimationEnd.LOOP, animationSpeed: 120});
-
-        this.addComponent(bubbleShield);
+            {xAnchor: 0.5, yAnchor: 0.5, alpha: 0.2, animationEndAction: AnimationEnd.LOOP, animationSpeed: 120}));
 
         this.addComponent(new Sprite(shieldSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
     }

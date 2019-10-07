@@ -23,7 +23,7 @@ export class TurretTag extends Component
 {
     canShoot: boolean = true;
 
-    constructor(public bulletSprite: Component,
+    constructor(public bulletSprite: () => AnimatedSprite,
                 public shootingTime: number,
                 public cooldownTime: number,
                 public bulletSpeed: number,
@@ -120,9 +120,11 @@ export class TurretShooter extends System
 
 export class Bullet extends Entity
 {
+    private sprite!: AnimatedSprite;
+
     constructor(layer: Layers, x: number, y: number,
                 private targRotation: number,
-                private sprite: Component,
+                private spriteCreator: () => AnimatedSprite,
                 private speed: number,
                 private damage: number)
     {
@@ -138,7 +140,7 @@ export class Bullet extends Entity
         this.addComponent(new Timer(6000, undefined)).onTrigger.register(caller => {
             caller.getEntity().destroy()
         });
-        this.addComponent(this.sprite);
+        this.sprite = this.addComponent(this.spriteCreator());
 
         this.addComponent(new ConstantMotion(this.targRotation, this.speed));
         const coll = this.addComponent(new CircleCollider(0, 0, 2, this.layer, true));

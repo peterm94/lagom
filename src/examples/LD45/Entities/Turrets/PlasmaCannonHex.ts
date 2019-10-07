@@ -34,11 +34,12 @@ export class PlasmaCannonHex extends HexEntity
     {
         super.onAdded();
         this.addComponent(
-            new TurretTag(new AnimatedSprite(turretBulletSheet.textureSliceFromRow(0, 0, 10),
-                                             {
-                                                 xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP,
-                                                 animationSpeed: 96
-                                             }),
+            new TurretTag(() => new AnimatedSprite(turretBulletSheet.textureSliceFromRow(0, 0, 10),
+                                                   {
+                                                       xAnchor: 0.5, yAnchor: 0.5,
+                                                       animationEndAction: AnimationEnd.LOOP,
+                                                       animationSpeed: 96
+                                                   }),
                           PlasmaCannonHex.shootingTime,
                           PlasmaCannonHex.cooldownTime,
                           0.3,

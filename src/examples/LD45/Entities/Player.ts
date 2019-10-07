@@ -57,6 +57,6 @@ export class PlayerHex extends HexEntity
     {
         super.onAdded();
 
-        const spr = this.addComponent(new Sprite(playerSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new Sprite(playerSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
     }
 }
