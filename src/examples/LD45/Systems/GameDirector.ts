@@ -6,6 +6,7 @@ import {Log, MathUtil} from "../../../Common/Util";
 import {HexRegister} from "../HexEntity";
 import {YouWin} from "../Entities/YouWin";
 import {spawn} from "child_process";
+import {ScreenShake, ScreenShaker} from "../../../Common/Screenshake";
 
 export class GameDirector extends Entity
 {
@@ -74,8 +75,9 @@ export class GameDirector extends Entity
             if (this.bossSpawn)
             {
                 enemyValue *= 2;
+                this.addComponent(new ScreenShake(5, 1000));
             }
-
+            
             Log.info("Spawning enemy at ", enemyX, enemyY);
             this.getScene().addEntity(new Enemy(enemyValue,
                                                 player.transform.x + enemyX,
