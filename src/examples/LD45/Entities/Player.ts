@@ -12,6 +12,7 @@ import {CircleCollider} from "../../../DetectCollisions/DetectColliders";
 import {ThrusterHex} from "./Thruster";
 import {ShieldHex} from "./Shield";
 import {LaserTurretHex} from "./Turrets/LaserTurretHex";
+import {ScreenShake} from "../../../Common/Screenshake";
 
 
 const playerSheet = new SpriteSheet(playerSpr, 32, 32);
