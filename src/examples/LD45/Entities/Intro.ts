@@ -1,4 +1,4 @@
-import {GUIEntity} from "../../../ECS/Entity";
+import {Entity, GUIEntity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import introSpr from "../art/intro.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
@@ -6,7 +6,7 @@ import {DrawLayer} from "../HexGame";
 
 const introSheet = new SpriteSheet(introSpr, 1280, 720);
 
-export class Intro extends GUIEntity
+export class Intro extends Entity
 {
     constructor()
     {

@@ -12,7 +12,7 @@ const shieldBubbleSheet = new SpriteSheet(shieldBubbleSpr, 96, 96);
 
 export class ShieldHex extends HexEntity
 {
-    constructor(public owner: HexRegister, public hex: Hex)
+    constructor(public owner: HexRegister | null, public hex: Hex)
     {
         super("shield", owner, hex, 3, DrawLayer.SHIELD, 7, 48)
     }

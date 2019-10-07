@@ -9,6 +9,7 @@ import {YouWin} from "../Entities/YouWin";
 export class GameDirector extends Entity
 {
     private counter!: EnemyCounter;
+    private threshold = 40;
     private overThreshold = false;
     private win = false;
 
@@ -45,8 +46,8 @@ export class GameDirector extends Entity
 
             const currValue = reg.computeValue();
 
-            // Once the player hits 50, don't spawn any more enemies.
-            if (currValue > 20)
+            // Once the player hits the threshold, don't spawn any more enemies.
+            if (currValue > this.threshold)
             {
                 this.overThreshold = true;
             }

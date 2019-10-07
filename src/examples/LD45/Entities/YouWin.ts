@@ -1,4 +1,4 @@
-import {Entity} from "../../../ECS/Entity";
+import {Entity, GUIEntity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import winSpr from "../art/end.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
@@ -7,11 +7,11 @@ import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 const winSheet = new SpriteSheet(winSpr, 1280, 720);
 
-export class YouWin extends Entity
+export class YouWin extends GUIEntity
 {
     constructor(x: number, y: number)
     {
-        super("gameOver", x - 660, y - 340, DrawLayer.GUI);
+        super("gameOver", 0, 0, DrawLayer.GUI);
     }
 
     private sprite!: Sprite;

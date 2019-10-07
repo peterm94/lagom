@@ -6,7 +6,15 @@ import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {FollowCamera} from "../../Common/CameraUtil";
 import {Diagnostics} from "../../Common/Debug";
 import {EnemyMarkerSystem} from "./Entities/Enemy";
-import {ClearMovement, ConstantMotionMover, Mover, MoveWithPlayer, PlayerControls} from "./Movement";
+import {
+    ClearMovement,
+    ConstantMotion,
+    ConstantMotionMover,
+    MoveMe,
+    Mover,
+    MoveWithPlayer,
+    PlayerControls
+} from "./Movement";
 import {ThrusterAnimationSystem} from "./Systems/ThrusterAnimationSystem";
 import {TimerSystem} from "../../Common/Timer";
 import {Player} from "./Entities/Player";
@@ -17,6 +25,10 @@ import {Background, TileMover} from "./Background";
 import {GameDirector} from "./Systems/GameDirector";
 import {EnemyAI} from "./Systems/EnemyAI";
 import {Intro} from "./Entities/Intro";
+import {ShieldHex} from "./Entities/Shield";
+import {Hex} from "./Hexagons/Hex";
+import {CircleCollider} from "../../DetectCollisions/DetectColliders";
+import {MathUtil} from "../../Common/Util";
 
 export enum Layers
 {
@@ -66,6 +78,17 @@ export class HexMainScene extends Scene
         this.addEntity(new Background());
         this.addEntity(new Diagnostics("white", 10, false));
         this.addEntity(new Player(this.camera.halfWidth, this.camera.halfHeight));
+        // const shield = this.addEntity(new ShieldHex(null, new Hex(0,0,0)));
+        // shield.transform.x = 640;
+        // shield.transform.y = 360;
+        // shield.layer = Layers.FREE_FLOAT;
+        // shield.getComponentsOfType<MoveMe>(MoveMe).forEach(value1 => value1.destroy());
+        // shield.getComponentsOfType<CircleCollider>(CircleCollider).forEach(value1 => value1.destroy());
+        // const chunkDir = MathUtil.degToRad(MathUtil.randomRange(0, 360));
+        // const chunkSpd = MathUtil.randomRange(1, 5) / 100;
+        // shield.addComponent(new ConstantMotion(chunkDir, chunkSpd));
+        // shield.addComponent(new CircleCollider(0, 0, 1, Layers.NONE, true));
+
         this.addEntity(new Intro());
 
         this.addEntity(new GameDirector());
