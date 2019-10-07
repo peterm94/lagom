@@ -5,13 +5,15 @@ import {Enemy, EnemyTag} from "../Entities/Enemy";
 import {Log, MathUtil} from "../../../Common/Util";
 import {HexRegister} from "../HexEntity";
 import {YouWin} from "../Entities/YouWin";
+import {spawn} from "child_process";
 
 export class GameDirector extends Entity
 {
     private counter!: EnemyCounter;
-    private threshold = 120;
+    private threshold = 100;
     private overThreshold = false;
     private win = false;
+    private bossSpawn = false;
 
     constructor()
     {
@@ -28,16 +30,23 @@ export class GameDirector extends Entity
 
     private trigger()
     {
-        if (this.counter.count === 0 && this.overThreshold && !this.win)
+        // Over the threshold, haven't displayed win yet.
+        if (this.counter.count === 0 && !this.win && this.overThreshold)
         {
             const player = this.getScene().getEntityWithName("player");
             this.getScene().addEntity(new YouWin(player!.transform.x, player!.transform.y));
             this.win = true;
         }
 
+        // Already spawned the boss, don't spawn anything else.
+        if (this.bossSpawn) return;
+
+        // Spawn the boss if there's only one enemy left and we're over the win threshold.
+        this.bossSpawn = this.counter.count === 1 && this.overThreshold;
+
         // Do we need a new enemy?
-        if ((this.counter.count === 0 || (this.counter.count < 3 && MathUtil.randomRange(0, 5) < 2))
-            && !this.overThreshold)
+        if (((this.counter.count === 0 || (this.counter.count < 3 && MathUtil.randomRange(0, 5) < 2)) && !this.overThreshold)
+        || this.bossSpawn)
         {
             const player = this.getScene().getEntityWithName("player");
             if (!player) return;
@@ -57,10 +66,15 @@ export class GameDirector extends Entity
             const enemyX = MathUtil.lengthDirX(enemyDist, enemyDir);
             const enemyY = MathUtil.lengthDirY(enemyDist, enemyDir);
 
-            let enemyValue = currValue - 2;
+            let enemyValue = currValue;
 
             // Don't let the ships be too small.
             if (enemyValue < 10) enemyValue = 10;
+
+            if (this.bossSpawn)
+            {
+                enemyValue *= 2;
+            }
 
             Log.info("Spawning enemy at ", enemyX, enemyY);
             this.getScene().addEntity(new Enemy(enemyValue,
