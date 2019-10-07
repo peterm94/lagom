@@ -94,7 +94,7 @@ export class Movement extends Component
         this.aimY = point.y;
     }
 
-    constructor(readonly angSpeed: number = 0.00001, readonly angCap: number = 1,
+    constructor(readonly angSpeed: number = 0.00001, readonly angCap: number = 0.5,
                 readonly linSpeed: number = 0.001, readonly linCap: number = 3)
     {
         super();
