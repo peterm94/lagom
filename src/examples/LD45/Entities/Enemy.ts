@@ -12,7 +12,7 @@ import {StructureHex} from "./Structure";
 import purpleAlienSpr from '../art/purple_alien.png';
 import greenAlienSpr from '../art/green_alien.png';
 import markerSpr from '../art/enemy_marker.png';
-import {MathUtil, Util} from "../../../Common/Util";
+import {MathUtil, Util, Log} from "../../../Common/Util";
 import {neighbours, add} from "../Hexagons/HexUtil";
 import {ThrusterHex} from "./Thruster";
 import {ShieldHex} from "./Shield";
@@ -126,7 +126,7 @@ export class Enemy extends Entity
             const newHex = add(hexEntity.hex, neighbours[randomFriend])
 
             // Check if it already exists
-            if (!register.register.has(newHex.toString()))
+            if (!register.register.has(newHex.toString()) && !newHex.equals(new Hex(0,0,0)))
             {
                 // All good
                 return newHex;
