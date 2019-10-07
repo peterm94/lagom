@@ -21,6 +21,8 @@ import {Sprite} from "../../../Common/Sprite/Sprite";
 import {System} from "../../../ECS/System";
 import {PlasmaCannonHex} from "./Turrets/PlasmaCannonHex";
 import {Movement} from "../Movement";
+import {Vector} from "../../../LagomPhysics/Physics";
+import {Timer} from "../../../Common/Timer";
 
 const purpleAlienSheet = new SpriteSheet(purpleAlienSpr, 32, 32);
 const greenAlienSheet = new SpriteSheet(greenAlienSpr, 32, 32);
@@ -28,6 +30,20 @@ const enemyMarkerSheet = new SpriteSheet(markerSpr, 32, 32);
 
 export class EnemyTag extends Component
 {
+    where: Vector = Vector.zero();
+
+    constructor()
+    {
+        super();
+        this.randomWhere();
+    }
+
+    randomWhere()
+    {
+        const dir = MathUtil.degToRad(MathUtil.randomRange(0, 360));
+        const dist = MathUtil.randomRange(300, 500);
+        this.where = new Vector(MathUtil.lengthDirX(dist, dir), MathUtil.lengthDirY(dist, dir));
+    }
 }
 
 export class EnemyMarkerE extends GUIEntity
@@ -75,15 +91,25 @@ export class Enemy extends Entity
         this.sprite = Util.choose(Enemy.purpleAlien, Enemy.greenAlien);
     }
 
+    makeTimer(caller: Timer<EnemyTag>, data: EnemyTag)
+    {
+        data.randomWhere();
+        caller.getEntity().addComponent(new Timer(MathUtil.randomRange(1000, 10000), data))
+              .onTrigger.register(this.makeTimer.bind(this));
+    }
+
     onAdded()
     {
         super.onAdded();
 
-        this.addComponent(new EnemyTag());
+        const tag = this.addComponent(new EnemyTag());
+
+        this.addComponent(new Timer(1, tag, false)).onTrigger.register(this.makeTimer.bind(this));
+
         this.addComponent(new DetectRigidbody());
         this.addComponent(new CircleCollider(0, 0, 1, Layers.NONE, true));
 
-        this.addComponent(new Movement());
+        this.addComponent(new Movement(0.00001, 0.9, 0.00075, 2.5));
         this.addComponent(new EnemyMarker());
 
         const register = this.addComponent(new HexRegister());
@@ -126,7 +152,7 @@ export class Enemy extends Entity
             const newHex = add(hexEntity.hex, neighbours[randomFriend])
 
             // Check if it already exists
-            if (!register.register.has(newHex.toString()) && !newHex.equals(new Hex(0,0,0)))
+            if (!register.register.has(newHex.toString()) && !newHex.equals(new Hex(0, 0, 0)))
             {
                 // All good
                 return newHex;
@@ -139,12 +165,18 @@ export class Enemy extends Entity
     {
         switch (MathUtil.randomRange(0, 10))
         {
-            case 0: return new StructureHex(register, location);
-            case 1: return new ThrusterHex(register, location);
-            case 2: return new LaserTurretHex(register, location);
-            case 3: return new ShieldHex(register, location);
-            case 4: return new PlasmaCannonHex(register, location);
-            default: return new StructureHex(register, location);
+            case 0:
+                return new StructureHex(register, location);
+            case 1:
+                return new ThrusterHex(register, location);
+            case 2:
+                return new LaserTurretHex(register, location);
+            case 3:
+                return new ShieldHex(register, location);
+            case 4:
+                return new PlasmaCannonHex(register, location);
+            default:
+                return new StructureHex(register, location);
         }
     }
 }

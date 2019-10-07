@@ -94,15 +94,17 @@ export class Movement extends Component
         this.aimY = point.y;
     }
 
+    constructor(readonly angSpeed: number = 0.00001, readonly angCap: number = 1,
+                readonly linSpeed: number = 0.001, readonly linCap: number = 3)
+    {
+        super();
+    }
+
     xVel = 0;
     yVel = 0;
     angVel = 0;
     readonly angDrag = 0.0002;
     readonly linDrag = 0.0005;
-    readonly linCap = 3;
-    readonly angCap = 1;
-    readonly angSpeed = 0.00001;
-    readonly linSpeed = 0.001;
 }
 
 export class Mover extends System
@@ -118,18 +120,18 @@ export class Mover extends System
             movement.yVel -= movement.yVel * movement.linDrag * delta;
             movement.angVel -= movement.angVel * movement.angDrag * delta;
 
-            const xMov = Math.sign(movement.x);
-            const yMov = Math.sign(movement.y);
+            const mov = new Vector(Math.sign(movement.x), Math.sign(movement.y));
+            mov.normalize();
             const angMov = Math.sign(movement.rotation);
 
-            if (xMov)
+            if (mov.x)
             {
-                movement.xVel = MathUtil.clamp(movement.xVel + (xMov * movement.linSpeed * delta),
+                movement.xVel = MathUtil.clamp(movement.xVel + (mov.x * movement.linSpeed * delta),
                                                -movement.linCap, movement.linCap);
             }
-            if (yMov)
+            if (mov.y)
             {
-                movement.yVel = MathUtil.clamp(movement.yVel + (yMov * movement.linSpeed * delta),
+                movement.yVel = MathUtil.clamp(movement.yVel + (mov.y * movement.linSpeed * delta),
                                                -movement.linCap, movement.linCap);
             }
 

@@ -66,7 +66,7 @@ class MainScene extends Scene
 
         this.addEntity(new Background());
         this.addEntity(new Diagnostics("white", 10, false));
-        this.addEntity(new Player());
+        this.addEntity(new Player(this.camera.halfWidth, this.camera.halfHeight));
         this.addEntity(new Intro());
 
         this.addEntity(new GameDirector());

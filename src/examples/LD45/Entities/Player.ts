@@ -18,9 +18,9 @@ const playerSheet = new SpriteSheet(playerSpr, 32, 32);
 
 export class Player extends Entity
 {
-    constructor()
+    constructor(x: number, y: number)
     {
-        super("player", 256, 256, DrawLayer.BLOCK);
+        super("player", x, y, DrawLayer.BLOCK);
         this.layer = Layers.PLAYER;
     }
 
