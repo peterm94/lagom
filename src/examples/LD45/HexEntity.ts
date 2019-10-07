@@ -11,6 +11,8 @@ import {Timer} from "../../Common/Timer";
 import {Result} from "detect-collisions";
 import {ScreenShake} from "../../Common/Screenshake";
 import {System} from "../../ECS/System";
+import {Observer} from "../../Common/Observer";
+import {RenderCircle} from "../../Common/PIXIComponents";
 
 export class HexRegister extends Component
 {
@@ -111,7 +113,9 @@ export abstract class HexEntity extends Entity
                           public owner: HexRegister | null,
                           public hex: Hex,
                           public value: number,
-                          depth?: DrawLayer)
+                          depth?: DrawLayer,
+                          private hexHp: number = 6,
+                          private colliderRadius: number = 14)
     {
         super(name, -999, -999, (depth === undefined ? DrawLayer.BLOCK : depth));
         if (owner) owner.register.set(hex.toString(), this);
@@ -129,8 +133,7 @@ export abstract class HexEntity extends Entity
         // Remove any movement applied
         this.getComponentsOfType<ConstantMotion>(ConstantMotion).forEach(value1 => value1.destroy());
 
-
-        const col = this.addComponent(new CircleCollider(0, 0, 14, this.layer, true));
+        const col = this.addComponent(new CircleCollider(0, 0, this.colliderRadius, this.layer, true));
         col.onTriggerEnter.register((coll: DetectCollider, res: { other: DetectCollider, result: Result }) => {
             const me = coll.getEntity() as HexEntity;
 
@@ -163,7 +166,7 @@ export abstract class HexEntity extends Entity
 
         if (this.owner) this.addFor(this.owner, this.hex);
         this.addComponent(new DetectRigidbody());
-        this.addComponent(new HexHP());
+        this.addComponent(new HexHP(this.hexHp));
     }
 
     destroy()
@@ -175,7 +178,14 @@ export abstract class HexEntity extends Entity
 
 export class HexHP extends Component
 {
-    current: number = 10;
+
+    constructor(hp: number)
+    {
+        super();
+        this.hp = hp;
+    }
+
+    hp: number = 6;
 }
 
 export class Damage extends Component
@@ -202,11 +212,11 @@ export class DamageSystem extends System
         this.runOnEntities((entity: Entity, hp: HexHP) => {
 
             entity.getComponentsOfType<Damage>(Damage).forEach(value => {
-                hp.current -= value.amt;
+                hp.hp -= value.amt;
                 value.destroy();
             });
 
-            if (hp.current <= 0)
+            if (hp.hp <= 0)
             {
                 this.entity.addComponent(new ScreenShake(0.8, 80));
                 entity.destroy();
