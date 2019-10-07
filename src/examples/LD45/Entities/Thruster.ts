@@ -17,7 +17,9 @@ export enum ThrusterAnimationStates
     ON,
 }
 
-export class ThrusterTag extends Component {}
+export class ThrusterTag extends Component
+{
+}
 
 export class ThrusterHex extends HexEntity
 {
@@ -32,9 +34,9 @@ export class ThrusterHex extends HexEntity
 
         this.addComponent(new ThrusterTag());
 
-        const spr = this.addComponent(new Sprite(thrusterBaseSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new Sprite(thrusterBaseSheet.texture(0, 0), {xAnchor: 0.5, yAnchor: 0.5}));
 
-        const thruster = this.addComponent(new AnimatedSpriteController(ThrusterAnimationStates.OFF, [
+        this.addComponent(new AnimatedSpriteController(ThrusterAnimationStates.OFF, [
             {
                 id: ThrusterAnimationStates.OFF,
                 textures: [thrusterSheet.texture(0, 0)],
@@ -42,7 +44,7 @@ export class ThrusterHex extends HexEntity
             },
             {
                 id: ThrusterAnimationStates.ON,
-                textures: thrusterSheet.textures([[1, 0], [2, 0], [3, 0]] ),
+                textures: thrusterSheet.textures([[1, 0], [2, 0], [3, 0]]),
                 config: {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.STOP, animationSpeed: 1000}
             }
         ]));

@@ -21,6 +21,7 @@ export class Intro extends Entity
         this.sprite = this.addComponent(new Sprite(introSheet.texture(0, 0)));
     }
 
+    // NAUGHTY
     update(delta: number): void
     {
         super.update(delta);

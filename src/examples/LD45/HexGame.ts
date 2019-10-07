@@ -16,7 +16,6 @@ import {DamageSystem} from "./HexEntity";
 import {Background, TileMover} from "./Background";
 import {GameDirector} from "./Systems/GameDirector";
 import {EnemyAI} from "./Systems/EnemyAI";
-import {Entity} from "../../ECS/Entity";
 import {Intro} from "./Entities/Intro";
 
 export enum Layers
@@ -75,7 +74,7 @@ export class HexMainScene extends Scene
         this.addSystem(new PlayerControls());
         this.addSystem(new Mover());
         this.addSystem(new MoveWithPlayer());
-        this.addSystem(new DetectCollisionSystem(collisionMatrix));
+        this.addSystem(new DetectCollisionSystem(collisionMatrix, 5));
 
         this.addSystem(new ThrusterAnimationSystem());
         this.addSystem(new TurretSystem());
@@ -87,7 +86,6 @@ export class HexMainScene extends Scene
         // Make sure this is declared last if you want to actually make use of the movement...
         this.addSystem(new ClearMovement());
         this.addSystem(new TileMover());
-        // this.addSystem(new OffScreenGarbageGuy());
 
         this.addSystem(new FollowCamera({centre: true, lerpSpeed: 0.8}));
 

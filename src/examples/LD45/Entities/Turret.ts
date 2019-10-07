@@ -1,8 +1,5 @@
-import {Damage, HexEntity, HexRegister} from "../HexEntity";
-import {Hex} from "../Hexagons/Hex";
-import {Sprite} from "../../../Common/Sprite/Sprite";
-import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
-import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
+import {Damage, HexEntity} from "../HexEntity";
+import {AnimatedSprite} from "../../../Common/Sprite/AnimatedSprite";
 import {System} from "../../../ECS/System";
 import {Component} from "../../../ECS/Component";
 import {ConstantMotion, Movement} from "../Movement";
@@ -11,7 +8,6 @@ import {MathUtil} from "../../../Common/Util";
 import {DrawLayer, Layers} from "../HexGame";
 import {DetectRigidbody} from "../../../DetectCollisions/DetectRigidbody";
 import {CircleCollider, DetectCollider} from "../../../DetectCollisions/DetectColliders";
-import {Garbage} from "../Systems/OffScreenGarbageGuy";
 import {Result} from "detect-collisions";
 import {Timer} from "../../../Common/Timer";
 import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteController";
@@ -27,7 +23,7 @@ export class TurretTag extends Component
 {
     canShoot: boolean = true;
 
-    constructor(public bulletSprite: Component,
+    constructor(public bulletSprite: () => AnimatedSprite,
                 public shootingTime: number,
                 public cooldownTime: number,
                 public bulletSpeed: number,
@@ -124,9 +120,11 @@ export class TurretShooter extends System
 
 export class Bullet extends Entity
 {
+    private sprite!: AnimatedSprite;
+
     constructor(layer: Layers, x: number, y: number,
                 private targRotation: number,
-                private sprite: Component,
+                private spriteCreator: () => AnimatedSprite,
                 private speed: number,
                 private damage: number)
     {
@@ -139,10 +137,10 @@ export class Bullet extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new Timer(5000, undefined)).onTrigger.register(caller => {
+        this.addComponent(new Timer(6000, undefined)).onTrigger.register(caller => {
             caller.getEntity().destroy()
         });
-        this.addComponent(this.sprite);
+        this.sprite = this.addComponent(this.spriteCreator());
 
         this.addComponent(new ConstantMotion(this.targRotation, this.speed));
         const coll = this.addComponent(new CircleCollider(0, 0, 2, this.layer, true));

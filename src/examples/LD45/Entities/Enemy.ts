@@ -74,11 +74,11 @@ export class EnemyMarker extends Component
 
 export class Enemy extends Entity
 {
-    public static purpleAlien = new AnimatedSprite(
+    public static purpleAlien = () => new AnimatedSprite(
         purpleAlienSheet.textures([[0, 0], [1, 0], [2, 0]]),
         {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 250});
 
-    public static greenAlien = new AnimatedSprite(
+    public static greenAlien = () => new AnimatedSprite(
         greenAlienSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0]]),
         {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 250});
 
@@ -88,7 +88,7 @@ export class Enemy extends Entity
     {
         super("enemy", x, y, DrawLayer.BLOCK);
         this.layer = Layers.ENEMY;
-        this.sprite = Util.choose(Enemy.purpleAlien, Enemy.greenAlien);
+        this.sprite = Util.choose(Enemy.purpleAlien, Enemy.greenAlien)();
     }
 
     makeTimer(caller: Timer<EnemyTag>, data: EnemyTag)
@@ -135,6 +135,10 @@ export class Enemy extends Entity
             {
                 this.getScene().addEntity(hexEntity);
             }
+            else
+            {
+                register.removeHex(hexEntity);
+            }
         }
     }
 
@@ -144,12 +148,12 @@ export class Enemy extends Entity
         {
             // Choose an entity to add a neighbour to
             const rando = MathUtil.randomRange(0, register.register.size);
-            let list = Array.from(register.register)
-            let hexEntity = list[rando][1]
+            let list = Array.from(register.register);
+            let hexEntity = list[rando][1];
 
             // choose which neighbour
             const randomFriend = MathUtil.randomRange(0, neighbours.length);
-            const newHex = add(hexEntity.hex, neighbours[randomFriend])
+            const newHex = add(hexEntity.hex, neighbours[randomFriend]);
 
             // Check if it already exists
             if (!register.register.has(newHex.toString()) && !newHex.equals(new Hex(0, 0, 0)))
