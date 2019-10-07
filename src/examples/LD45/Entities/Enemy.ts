@@ -135,6 +135,10 @@ export class Enemy extends Entity
             {
                 this.getScene().addEntity(hexEntity);
             }
+            else
+            {
+                register.removeHex(hexEntity);
+            }
         }
     }
 
