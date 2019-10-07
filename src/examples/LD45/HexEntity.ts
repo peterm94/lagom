@@ -12,6 +12,7 @@ import {Result} from "detect-collisions";
 import {ScreenShake} from "../../Common/Screenshake";
 import {System} from "../../ECS/System";
 import {GameOver} from "./Entities/GameOver";
+import {Explosion} from "./Entities/Turret";
 
 export class HexRegister extends Component
 {
@@ -226,6 +227,21 @@ export class DamageSystem extends System
                 }
 
                 this.entity.addComponent(new ScreenShake(0.8, 80));
+
+                this.getScene().addEntity(new Explosion(entity.transform.x, entity.transform.y));
+
+                this.entity.addComponent(new Timer(100, entity.transform)).onTrigger.register((caller, data) => {
+                    this.getScene().addEntity(new Explosion(data.x + 10, data.y + 10));
+                });
+                this.entity.addComponent(new Timer(40, entity.transform)).onTrigger.register((caller, data) => {
+                    this.getScene().addEntity(new Explosion(data.x - 10, data.y + 10));
+                });
+                this.entity.addComponent(new Timer(150, entity.transform)).onTrigger.register((caller, data) => {
+                    this.getScene().addEntity(new Explosion(data.x + 10, data.y - 10));
+                });
+                this.entity.addComponent(new Timer(80, entity.transform)).onTrigger.register((caller, data) => {
+                    this.getScene().addEntity(new Explosion(data.x - 10, data.y - 10));
+                });
                 entity.destroy();
             }
         });

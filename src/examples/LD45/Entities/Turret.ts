@@ -1,5 +1,5 @@
 import {Damage, HexEntity} from "../HexEntity";
-import {AnimatedSprite} from "../../../Common/Sprite/AnimatedSprite";
+import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import {System} from "../../../ECS/System";
 import {Component} from "../../../ECS/Component";
 import {ConstantMotion, Movement} from "../Movement";
@@ -11,6 +11,12 @@ import {CircleCollider, DetectCollider} from "../../../DetectCollisions/DetectCo
 import {Result} from "detect-collisions";
 import {Timer} from "../../../Common/Timer";
 import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteController";
+import {ScreenShake} from "../../../Common/Screenshake";
+
+import explosionSpr from "../art/explosion.png"
+import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
+
+const explosionSheet = new SpriteSheet(explosionSpr, 32, 32);
 
 export enum TurretAnimationStates
 {
@@ -118,6 +124,31 @@ export class TurretShooter extends System
     }
 }
 
+export class Explosion extends Entity
+{
+    constructor(x: number, y: number)
+    {
+        super("explosion", x, y, DrawLayer.EXPLOSION);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+
+        this.addComponent(new AnimatedSpriteController(0, [
+            {
+                config: {
+                    animationEndAction: AnimationEnd.STOP,
+                    rotation: MathUtil.degToRad(MathUtil.randomRange(0, 360)),
+                    animationSpeed: 120
+                },
+                textures: explosionSheet.textureSliceFromRow(0, 0, 7),
+                id: 0,
+            }
+        ])).addEvent(0, 8, () => this.destroy());
+    }
+}
+
 export class Bullet extends Entity
 {
     private sprite!: AnimatedSprite;
@@ -150,7 +181,10 @@ export class Bullet extends Entity
             if ((res.other.layer === Layers.PLAYER && coll.layer === Layers.ENEMY_PROJECTILE)
                 || (res.other.layer === Layers.ENEMY && coll.layer === Layers.PLAYER_PROJECTILE))
             {
-                res.other.getEntity().addComponent(new Damage(this.damage));
+                const otherE = res.other.getEntity();
+                otherE.addComponent(new Damage(this.damage));
+                otherE.addComponent(new ScreenShake(0.2, 60));
+                this.getScene().addEntity(new Explosion(otherE.transform.x + 16, otherE.transform.y));
                 coll.getEntity().destroy();
             }
         });

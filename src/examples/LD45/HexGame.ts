@@ -45,6 +45,7 @@ export enum Layers
 
 export enum DrawLayer
 {
+    EXPLOSION = 90,
     GUI = 1000,
     BLOCK = 0,
     SHIELD = 50,
