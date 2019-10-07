@@ -30,13 +30,13 @@ export class EnemyAI extends System
             movement.setAim(player.transform.position);
 
             // Shoot if in range
-            if (playerDist < 600)
+            if (playerDist < 450)
             {
                 movement.shooting = true;
             }
 
             // Move towards player if not too close
-            if (playerDist > 200)
+            if (playerDist > 350)
             {
                 const x = MathUtil.lengthDirX(1, playerDir);
                 const y = -MathUtil.lengthDirY(1, playerDir); // negative why?!?

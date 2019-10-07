@@ -83,7 +83,7 @@ export class Enemy extends Entity
         this.addComponent(new DetectRigidbody());
         this.addComponent(new CircleCollider(0, 0, 1, Layers.NONE, true));
 
-        this.addComponent(new Movement());
+        this.addComponent(new Movement(0.00001, 0.9, 0.00075, 2.5));
         this.addComponent(new EnemyMarker());
 
         const register = this.addComponent(new HexRegister());
@@ -126,7 +126,7 @@ export class Enemy extends Entity
             const newHex = add(hexEntity.hex, neighbours[randomFriend])
 
             // Check if it already exists
-            if (!register.register.has(newHex.toString()) && !newHex.equals(new Hex(0,0,0)))
+            if (!register.register.has(newHex.toString()) && !newHex.equals(new Hex(0, 0, 0)))
             {
                 // All good
                 return newHex;
@@ -139,12 +139,18 @@ export class Enemy extends Entity
     {
         switch (MathUtil.randomRange(0, 10))
         {
-            case 0: return new StructureHex(register, location);
-            case 1: return new ThrusterHex(register, location);
-            case 2: return new LaserTurretHex(register, location);
-            case 3: return new ShieldHex(register, location);
-            case 4: return new PlasmaCannonHex(register, location);
-            default: return new StructureHex(register, location);
+            case 0:
+                return new StructureHex(register, location);
+            case 1:
+                return new ThrusterHex(register, location);
+            case 2:
+                return new LaserTurretHex(register, location);
+            case 3:
+                return new ShieldHex(register, location);
+            case 4:
+                return new PlasmaCannonHex(register, location);
+            default:
+                return new StructureHex(register, location);
         }
     }
 }
