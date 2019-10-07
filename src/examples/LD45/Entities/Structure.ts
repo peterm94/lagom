@@ -11,7 +11,7 @@ const circuitsSheet = new SpriteSheet(circuitsSpr, 32, 32);
 
 export class StructureHex extends HexEntity
 {
-    constructor(public owner: HexRegister, public hex: Hex)
+    constructor(public owner: HexRegister | null, public hex: Hex)
     {
         super("structure", owner, hex, 1);
     }

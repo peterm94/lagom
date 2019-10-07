@@ -23,7 +23,7 @@ export class ThrusterTag extends Component
 
 export class ThrusterHex extends HexEntity
 {
-    constructor(public owner: HexRegister, public hex: Hex)
+    constructor(public owner: HexRegister | null, public hex: Hex)
     {
         super("thruster", owner, hex, 1);
     }

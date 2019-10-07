@@ -9,7 +9,7 @@ import {YouWin} from "../Entities/YouWin";
 export class GameDirector extends Entity
 {
     private counter!: EnemyCounter;
-    private threshold = 40;
+    private threshold = 80;
     private overThreshold = false;
     private win = false;
 

@@ -25,7 +25,7 @@ export class LaserTurretHex extends HexEntity
     public static cooldownFrameSpeed = 240;
     public static cooldownTime = LaserTurretHex.cooldownSprites().length * LaserTurretHex.cooldownFrameSpeed;
 
-    constructor(public owner: HexRegister, public hex: Hex)
+    constructor(public owner: HexRegister | null, public hex: Hex)
     {
         super("laserTurret", owner, hex, 4);
     }

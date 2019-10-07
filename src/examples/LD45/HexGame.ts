@@ -16,11 +16,11 @@ import {
     PlayerControls
 } from "./Movement";
 import {ThrusterAnimationSystem} from "./Systems/ThrusterAnimationSystem";
-import {TimerSystem} from "../../Common/Timer";
+import {Timer, TimerSystem} from "../../Common/Timer";
 import {Player} from "./Entities/Player";
 import {ScreenShaker} from "../../Common/Screenshake";
 import {TurretShooter, TurretSystem} from "./Entities/Turret";
-import {DamageSystem} from "./HexEntity";
+import {DamageSystem, HexEntity} from "./HexEntity";
 import {Background, TileMover} from "./Background";
 import {GameDirector} from "./Systems/GameDirector";
 import {EnemyAI} from "./Systems/EnemyAI";
@@ -29,6 +29,9 @@ import {ShieldHex} from "./Entities/Shield";
 import {Hex} from "./Hexagons/Hex";
 import {CircleCollider} from "../../DetectCollisions/DetectColliders";
 import {MathUtil} from "../../Common/Util";
+import {StructureHex} from "./Entities/Structure";
+import {ThrusterHex} from "./Entities/Thruster";
+import {LaserTurretHex} from "./Entities/Turrets/LaserTurretHex";
 
 export enum Layers
 {
@@ -68,6 +71,29 @@ export class HexGame extends Game
     }
 }
 
+const makeFloater = (hex: HexEntity, x: number, y: number) => {
+    hex.transform.x = x;
+    hex.transform.y = y;
+    hex.layer = Layers.FREE_FLOAT;
+    hex.getComponentsOfType<MoveMe>(MoveMe).forEach(value1 => value1.destroy());
+    hex.getComponentsOfType<CircleCollider>(CircleCollider).forEach(value1 => value1.destroy());
+    const chunkDir = MathUtil.degToRad(MathUtil.randomRange(0, 360));
+    const chunkSpd = MathUtil.randomRange(1, 5) / 20;
+    const motion = hex.addComponent(new ConstantMotion(chunkDir, chunkSpd));
+    const collider = hex.addComponent(new CircleCollider(0, 0, 1, Layers.NONE, true));
+
+    // After a delay, allow to be reattached
+    hex.addComponent(new Timer(1000, undefined)).onTrigger.register(() => {
+        collider.destroy();
+        motion.destroy();
+        const chunkSpd = MathUtil.randomRange(1, 5) / 200;
+        const chunkDir = MathUtil.degToRad(MathUtil.randomRange(0, 360));
+        hex.addComponent(new ConstantMotion(chunkDir, chunkSpd));
+        hex.addComponent(new CircleCollider(0, 0, 16, Layers.FREE_FLOAT, true));
+    });
+
+    return hex;
+};
 
 export class HexMainScene extends Scene
 {
@@ -78,16 +104,17 @@ export class HexMainScene extends Scene
         this.addEntity(new Background());
         this.addEntity(new Diagnostics("white", 10, false));
         this.addEntity(new Player(this.camera.halfWidth, this.camera.halfHeight));
-        // const shield = this.addEntity(new ShieldHex(null, new Hex(0,0,0)));
-        // shield.transform.x = 640;
-        // shield.transform.y = 360;
-        // shield.layer = Layers.FREE_FLOAT;
-        // shield.getComponentsOfType<MoveMe>(MoveMe).forEach(value1 => value1.destroy());
-        // shield.getComponentsOfType<CircleCollider>(CircleCollider).forEach(value1 => value1.destroy());
-        // const chunkDir = MathUtil.degToRad(MathUtil.randomRange(0, 360));
-        // const chunkSpd = MathUtil.randomRange(1, 5) / 100;
-        // shield.addComponent(new ConstantMotion(chunkDir, chunkSpd));
-        // shield.addComponent(new CircleCollider(0, 0, 1, Layers.NONE, true));
+
+        this.addEntity(makeFloater(new ShieldHex(null, new Hex(0,0,0)), 640, 360));
+        this.addEntity(makeFloater(new ShieldHex(null, new Hex(0,0,0)), 640, 360));
+        this.addEntity(makeFloater(new LaserTurretHex(null, new Hex(0,0,0)), 640, 360));
+        this.addEntity(makeFloater(new LaserTurretHex(null, new Hex(0,0,0)), 640, 360));
+        this.addEntity(makeFloater(new StructureHex(null, new Hex(0,0,0)), 640, 360));
+        this.addEntity(makeFloater(new StructureHex(null, new Hex(0,0,0)), 640, 360));
+        this.addEntity(makeFloater(new StructureHex(null, new Hex(0,0,0)), 640, 360));
+        this.addEntity(makeFloater(new StructureHex(null, new Hex(0,0,0)), 640, 360));
+        this.addEntity(makeFloater(new ThrusterHex(null, new Hex(0,0,0)), 640, 360));
+        this.addEntity(makeFloater(new ThrusterHex(null, new Hex(0,0,0)), 640, 360));
 
         this.addEntity(new Intro());
 
