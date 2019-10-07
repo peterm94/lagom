@@ -4,10 +4,13 @@ import {System} from "../../../ECS/System";
 import {Enemy, EnemyTag} from "../Entities/Enemy";
 import {Log, MathUtil} from "../../../Common/Util";
 import {HexRegister} from "../HexEntity";
+import {YouWin} from "../Entities/YouWin";
 
 export class GameDirector extends Entity
 {
     private counter!: EnemyCounter;
+    private overThreshold = false;
+    private win = false;
 
     constructor()
     {
@@ -24,8 +27,16 @@ export class GameDirector extends Entity
 
     private trigger()
     {
+        if (this.counter.count === 0 && this.overThreshold && !this.win)
+        {
+            const player = this.getScene().getEntityWithName("player");
+            this.getScene().addEntity(new YouWin(player!.transform.x, player!.transform.y));
+            this.win = true;
+        }
+
         // Do we need a new enemy?
-        if (this.counter.count === 0 || (this.counter.count < 3 && MathUtil.randomRange(0, 5) < 2))
+        if ((this.counter.count === 0 || (this.counter.count < 3 && MathUtil.randomRange(0, 5) < 2))
+            && !this.overThreshold)
         {
             const player = this.getScene().getEntityWithName("player");
             if (!player) return;
@@ -34,13 +45,19 @@ export class GameDirector extends Entity
 
             const currValue = reg.computeValue();
 
+            // Once the player hits 50, don't spawn any more enemies.
+            if (currValue > 20)
+            {
+                this.overThreshold = true;
+            }
+
             const enemyDist = MathUtil.randomRange(400, 1200);
             const enemyDir = MathUtil.degToRad(MathUtil.randomRange(0, 360));
             const enemyX = MathUtil.lengthDirX(enemyDist, enemyDir);
             const enemyY = MathUtil.lengthDirY(enemyDist, enemyDir);
 
             Log.info("Spawning enemy at ", enemyX, enemyY);
-            this.getScene().addEntity(new Enemy(currValue + 4,
+            this.getScene().addEntity(new Enemy(currValue,
                                                 player.transform.x + enemyX,
                                                 player.transform.y + enemyY));
         }
