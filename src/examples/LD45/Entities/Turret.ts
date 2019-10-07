@@ -140,7 +140,9 @@ export class Explosion extends Entity
                 config: {
                     animationEndAction: AnimationEnd.STOP,
                     rotation: MathUtil.degToRad(MathUtil.randomRange(0, 360)),
-                    animationSpeed: 120
+                    animationSpeed: 120,
+                    xAnchor: 0.5,
+                    yAnchor: 0.5
                 },
                 textures: explosionSheet.textureSliceFromRow(0, 0, 7),
                 id: 0,
