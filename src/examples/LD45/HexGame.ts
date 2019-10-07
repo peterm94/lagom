@@ -16,6 +16,8 @@ import {DamageSystem} from "./HexEntity";
 import {Background, TileMover} from "./Background";
 import {GameDirector} from "./Systems/GameDirector";
 import {EnemyAI} from "./Systems/EnemyAI";
+import {Entity} from "../../ECS/Entity";
+import {Intro} from "./Entities/Intro";
 
 export enum Layers
 {
@@ -65,6 +67,7 @@ class MainScene extends Scene
         this.addEntity(new Background());
         this.addEntity(new Diagnostics("white", 10, false));
         this.addEntity(new Player());
+        this.addEntity(new Intro());
 
         this.addEntity(new GameDirector());
 
