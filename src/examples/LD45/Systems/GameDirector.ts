@@ -9,7 +9,7 @@ import {YouWin} from "../Entities/YouWin";
 export class GameDirector extends Entity
 {
     private counter!: EnemyCounter;
-    private threshold = 80;
+    private threshold = 120;
     private overThreshold = false;
     private win = false;
 
@@ -23,7 +23,7 @@ export class GameDirector extends Entity
         super.onAdded();
 
         this.counter = this.getScene().addSystem(new EnemyCounter());
-        this.addComponent(new Timer(8000, undefined, true)).onTrigger.register(this.trigger.bind(this))
+        this.addComponent(new Timer(10000, undefined, true)).onTrigger.register(this.trigger.bind(this))
     }
 
     private trigger()
@@ -57,8 +57,13 @@ export class GameDirector extends Entity
             const enemyX = MathUtil.lengthDirX(enemyDist, enemyDir);
             const enemyY = MathUtil.lengthDirY(enemyDist, enemyDir);
 
+            let enemyValue = currValue - 2;
+
+            // Don't let the ships be too small.
+            if (enemyValue < 10) enemyValue = 10;
+
             Log.info("Spawning enemy at ", enemyX, enemyY);
-            this.getScene().addEntity(new Enemy(currValue,
+            this.getScene().addEntity(new Enemy(enemyValue,
                                                 player.transform.x + enemyX,
                                                 player.transform.y + enemyY));
         }
