@@ -191,7 +191,7 @@ enum LogLevel
 
 export class Log
 {
-    static logLevel: LogLevel = LogLevel.ALL;
+    static logLevel: LogLevel = LogLevel.NONE;
 
     static error(...msg: any[])
     {

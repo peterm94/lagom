@@ -1,4 +1,4 @@
-import {Entity, GUIEntity} from "../../../ECS/Entity";
+import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import introSpr from "../art/intro.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";

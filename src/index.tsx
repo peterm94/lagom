@@ -16,11 +16,13 @@ serviceWorker.unregister();
 
 const game = new HexGame();
 
+//    <Container fluid={true}>
+//         <Row>
+//             <Col><LagomGameComponent game={game}/></Col>
+//             {/*<Col><InspectorComponent game={game}/></Col>*/}
+//         </Row>
+//     </Container>,
+
 ReactDOM.render(
-    <Container fluid={true}>
-        <Row>
-            <Col><LagomGameComponent game={game}/></Col>
-            {/*<Col><InspectorComponent game={game}/></Col>*/}
-        </Row>
-    </Container>,
+    <LagomGameComponent game={game}/>,
     document.getElementById("root"));
