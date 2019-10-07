@@ -10,7 +10,7 @@ const introSheet = new SpriteSheet(introSpr, 1280, 720);
 export class Intro extends Entity
 {
     constructor() {
-        super("intro", -380, -100, DrawLayer.GUI)
+        super("intro", 0, 0, DrawLayer.GUI)
     }
 
     private sprite?: Sprite;
