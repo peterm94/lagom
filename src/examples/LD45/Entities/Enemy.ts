@@ -41,7 +41,7 @@ export class EnemyTag extends Component
     randomWhere()
     {
         const dir = MathUtil.degToRad(MathUtil.randomRange(0, 360));
-        const dist = MathUtil.randomRange(350, 700);
+        const dist = MathUtil.randomRange(300, 500);
         this.where = new Vector(MathUtil.lengthDirX(dist, dir), MathUtil.lengthDirY(dist, dir));
     }
 }
