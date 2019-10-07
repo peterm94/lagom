@@ -10,10 +10,9 @@ import {Movement, PlayerControlled} from "../Movement";
 import {DetectRigidbody} from "../../../DetectCollisions/DetectRigidbody";
 import {CircleCollider} from "../../../DetectCollisions/DetectColliders";
 import {ThrusterHex} from "./Thruster";
-import {StructureHex} from "./Structure";
 import {ShieldHex} from "./Shield";
 import {LaserTurretHex} from "./Turrets/LaserTurretHex";
-import {PlasmaCannonHex} from "./Turrets/PlasmaCannonHex";
+
 
 const playerSheet = new SpriteSheet(playerSpr, 32, 32);
 

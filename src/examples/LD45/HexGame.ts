@@ -74,7 +74,6 @@ class MainScene extends Scene
         this.addSystem(new EnemyAI());
         this.addSystem(new PlayerControls());
         this.addSystem(new Mover());
-        this.addSystem(new FollowCamera({centre: true, lerpSpeed: 0.8}));
         this.addSystem(new MoveWithPlayer());
         this.addSystem(new DetectCollisionSystem(collisionMatrix));
 
@@ -89,6 +88,8 @@ class MainScene extends Scene
         this.addSystem(new ClearMovement());
         this.addSystem(new TileMover());
         // this.addSystem(new OffScreenGarbageGuy());
+
+        this.addSystem(new FollowCamera({centre: true, lerpSpeed: 0.8}));
 
         this.addGlobalSystem(new ScreenShaker());
         this.addGlobalSystem(new TimerSystem());

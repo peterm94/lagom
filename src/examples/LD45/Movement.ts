@@ -5,13 +5,12 @@ import {hexToWorld} from "./Hexagons/HexUtil";
 import {System} from "../../ECS/System";
 import {LagomType} from "../../ECS/LifecycleObject";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
-import {Log, MathUtil} from "../../Common/Util";
-import {FollowCamera} from "../../Common/CameraUtil";
+import {MathUtil} from "../../Common/Util";
 import {Game} from "../../ECS/Game";
 import {Key} from "../../Input/Key";
 import {Button} from "../../Input/Button";
 import {Vector} from "../../LagomPhysics/Physics";
-
+import {TextDisp} from "../../Common/PIXIComponents";
 
 export class PlayerControlled extends Component
 {
@@ -94,6 +93,16 @@ export class Movement extends Component
         this.aimX = point.x;
         this.aimY = point.y;
     }
+
+    xVel = 0;
+    yVel = 0;
+    angVel = 0;
+    readonly angDrag = 0.0002;
+    readonly linDrag = 0.0005;
+    readonly linCap = 3;
+    readonly angCap = 1;
+    readonly angSpeed = 0.00001;
+    readonly linSpeed = 0.001;
 }
 
 export class Mover extends System
@@ -102,10 +111,37 @@ export class Mover extends System
 
     update(delta: number)
     {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody, movement: Movement) => {
-            body.move(movement.x, movement.y);
-            entity.transform.rotation += movement.rotation;
-        })
+        this.runOnEntities((entity: Entity, body: DetectRigidbody, movement: Movement, txt: TextDisp) => {
+
+            // apply drag to existing motion
+            movement.xVel -= movement.xVel * movement.linDrag * delta;
+            movement.yVel -= movement.yVel * movement.linDrag * delta;
+            movement.angVel -= movement.angVel * movement.angDrag * delta;
+
+            const xMov = Math.sign(movement.x);
+            const yMov = Math.sign(movement.y);
+            const angMov = Math.sign(movement.rotation);
+
+            if (xMov)
+            {
+                movement.xVel = MathUtil.clamp(movement.xVel + (xMov * movement.linSpeed * delta),
+                                               -movement.linCap, movement.linCap);
+            }
+            if (yMov)
+            {
+                movement.yVel = MathUtil.clamp(movement.yVel + (yMov * movement.linSpeed * delta),
+                                               -movement.linCap, movement.linCap);
+            }
+
+            if (angMov)
+            {
+                movement.angVel = MathUtil.clamp(movement.angVel + (angMov * movement.angSpeed * delta),
+                                                 -movement.angCap, movement.angCap);
+            }
+
+            body.move(movement.xVel, movement.yVel);
+            entity.transform.rotation += movement.angVel;
+        });
     }
 }
 
@@ -161,12 +197,10 @@ export class PlayerControls extends System
             if (Game.keyboard.isKeyDown(Key.KeyQ))
             {
                 movement.rotate(-this.rotSpeed * delta);
-                // body.move(0, this.moveSpeed * delta);
             }
             if (Game.keyboard.isKeyDown(Key.KeyE))
             {
                 movement.rotate(this.rotSpeed * delta);
-                // body.move(0, this.moveSpeed * delta);
             }
 
             // Mouse aim
