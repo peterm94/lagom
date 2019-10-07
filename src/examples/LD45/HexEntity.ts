@@ -13,6 +13,8 @@ import {ScreenShake} from "../../Common/Screenshake";
 import {System} from "../../ECS/System";
 import {Observer} from "../../Common/Observer";
 import {RenderCircle} from "../../Common/PIXIComponents";
+import {PlayerHex} from "./Entities/Player";
+import {GameOver} from "./Entities/GameOver";
 
 export class HexRegister extends Component
 {
@@ -218,6 +220,12 @@ export class DamageSystem extends System
 
             if (hp.hp <= 0)
             {
+                if (entity.name === "player")
+                {
+                    // End the game.
+                    this.getScene().addEntity(new GameOver(entity.transform.x, entity.transform.y));
+                }
+
                 this.entity.addComponent(new ScreenShake(0.8, 80));
                 entity.destroy();
             }
