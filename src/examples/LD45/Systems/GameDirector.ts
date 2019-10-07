@@ -23,7 +23,7 @@ export class GameDirector extends Entity
         super.onAdded();
 
         this.counter = this.getScene().addSystem(new EnemyCounter());
-        this.addComponent(new Timer(5000, undefined, true)).onTrigger.register(this.trigger.bind(this))
+        this.addComponent(new Timer(8000, undefined, true)).onTrigger.register(this.trigger.bind(this))
     }
 
     private trigger()
