@@ -74,11 +74,11 @@ export class EnemyMarker extends Component
 
 export class Enemy extends Entity
 {
-    public static purpleAlien = new AnimatedSprite(
+    public static purpleAlien = () => new AnimatedSprite(
         purpleAlienSheet.textures([[0, 0], [1, 0], [2, 0]]),
         {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 250});
 
-    public static greenAlien = new AnimatedSprite(
+    public static greenAlien = () => new AnimatedSprite(
         greenAlienSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0]]),
         {xAnchor: 0.5, yAnchor: 0.5, animationEndAction: AnimationEnd.LOOP, animationSpeed: 250});
 
@@ -88,7 +88,7 @@ export class Enemy extends Entity
     {
         super("enemy", x, y, DrawLayer.BLOCK);
         this.layer = Layers.ENEMY;
-        this.sprite = Util.choose(Enemy.purpleAlien, Enemy.greenAlien);
+        this.sprite = Util.choose(Enemy.purpleAlien, Enemy.greenAlien)();
     }
 
     makeTimer(caller: Timer<EnemyTag>, data: EnemyTag)

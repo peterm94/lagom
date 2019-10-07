@@ -1,8 +1,5 @@
-import {Damage, HexEntity, HexRegister} from "../HexEntity";
-import {Hex} from "../Hexagons/Hex";
-import {Sprite} from "../../../Common/Sprite/Sprite";
-import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
-import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
+import {Damage, HexEntity} from "../HexEntity";
+import {AnimatedSprite} from "../../../Common/Sprite/AnimatedSprite";
 import {System} from "../../../ECS/System";
 import {Component} from "../../../ECS/Component";
 import {ConstantMotion, Movement} from "../Movement";
@@ -11,7 +8,6 @@ import {MathUtil} from "../../../Common/Util";
 import {DrawLayer, Layers} from "../HexGame";
 import {DetectRigidbody} from "../../../DetectCollisions/DetectRigidbody";
 import {CircleCollider, DetectCollider} from "../../../DetectCollisions/DetectColliders";
-import {Garbage} from "../Systems/OffScreenGarbageGuy";
 import {Result} from "detect-collisions";
 import {Timer} from "../../../Common/Timer";
 import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteController";
@@ -139,7 +135,7 @@ export class Bullet extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new Timer(5000, undefined)).onTrigger.register(caller => {
+        this.addComponent(new Timer(6000, undefined)).onTrigger.register(caller => {
             caller.getEntity().destroy()
         });
         this.addComponent(this.sprite);

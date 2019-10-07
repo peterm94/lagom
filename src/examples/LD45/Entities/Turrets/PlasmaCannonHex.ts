@@ -16,14 +16,14 @@ const turretBulletSheet = new SpriteSheet(turretBulletSpr, 32, 32);
 
 export class PlasmaCannonHex extends HexEntity
 {
-    public static idleSprites = turretSheet.textureSliceFromRow(0, 0, 4);
+    public static idleSprites = () => turretSheet.textureSliceFromRow(0, 0, 4);
     public static idleFrameSpeed = 240;
-    public static shootingSprites = turretSheet.textureSliceFromRow(0, 5, 23);
+    public static shootingSprites = () => turretSheet.textureSliceFromRow(0, 5, 23);
     public static shootingFrameSpeed = 48;
-    public static shootingTime = PlasmaCannonHex.shootingSprites.length * PlasmaCannonHex.shootingFrameSpeed;
-    public static cooldownSprites = turretSheet.textureSliceFromRow(0, 23, 28);
+    public static shootingTime = PlasmaCannonHex.shootingSprites().length * PlasmaCannonHex.shootingFrameSpeed;
+    public static cooldownSprites = () => turretSheet.textureSliceFromRow(0, 23, 28);
     public static cooldownFrameSpeed = 48;
-    public static cooldownTime = PlasmaCannonHex.cooldownSprites.length * PlasmaCannonHex.cooldownFrameSpeed;
+    public static cooldownTime = PlasmaCannonHex.cooldownSprites().length * PlasmaCannonHex.cooldownFrameSpeed;
 
     constructor(public owner: HexRegister, public hex: Hex)
     {
@@ -48,17 +48,17 @@ export class PlasmaCannonHex extends HexEntity
         this.addComponent(new AnimatedSpriteController(0, [
             {
                 id: TurretAnimationStates.OFF,
-                textures: PlasmaCannonHex.idleSprites,
+                textures: PlasmaCannonHex.idleSprites(),
                 config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: PlasmaCannonHex.idleFrameSpeed}
             },
             {
                 id: TurretAnimationStates.SHOOTING,
-                textures: PlasmaCannonHex.shootingSprites,
+                textures: PlasmaCannonHex.shootingSprites(),
                 config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: PlasmaCannonHex.shootingFrameSpeed}
             },
             {
                 id: TurretAnimationStates.COOLING,
-                textures: PlasmaCannonHex.cooldownSprites,
+                textures: PlasmaCannonHex.cooldownSprites(),
                 config: {xAnchor: 0.5, yAnchor: 0.5, animationSpeed: PlasmaCannonHex.cooldownFrameSpeed}
             }]));
 
