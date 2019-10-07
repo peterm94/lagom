@@ -27,7 +27,7 @@ export class PlasmaCannonHex extends HexEntity
 
     constructor(public owner: HexRegister, public hex: Hex)
     {
-        super("plasmaCannon", owner, hex, 6);
+        super("plasmaCannon", owner, hex, 15);
     }
 
     onAdded()

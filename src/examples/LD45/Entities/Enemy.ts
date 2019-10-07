@@ -30,6 +30,7 @@ const enemyMarkerSheet = new SpriteSheet(markerSpr, 32, 32);
 
 export class EnemyTag extends Component
 {
+    canShoot = true;
     where: Vector = Vector.zero();
 
     constructor()
