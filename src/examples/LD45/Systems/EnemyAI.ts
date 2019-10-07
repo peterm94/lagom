@@ -44,7 +44,7 @@ export class EnemyAI extends System
                 movement.move(x * delta * this.moveSpeed, y * delta * this.moveSpeed);
             }
             // rotate towards player
-            entity.transform.rotation = MathUtil.angleLerp(entity.transform.rotation, playerDir, 0.1 * delta);
+            entity.transform.rotation = MathUtil.angleLerp(entity.transform.rotation, -playerDir, 0.1 * delta/1000);
         });
     }
 
