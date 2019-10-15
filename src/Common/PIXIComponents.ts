@@ -17,7 +17,7 @@ export abstract class PIXIGraphicsComponent extends PIXIComponent<PIXI.Graphics>
     static readonly defaultLine = 0xFF3300;
     static readonly defaultFill = null;
 
-    constructor(drawFunc : Function, fillColour: number | null, lineColour: number)
+    constructor(fillColour: number | null, lineColour: number)
     {
         super(new PIXI.Graphics());
 
@@ -26,8 +26,6 @@ export abstract class PIXIGraphicsComponent extends PIXIComponent<PIXI.Graphics>
         {
             this.pixiObj.beginFill(fillColour);
         }
-
-        drawFunc(this.pixiObj);
     }
 }
 
@@ -39,9 +37,9 @@ export class RenderCircle extends PIXIGraphicsComponent
                 fillColour: number | null = PIXIGraphicsComponent.defaultFill,
                 lineColour: number = PIXIGraphicsComponent.defaultLine)
     {
-        super((pixi: PIXI.Graphics) => { pixi.drawCircle(xOff, yOff, radius)},
-              fillColour,
+        super(fillColour,
               lineColour);
+        this.pixiObj.drawCircle(xOff, yOff, radius);
     }
 }
 
@@ -54,9 +52,9 @@ export class RenderRect extends PIXIGraphicsComponent
                 fillColour: number | null = PIXIGraphicsComponent.defaultFill,
                 lineColour: number = PIXIGraphicsComponent.defaultLine)
     {
-        super((pixi: PIXI.Graphics) => { pixi.drawRect(xOff, yOff, width, height)},
-              fillColour,
+        super(fillColour,
               lineColour);
+        this.pixiObj.drawRect(xOff, yOff, width, height)
     }
 }
 
@@ -66,8 +64,8 @@ export class RenderPoly extends PIXIGraphicsComponent
                 fillColour: number | null = PIXIGraphicsComponent.defaultFill,
                 lineColour: number = PIXIGraphicsComponent.defaultLine)
     {
-        super((pixi: PIXI.Graphics) => { pixi.drawPolygon(points)},
-              fillColour,
+        super(fillColour,
               lineColour);
+        this.pixiObj.drawPolygon(points)
     }
 }
