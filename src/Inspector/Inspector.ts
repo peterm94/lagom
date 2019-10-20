@@ -24,8 +24,7 @@ export class Inspector extends GlobalSystem
 
     update(delta: number): void
     {
-        this.entities = this.getScene().entities.map(
-            entity => entity.name);
+        this.entities = this.getScene().entities.map(entity => entity.name);
 
         if (this.inspectingEntity)
         {
