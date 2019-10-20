@@ -32,12 +32,13 @@ export class DetectDemo extends Game
 {
     constructor()
     {
-        super(() => new DetectDemoScene(),
-              {width: 512, height: 512, resolution: 1, backgroundColor: 0xe0c723}, loader);
+        super({width: 512, height: 512, resolution: 1, backgroundColor: 0xe0c723}, loader);
 
         loader.add([spr_block]).load(() => {
-            this.start();
-        })
+            // TODO this is probably broken
+        });
+
+        this.setScene(new DetectDemoScene(this));
     }
 }
 

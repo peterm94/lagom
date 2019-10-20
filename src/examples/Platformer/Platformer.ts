@@ -41,13 +41,15 @@ export class Platformer extends Game
 {
     constructor()
     {
-        super(() => new MainScene(), {
+        super( {
             width: 256,
             height: 128,
             resolution: 4,
             backgroundColor: 0xad58ac,
             antialias: false
         });
+
+        this.setScene(new MainScene(this));
 
         collisionMatrix.addCollision(Layers.PLAYER, Layers.SOLIDS);
         collisionMatrix.addCollision(Layers.ENEMY, Layers.SOLIDS);

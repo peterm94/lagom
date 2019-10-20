@@ -56,7 +56,8 @@ export class Downshaft extends Game
 {
     constructor()
     {
-        super(() => new MainScene(), {width: 512, height: 512, resolution: 1.5, backgroundColor: 0x0b1224});
+        super({width: 512, height: 512, resolution: 1.5, backgroundColor: 0x0b1224});
+        this.setScene(new MainScene(this));
     }
 }
 
@@ -97,6 +98,15 @@ class MainScene extends Scene
         matrix.addCollision(Layers.Enemy, Layers.Bullet);
         matrix.addCollision(Layers.Enemy, Layers.Player);
 
+        this.addSystem(new PlayerMover());
+        this.addSystem(new VerticalFollowCamera());
+        this.addSystem(new DetectCollisionSystem(matrix, 2));
+        this.addSystem(new SimpleGravity());
+        this.addSystem(new BulletMover());
+        this.addSystem(new BulletShooter());
+        this.addGlobalSystem(new FrameTriggerSystem());
+        this.addGlobalSystem(new TimerSystem());
+
         this.addEntity(new Diagnostics("cyan", 10));
 
         this.addEntity(new Player(64, topY - 32));
@@ -106,15 +116,6 @@ class MainScene extends Scene
 
         // Add the end trigger
         this.addEntity(new NextLevelTrigger(leftWallX, topY + gameHeight * 32));
-
-        this.addSystem(new PlayerMover());
-        this.addSystem(new VerticalFollowCamera());
-        this.addSystem(new DetectCollisionSystem(matrix, 2));
-        this.addSystem(new SimpleGravity());
-        this.addSystem(new BulletMover());
-        this.addSystem(new BulletShooter());
-        this.addGlobalSystem(new FrameTriggerSystem());
-        this.addGlobalSystem(new TimerSystem());
     }
 
     private createLevel()
@@ -197,7 +198,7 @@ class NextLevelTrigger extends Entity
         const trigger = this.addComponent(new RectCollider(0, 0, 288, 32, Layers.EndTrigger, 0, true));
         trigger.onTriggerEnter.register((caller, data) => {
             // Restart the level
-            this.getScene().getGame().setScene(() => new MainScene());
+            this.getScene().getGame().setScene(new MainScene(this.getScene().getGame()));
         });
     }
 }

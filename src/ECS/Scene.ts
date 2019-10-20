@@ -7,7 +7,7 @@ import {Observable} from "../Common/Observer";
 import {Game} from "./Game";
 import {LagomType} from "./LifecycleObject";
 import {Camera} from "../Common/Camera";
-import {Util} from "../Common/Util";
+import {Log, Util} from "../Common/Util";
 
 /**
  * Scene object type. Should be the main interface used for games using the framework.
@@ -27,17 +27,15 @@ export class Scene extends LifecycleObject implements Updatable
     // GUI top level node. This node should not be offset, allowing for static GUI elements.
     readonly guiNode: PIXI.Container;
 
-    game!: Game;
-
     // TODO can these be sets? need unique, but update order needs to be defined :/ i need a comparator for each
     // type that can define it's order.
     readonly entities: Entity[] = [];
     readonly systems: System[] = [];
     readonly globalSystems: GlobalSystem[] = [];
 
-    camera!: Camera;
+    readonly camera: Camera;
 
-    constructor()
+    constructor(readonly game: Game)
     {
         super();
         this.pixiStage = Util.sortedContainer();
@@ -48,11 +46,7 @@ export class Scene extends LifecycleObject implements Updatable
         this.guiNode = Util.sortedContainer();
         this.guiNode.name = "gui";
         this.pixiStage.addChild(this.sceneNode, this.guiNode);
-    }
 
-    onAdded()
-    {
-        super.onAdded();
         this.camera = new Camera(this);
     }
 
@@ -60,9 +54,6 @@ export class Scene extends LifecycleObject implements Updatable
     {
         // Update global systems
         this.globalSystems.forEach(system => system.update(delta));
-
-        // Resolve updates for entities
-        // this.entities.forEach(entity => entity.update(delta));
 
         // Update normal systems
         this.systems.forEach(system => system.update(delta));
@@ -72,9 +63,6 @@ export class Scene extends LifecycleObject implements Updatable
     {
         // Update global systems
         this.globalSystems.forEach(system => system.fixedUpdate(delta));
-
-        // Resolve updates for entities
-        // this.entities.forEach(entity => entity.fixedUpdate(delta));
 
         // Update normal systems
         this.systems.forEach(system => system.fixedUpdate(delta));
@@ -87,19 +75,12 @@ export class Scene extends LifecycleObject implements Updatable
      */
     addSystem<T extends System>(system: T): T
     {
-        // TODO remove this function
-        system.setParent(this);
-        // this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
-        return system;
-    }
-
-    addSystem2<T extends System>(creator: () => T): T
-    {
-        const system = creator();
         system.parent = this;
 
         this.systems.push(system);
         system.addedToScene(this);
+
+        system.onAdded();
 
         return system;
     }
@@ -111,19 +92,12 @@ export class Scene extends LifecycleObject implements Updatable
      */
     addGlobalSystem<T extends GlobalSystem>(system: T): T
     {
-        // TODO remove this function
-        system.setParent(this);
-        // this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
-        return system;
-    }
-
-    addGlobalSystem2<T extends GlobalSystem>(creator: () => T): T
-    {
-        const system = creator();
         system.parent = this;
 
         this.globalSystems.push(system);
         system.addedToScene(this);
+
+        system.onAdded();
 
         return system;
     }
@@ -135,15 +109,7 @@ export class Scene extends LifecycleObject implements Updatable
      */
     addEntity<T extends Entity>(entity: T): T
     {
-        // TODO remove this function
-        entity.setParent(this);
-        // this.toUpdate.push({state: ObjectState.PENDING_ADD, object: entity});
-        return entity;
-    }
-
-    addEntity2<T extends Entity>(creator: () => T): T
-    {
-        const entity = creator();
+        Log.debug("Adding entity to scene.", entity);
         entity.parent = this;
 
         this.entities.push(entity);
@@ -151,6 +117,8 @@ export class Scene extends LifecycleObject implements Updatable
 
         // Add this PIXI container under the correct root node.
         entity.rootNode().addChild(entity.transform);
+
+        entity.onAdded();
 
         return entity;
     }

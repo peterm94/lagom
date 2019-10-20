@@ -51,23 +51,13 @@ export class Entity extends LifecycleObject
      */
     addComponent<T extends Component>(component: T): T
     {
-        // TODO remove completely
-        // component.setParent(this);
-        // this.toUpdate.push({state: ObjectState.PENDING_ADD, object: component});
-        // return component;
-        return null as any;
-    }
-
-    addComponent2<T extends Component>(creator: () => T): T
-    {
-
-        // Create the component and add the reference to the parent Entity.
-        const component = creator();
         component.parent = this;
 
         // Add to the entity component list
         this.components.push(component);
         this.componentAddedEvent.trigger(this, component);
+
+        component.onAdded();
 
         return component;
     }
@@ -99,7 +89,7 @@ export class Entity extends LifecycleObject
         else if (creator)
         {
             // TODO this won't be added in time? may cause quirks.
-            return this.addComponent2(creator) as T;
+            return this.addComponent(creator()) as T;
         }
         else
         {

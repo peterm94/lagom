@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import {LifecycleObject, ObjectState} from "./LifecycleObject";
 import {Scene} from "./Scene";
+import {Log} from "../Common/Util";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
 // keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
@@ -90,7 +91,7 @@ export class Game
      * @param initialSceneCreator Creator for the first scene to load.
      * @param options Options for the PIXI Renderer.
      */
-    constructor(initialSceneCreator: () => Scene, options?: {
+    constructor(options?: {
         width?: number;
         height?: number;
         view?: HTMLCanvasElement;
@@ -106,13 +107,8 @@ export class Game
         context?: any;
     }, private readonly loader?: PIXI.Loader)
     {
-        this.setScene(initialSceneCreator);
-
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
-
-        // If we just want to run it raw, we can enable this again.
-        // document.body.appendChild(this.renderer.view);
     }
 
     /**
@@ -120,6 +116,10 @@ export class Game
      */
     start()
     {
+        if (this.currentScene == null)
+        {
+            throw new Error("Ensure a scene is set before starting the game.");
+        }
         // TODO remove this whole concept and do it like the platformer does.
         // If we need to load additional resources, do that.
         if (this.loader)
@@ -136,6 +136,8 @@ export class Game
 
     private startInternal()
     {
+        Log.info("Game started.");
+
         // Start the update loop
         this.lastFrameTime = Date.now();
         this.updateLoop()
@@ -159,14 +161,15 @@ export class Game
 
     /**
      * Set a scene to load. Will be started instantly.
-     * @param creator Function that will return the Scene to load.
+     * @param scene The Scene to load.
      */
-    setScene<T extends Scene>(creator: () => T) : T
+    setScene<T extends Scene>(scene: T): T
     {
         // TODO clean up old scene?
-        const scene = creator();
-        scene.game = this;
         this.currentScene = scene;
+
+        Log.debug("Setting scene for game.", scene);
+        scene.onAdded();
         return scene;
     }
 }

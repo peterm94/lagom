@@ -33,20 +33,21 @@ export class Asteroids extends Game
 {
     constructor()
     {
-        super(() => new AsteroidsScene(), {
-            width: 512,
-            height: 512,
-            resolution: 1,
-            backgroundColor: 0x200140
-        }, loader);
+        super({
+                  width: 512,
+                  height: 512,
+                  resolution: 1,
+                  backgroundColor: 0x200140
+              }, loader);
         loader.add([spr_asteroid,
                     spr_asteroid2,
                     spr_asteroid3,
                     spr_ship,
                     spr_bullet]).load(() => {
-
-            this.start();
+            // TODO this is probably broken.
         });
+
+        this.setScene(new AsteroidsScene(this));
     }
 }
 
