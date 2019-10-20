@@ -21,25 +21,37 @@ const Keyboard = require('pixi.js-keyboard');
 
 const loader = new PIXI.Loader();
 
-export class Asteroids extends Scene
+enum Layers
+{
+    Default,
+    Bullet,
+    Ship,
+    Asteroid
+}
+
+export class Asteroids extends Game
 {
     constructor()
     {
-        super();
-
-        const game = new Game(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0x200140});
-
+        super(() => new AsteroidsScene(), {
+            width: 512,
+            height: 512,
+            resolution: 1,
+            backgroundColor: 0x200140
+        }, loader);
         loader.add([spr_asteroid,
                     spr_asteroid2,
                     spr_asteroid3,
                     spr_ship,
                     spr_bullet]).load(() => {
 
-            game.start();
+            this.start();
         });
     }
+}
 
-
+class AsteroidsScene extends Scene
+{
     onAdded()
     {
         super.onAdded();
@@ -95,14 +107,6 @@ class Ship extends Entity
         body.xDrag = 0.010;
         body.yDrag = 0.010;
     }
-}
-
-enum Layers
-{
-    Default,
-    Bullet,
-    Ship,
-    Asteroid
 }
 
 class Asteroid extends Entity
@@ -264,7 +268,7 @@ class AsteroidSplitter extends System
     {
         this.runOnEntities((entity: Entity) => {
 
-            const currSize = (<Asteroid>entity).size;
+            const currSize = (entity as Asteroid).size;
 
             if (currSize > 1)
             {

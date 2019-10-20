@@ -41,7 +41,7 @@ export class Platformer extends Game
 {
     constructor()
     {
-        super(new MainScene(), {
+        super(() => new MainScene(), {
             width: 256,
             height: 128,
             resolution: 4,

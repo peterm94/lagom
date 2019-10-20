@@ -40,7 +40,7 @@ export class MatterAsteroids extends Game
 {
     constructor()
     {
-        super(new MainScene(), {width: 512, height: 512, resolution: 1, backgroundColor: 0x200140} , loader);
+        super(() => new MainScene(), {width: 512, height: 512, resolution: 1, backgroundColor: 0x200140}, loader);
     }
 }
 

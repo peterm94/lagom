@@ -56,7 +56,7 @@ export class Downshaft extends Game
 {
     constructor()
     {
-        super(new MainScene(), {width: 512, height: 512, resolution: 1.5, backgroundColor: 0x0b1224});
+        super(() => new MainScene(), {width: 512, height: 512, resolution: 1.5, backgroundColor: 0x0b1224});
     }
 }
 
@@ -197,7 +197,7 @@ class NextLevelTrigger extends Entity
         const trigger = this.addComponent(new RectCollider(0, 0, 288, 32, Layers.EndTrigger, 0, true));
         trigger.onTriggerEnter.register((caller, data) => {
             // Restart the level
-            this.getScene().getGame().setScene(new MainScene());
+            this.getScene().getGame().setScene(() => new MainScene());
         });
     }
 }
