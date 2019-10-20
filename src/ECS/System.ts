@@ -96,13 +96,8 @@ export abstract class System extends LifecycleObject implements Updatable
         this.runOn.delete(entity);
     }
 
-    onAdded()
+    addedToScene(scene: Scene)
     {
-        super.onAdded();
-
-        const scene = this.getScene();
-        scene.systems.push(this);
-
         scene.entityAddedEvent.register(this.onEntityAdded.bind(this));
         scene.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
 

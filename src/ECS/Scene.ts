@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import {ContainerLifecycleObject, ObjectState, Updatable} from "./LifecycleObject";
+import {LifecycleObject, Updatable} from "./LifecycleObject";
 import {Entity} from "./Entity";
 import {System} from "./System";
 import {GlobalSystem} from "./GlobalSystem";
@@ -12,7 +12,7 @@ import {Util} from "../Common/Util";
 /**
  * Scene object type. Should be the main interface used for games using the framework.
  */
-export class Scene extends ContainerLifecycleObject implements Updatable
+export class Scene extends LifecycleObject implements Updatable
 {
     // Some fancy entity events for anything that cares.
     readonly entityAddedEvent: Observable<Scene, Entity> = new Observable();
@@ -26,6 +26,8 @@ export class Scene extends ContainerLifecycleObject implements Updatable
 
     // GUI top level node. This node should not be offset, allowing for static GUI elements.
     readonly guiNode: PIXI.Container;
+
+    game!: Game;
 
     // TODO can these be sets? need unique, but update order needs to be defined :/ i need a comparator for each
     // type that can define it's order.
@@ -56,13 +58,11 @@ export class Scene extends ContainerLifecycleObject implements Updatable
 
     update(delta: number): void
     {
-        super.update(delta);
-
         // Update global systems
         this.globalSystems.forEach(system => system.update(delta));
 
         // Resolve updates for entities
-        this.entities.forEach(entity => entity.update(delta));
+        // this.entities.forEach(entity => entity.update(delta));
 
         // Update normal systems
         this.systems.forEach(system => system.update(delta));
@@ -70,13 +70,11 @@ export class Scene extends ContainerLifecycleObject implements Updatable
 
     fixedUpdate(delta: number): void
     {
-        super.fixedUpdate(delta);
-
         // Update global systems
         this.globalSystems.forEach(system => system.fixedUpdate(delta));
 
         // Resolve updates for entities
-        this.entities.forEach(entity => entity.fixedUpdate(delta));
+        // this.entities.forEach(entity => entity.fixedUpdate(delta));
 
         // Update normal systems
         this.systems.forEach(system => system.fixedUpdate(delta));
@@ -89,8 +87,20 @@ export class Scene extends ContainerLifecycleObject implements Updatable
      */
     addSystem<T extends System>(system: T): T
     {
+        // TODO remove this function
         system.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
+        // this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
+        return system;
+    }
+
+    addSystem2<T extends System>(creator: () => T): T
+    {
+        const system = creator();
+        system.parent = this;
+
+        this.systems.push(system);
+        system.addedToScene(this);
+
         return system;
     }
 
@@ -101,8 +111,20 @@ export class Scene extends ContainerLifecycleObject implements Updatable
      */
     addGlobalSystem<T extends GlobalSystem>(system: T): T
     {
+        // TODO remove this function
         system.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
+        // this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
+        return system;
+    }
+
+    addGlobalSystem2<T extends GlobalSystem>(creator: () => T): T
+    {
+        const system = creator();
+        system.parent = this;
+
+        this.globalSystems.push(system);
+        system.addedToScene(this);
+
         return system;
     }
 
@@ -113,8 +135,23 @@ export class Scene extends ContainerLifecycleObject implements Updatable
      */
     addEntity<T extends Entity>(entity: T): T
     {
+        // TODO remove this function
         entity.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: entity});
+        // this.toUpdate.push({state: ObjectState.PENDING_ADD, object: entity});
+        return entity;
+    }
+
+    addEntity2<T extends Entity>(creator: () => T): T
+    {
+        const entity = creator();
+        entity.parent = this;
+
+        this.entities.push(entity);
+        this.entityAddedEvent.trigger(this, entity);
+
+        // Add this PIXI container under the correct root node.
+        entity.rootNode().addChild(entity.transform);
+
         return entity;
     }
 
@@ -158,6 +195,6 @@ export class Scene extends ContainerLifecycleObject implements Updatable
      */
     getGame(): Game
     {
-        return this.getParent() as Game;
+        return this.game;
     }
 }

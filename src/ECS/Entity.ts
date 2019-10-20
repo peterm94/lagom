@@ -2,13 +2,13 @@ import {Observable} from "../Common/Observer";
 import * as PIXI from "pixi.js";
 import {Log, Util} from "../Common/Util";
 import {Component} from "./Component";
-import {LagomType, ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
+import {LagomType, LifecycleObject, ObjectState} from "./LifecycleObject";
 import {Scene} from "./Scene";
 
 /**
  * Entity base class. Raw entities can be used or subclasses can be defined similarly to prefabs.
  */
-export class Entity extends ContainerLifecycleObject
+export class Entity extends LifecycleObject
 {
     set depth(value: number)
     {
@@ -51,8 +51,24 @@ export class Entity extends ContainerLifecycleObject
      */
     addComponent<T extends Component>(component: T): T
     {
-        component.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: component});
+        // TODO remove completely
+        // component.setParent(this);
+        // this.toUpdate.push({state: ObjectState.PENDING_ADD, object: component});
+        // return component;
+        return null as any;
+    }
+
+    addComponent2<T extends Component>(creator: () => T): T
+    {
+
+        // Create the component and add the reference to the parent Entity.
+        const component = creator();
+        component.parent = this;
+
+        // Add to the entity component list
+        this.components.push(component);
+        this.componentAddedEvent.trigger(this, component);
+
         return component;
     }
 
@@ -83,7 +99,7 @@ export class Entity extends ContainerLifecycleObject
         else if (creator)
         {
             // TODO this won't be added in time? may cause quirks.
-            return this.addComponent(creator()) as T;
+            return this.addComponent2(creator) as T;
         }
         else
         {
@@ -94,14 +110,6 @@ export class Entity extends ContainerLifecycleObject
     onAdded()
     {
         super.onAdded();
-
-        // Add to the scene
-        const scene = this.getScene();
-        scene.entities.push(this);
-        scene.entityAddedEvent.trigger(scene, this);
-
-        // Add this PIXI container
-        this.rootNode().addChild(this.transform);
     }
 
     onRemoved()
@@ -124,10 +132,11 @@ export class Entity extends ContainerLifecycleObject
 
         // Take any components with us
         this.components.forEach((val) => val.destroy());
-        this.getScene().toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
+        // TODO handle destruction of THIS
     }
 
-    protected rootNode(): PIXI.Container
+    // TODO package private?
+    rootNode(): PIXI.Container
     {
         return this.getScene().sceneNode;
     }
@@ -145,7 +154,7 @@ export class Entity extends ContainerLifecycleObject
  */
 export class GUIEntity extends Entity
 {
-    protected rootNode(): PIXI.Container
+    rootNode(): PIXI.Container
     {
         return this.getScene().guiNode;
     }

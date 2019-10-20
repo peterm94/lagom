@@ -1,5 +1,5 @@
 import * as PIXI from "pixi.js";
-import {ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
+import {LifecycleObject, ObjectState} from "./LifecycleObject";
 import {Scene} from "./Scene";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
@@ -20,7 +20,7 @@ class Diag
 /**
  * Game class, containing all high level framework references. Sets up the render window and controls updating the ECS.
  */
-export class Game extends ContainerLifecycleObject
+export class Game
 {
     static mouse = Mouse;
     static keyboard = Keyboard;
@@ -63,7 +63,7 @@ export class Game extends ContainerLifecycleObject
             while (this.elapsedSinceUpdate >= this.fixedDeltaMS)
             {
                 // call FixedUpdate() for the ECS
-                this.fixedUpdate(this.fixedDeltaMS);
+                this.fixedUpdateInternal(this.fixedDeltaMS);
 
                 this.elapsedSinceUpdate -= this.fixedDeltaMS;
                 this.timeMs += this.fixedDeltaMS;
@@ -71,7 +71,7 @@ export class Game extends ContainerLifecycleObject
             this.diag.fixedUpdateTime = Date.now() - now;
             // Call update() for the ECS
             now = Date.now();
-            this.update(this.deltaTime);
+            this.updateInternal(this.deltaTime);
             this.diag.updateTime = Date.now() - now;
 
             now = Date.now();
@@ -87,10 +87,10 @@ export class Game extends ContainerLifecycleObject
 
     /**
      * Create a new Game.
-     * @param scene The first scene to load.
+     * @param initialSceneCreator Creator for the first scene to load.
      * @param options Options for the PIXI Renderer.
      */
-    constructor(scene: Scene, options?: {
+    constructor(initialSceneCreator: () => Scene, options?: {
         width?: number;
         height?: number;
         view?: HTMLCanvasElement;
@@ -106,9 +106,7 @@ export class Game extends ContainerLifecycleObject
         context?: any;
     }, private readonly loader?: PIXI.Loader)
     {
-        super();
-
-        this.setScene(scene);
+        this.setScene(initialSceneCreator);
 
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
@@ -143,35 +141,32 @@ export class Game extends ContainerLifecycleObject
         this.updateLoop()
     }
 
-    update(delta: number): void
+    private updateInternal(delta: number): void
     {
-        super.update(delta);
-
         this.currentScene.update(delta);
 
         // TODO this is fine here, but we should document it. If something in fixedUpdate() is looking for keyboard
         //  events it is going to have a bad time.
+        // TODO put this in a system? in scene itself?
         Game.keyboard.update();
         Game.mouse.update();
     }
 
-    fixedUpdate(delta: number): void
+    private fixedUpdateInternal(delta: number): void
     {
-        super.fixedUpdate(delta);
-
         this.currentScene.fixedUpdate(delta);
     }
 
     /**
      * Set a scene to load. Will be started instantly.
-     * @param scene The Scene to load.
+     * @param creator Function that will return the Scene to load.
      */
-    setScene(scene: Scene)
+    setScene<T extends Scene>(creator: () => T) : T
     {
-        scene.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: scene});
+        // TODO clean up old scene?
+        const scene = creator();
+        scene.game = this;
         this.currentScene = scene;
-
-        // TODO what happens to the old scene?
+        return scene;
     }
 }

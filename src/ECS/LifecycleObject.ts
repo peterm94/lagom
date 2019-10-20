@@ -15,7 +15,7 @@ export enum ObjectState
  */
 export abstract class LifecycleObject
 {
-    parent: LifecycleObject | null = null;
+    parent!: LifecycleObject;
 
     /**
      * Set the parent for this object.
@@ -69,49 +69,6 @@ export abstract class LifecycleObject
  * Type for internal ECS updates.
  */
 export type PendingUpdate = { state: ObjectState, object: LifecycleObject }
-
-
-/**
- * Lifecycle object that can contain other objects. Used to keep the ECS hierarchy updated correctly.
- */
-export abstract class ContainerLifecycleObject extends LifecycleObject implements Updatable
-{
-    toUpdate: PendingUpdate[] = [];
-
-    update(delta: number): void
-    {
-        // Copy the pending map make a new one, allowing it to be used for the next frame.
-        const pending = this.toUpdate;
-        this.toUpdate = [];
-
-        for (let item of pending)
-        {
-            Log.debug(item);
-
-            switch (item.state)
-            {
-                case ObjectState.PENDING_REMOVE:
-                {
-                    item.object.onRemoved();
-                    break;
-                }
-                case ObjectState.PENDING_ADD:
-                {
-                    item.object.onAdded();
-                    break;
-                }
-                default:
-                {
-                    Log.error("I DON'T KNOW WHAT TO DO");
-                }
-            }
-        }
-    }
-
-    fixedUpdate(delta: number): void
-    {
-    }
-}
 
 /**
  * Interface for updatable objects. Update will be called once per logic frame.
