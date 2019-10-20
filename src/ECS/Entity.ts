@@ -2,7 +2,7 @@ import {Observable} from "../Common/Observer";
 import * as PIXI from "pixi.js";
 import {Log, Util} from "../Common/Util";
 import {Component} from "./Component";
-import {LagomType, LifecycleObject, ObjectState} from "./LifecycleObject";
+import {LagomType, LifecycleObject} from "./LifecycleObject";
 import {Scene} from "./Scene";
 
 /**
@@ -62,6 +62,19 @@ export class Entity extends LifecycleObject
         return component;
     }
 
+    removeComponent(component: Component, doRemove: boolean)
+    {
+        Log.trace("Removing component from entity.", component);
+
+        if (doRemove && !Util.remove(this.components, component))
+        {
+            Log.warn("Attempting to remove Component that does not exist on Entity.", component, this);
+        }
+        this.componentRemovedEvent.trigger(this, component);
+
+        component.onRemoved();
+    }
+
     /**
      * Get all components of a given type.
      * @param type The type of component to search for.
@@ -97,32 +110,26 @@ export class Entity extends LifecycleObject
         }
     }
 
-    onAdded()
-    {
-        super.onAdded();
-    }
-
     onRemoved()
     {
         super.onRemoved();
 
-        const scene = this.getScene();
-        Util.remove(scene.entities, this);
-        scene.entityRemovedEvent.trigger(scene, this);
+        Log.trace("Destroying ", this.components);
 
-        // Remove the entire PIXI container
-        this.rootNode().removeChild(this.transform);
+        // Take any components with us
+        while (this.components.length > 0)
+        {
+            const val = this.components.pop();
+            if (val !== undefined) this.removeComponent(val, false);
+        }
     }
 
     destroy()
     {
         super.destroy();
 
-        Log.debug("Entity destroy() called for:", this.name);
-
-        // Take any components with us
-        this.components.forEach((val) => val.destroy());
-        // TODO handle destruction of THIS
+        // Destroy the entity.
+        this.getScene().removeEntity(this);
     }
 
     // TODO package private?

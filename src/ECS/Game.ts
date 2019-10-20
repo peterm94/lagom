@@ -1,5 +1,4 @@
 import * as PIXI from "pixi.js";
-import {LifecycleObject, ObjectState} from "./LifecycleObject";
 import {Scene} from "./Scene";
 import {Log} from "../Common/Util";
 
@@ -88,7 +87,6 @@ export class Game
 
     /**
      * Create a new Game.
-     * @param initialSceneCreator Creator for the first scene to load.
      * @param options Options for the PIXI Renderer.
      */
     constructor(options?: {

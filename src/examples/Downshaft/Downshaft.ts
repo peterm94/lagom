@@ -406,7 +406,6 @@ class Player extends Entity
         const collider = this.addComponent(new RectCollider(8, 0, 16, 32, Layers.Player));
         this.addComponent(new RenderRect(8, 0, 16, 32));
 
-        collider.onCollisionEnter.register(this.onHitThing.bind(this));
         collider.onTriggerEnter.register(this.onHitThing.bind(this));
     }
 

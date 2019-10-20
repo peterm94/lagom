@@ -86,6 +86,17 @@ export class Scene extends LifecycleObject implements Updatable
     }
 
     /**
+     * Get a System of the provided type.
+     * @param type The type of system to search for.
+     * @returns The found system or null.
+     */
+    getSystem<T extends System>(type: LagomType<System>): T | null
+    {
+        const found = this.systems.find(value => value instanceof type);
+        return found !== undefined ? found as T : null;
+    }
+
+    /**
      * Add a global system to the Scene. These are not tied to entity processing.
      * @param system The system to add.
      * @returns The added system.
@@ -101,6 +112,18 @@ export class Scene extends LifecycleObject implements Updatable
 
         return system;
     }
+
+    /**
+     * Get a GlobalSystem of the provided type.
+     * @param type The type of system to search for.
+     * @returns The found system or null.
+     */
+    getGlobalSystem<T extends GlobalSystem>(type: LagomType<GlobalSystem>): T | null
+    {
+        const found = this.globalSystems.find(value => value instanceof type);
+        return found !== undefined ? found as T : null;
+    }
+
 
     /**
      * Add an entity to the Scene.
@@ -123,26 +146,21 @@ export class Scene extends LifecycleObject implements Updatable
         return entity;
     }
 
-    /**
-     * Get a System of the provided type.
-     * @param type The type of system to search for.
-     * @returns The found system or null.
-     */
-    getSystem<T extends System>(type: LagomType<System>): T | null
+    removeEntity(entity: Entity)
     {
-        const found = this.systems.find(value => value instanceof type);
-        return found !== undefined ? found as T : null;
-    }
+        Log.trace("Removing entity from scene.", entity.name);
 
-    /**
-     * Get a GlobalSystem of the provided type.
-     * @param type The type of system to search for.
-     * @returns The found system or null.
-     */
-    getGlobalSystem<T extends GlobalSystem>(type: LagomType<GlobalSystem>): T | null
-    {
-        const found = this.globalSystems.find(value => value instanceof type);
-        return found !== undefined ? found as T : null;
+        if (!Util.remove(this.entities, entity))
+        {
+            Log.warn("Attempting to remove Entity that does not exist in Scene.", entity, this);
+        }
+
+        this.entityRemovedEvent.trigger(this, entity);
+
+        // Remove the entire PIXI container
+        entity.rootNode().removeChild(entity.transform);
+
+        entity.onRemoved();
     }
 
     /**

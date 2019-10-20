@@ -53,6 +53,8 @@ export abstract class DetectCollider extends Component
         if (this.engine !== null)
         {
             this.engine.removeBody(this);
+        } else {
+            Log.warn("Engine is null for Collider.", this);
         }
     }
 

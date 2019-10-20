@@ -7,15 +7,19 @@ export class Util
      * Convenience list removal function.
      * @param list The list to remove an element from.
      * @param element The element to remove.
+     * @returns True on successful deletion, false if the element did not exist.
      */
-    static remove<T>(list: T[], element: T)
+    static remove<T>(list: T[], element: T): boolean
     {
         const idx = list.indexOf(element);
 
         if (idx > -1)
         {
             list.splice(idx, 1);
+            return true;
         }
+
+        return false;
     }
 
     static move(e: Entity, dist: number)
@@ -201,7 +205,7 @@ export class Log
     {
         if (this.logLevel >= LogLevel.ALL)
         {
-            console.trace("%cTRACE", 'color: #65c4ff', ...msg);
+            console.debug("%cTRACE", 'color: #65c4ff', ...msg);
         }
     }
 }

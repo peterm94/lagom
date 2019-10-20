@@ -1,14 +1,5 @@
 import {Log} from "../Common/Util";
 
-export enum ObjectState
-{
-    ACTIVE,
-    INACTIVE,
-    PENDING_ACTIATE,
-    PENDING_DEACTIVATE,
-    PENDING_ADD,
-    PENDING_REMOVE
-}
 
 /**
  * Base class for any lifecycle-aware object.
@@ -16,15 +7,6 @@ export enum ObjectState
 export abstract class LifecycleObject
 {
     parent!: LifecycleObject;
-
-    /**
-     * Set the parent for this object.
-     * @param parent The parent.
-     */
-    setParent(parent: LifecycleObject)
-    {
-        this.parent = parent;
-    }
 
     /**
      * Retrieve the parent. If this object is not part of the ECS, it will throw an exception.
@@ -64,11 +46,6 @@ export abstract class LifecycleObject
     {
     }
 }
-
-/**
- * Type for internal ECS updates.
- */
-export type PendingUpdate = { state: ObjectState, object: LifecycleObject }
 
 /**
  * Interface for updatable objects. Update will be called once per logic frame.
