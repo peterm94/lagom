@@ -37,7 +37,7 @@ const App = () => (
                 <Box flex align="center" justify="center">
                     <LagomGameComponent game={game}/>
                 </Box>
-                <Box width="medium" background="light-2" elevation="small">
+                <Box width="medium" background="light-2">
                     <DylanInspectorComponent game={game}/>
                 </Box>
             </Box>
