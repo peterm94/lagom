@@ -20,6 +20,7 @@ export class Entity extends ContainerLifecycleObject
     readonly componentRemovedEvent: Observable<Entity, Component> = new Observable();
 
     readonly name: string;
+    readonly id: string;
     readonly components: Component[] = [];
 
     transform: PIXI.Container;
@@ -37,6 +38,7 @@ export class Entity extends ContainerLifecycleObject
     {
         super();
         this.name = name;
+        this.id = Math.random().toString(16);
 
         this.transform = Util.sortedContainer();
         this.transform.x = x;

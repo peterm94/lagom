@@ -1,8 +1,7 @@
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {LagomType} from "../ECS/LifecycleObject";
 import {Component} from "../ECS/Component";
-import {observable} from "mobx";
-import {Entity} from "../ECS/Entity";
+import {action, computed, observable, ObservableMap, runInAction} from "mobx";
 
 class EntityStuff
 {
@@ -18,19 +17,28 @@ class EntityStuff
 
 export class DylanInspectorSystem extends GlobalSystem
 {
-    @observable public entities: Entity[] = [];
-    public entityStuff: EntityStuff = new EntityStuff(0, 0);
+    @observable public entities: ObservableMap<string, string> = observable.map();
 
-    constructor()
+    // public entityStuff: EntityStuff = new EntityStuff(0, 0);
+
+    @computed get entityEntries()
     {
-        super();
-        // this.entities = this.getScene().entities;
+        return Array.from(this.entities.entries())
     }
 
-    //
-    update(delta: number): void
+    onAdded()
     {
-        this.entities = this.getScene().entities;
+        super.onAdded();
+        const scene = this.getScene();
+        scene.entityAddedEvent.register(
+            (scene, entity) => runInAction(() => this.entities.set(entity.id, entity.name)));
+        scene.entityRemovedEvent.register(
+            (scene, entity) => runInAction(() => this.entities.delete(entity.id)));
+    }
+
+    @action
+    public update(delta: number): void
+    {
     }
 
     types(): LagomType<Component>[]
