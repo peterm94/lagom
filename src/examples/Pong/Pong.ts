@@ -21,6 +21,12 @@ enum Layers
     rightpaddle
 }
 
+enum PaddleSide
+{
+    left,
+    right
+}
+
 export class Pong extends Game
 {
     constructor()
@@ -53,12 +59,6 @@ class MainScene extends Scene
     }
 }
 
-enum PaddleSide
-{
-    left,
-    right
-}
-
 class Paddle extends Entity
 {
     private static width = 30;
@@ -73,7 +73,7 @@ class Paddle extends Entity
         super.onAdded();
 
         this.addComponent(new DetectRigidbody());
-        if (this.side == PaddleSide.left)
+        if (this.side === PaddleSide.left)
         {
             this.addComponent(new PlayerControlled(Key.KeyW, Key.KeyS));
         }
