@@ -54,7 +54,7 @@ export class RenderRect extends PIXIGraphicsComponent
     {
         super(fillColour,
               lineColour);
-        this.pixiObj.drawRect(xOff, yOff, width, height)
+        this.pixiObj.drawRect(xOff, yOff, width, height);
     }
 }
 
@@ -66,6 +66,6 @@ export class RenderPoly extends PIXIGraphicsComponent
     {
         super(fillColour,
               lineColour);
-        this.pixiObj.drawPolygon(points)
+        this.pixiObj.drawPolygon(points);
     }
 }

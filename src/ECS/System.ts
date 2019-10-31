@@ -117,7 +117,7 @@ export abstract class System extends LifecycleObject implements Updatable
             {
                 this.runOn.set(entity, ret);
             }
-        })
+        });
     }
 
     onRemoved()
@@ -145,7 +145,7 @@ export abstract class System extends LifecycleObject implements Updatable
      * Component types that this System runs on.
      * @returns A list of Component types.
      */
-    abstract types(): LagomType<Component>[]
+    abstract types(): LagomType<Component>[];
 
     /**
      * Call this from update() to run on the requested component instances.
@@ -158,14 +158,14 @@ export abstract class System extends LifecycleObject implements Updatable
     {
         this.runOn.forEach((value: Component[], key: Entity) => {
             f(key, ...value);
-        })
+        });
     }
 
     protected runOnEntitiesWithSystem(f: Function)
     {
         this.runOn.forEach((value: Component[], key: Entity) => {
             f(this, key, ...value);
-        })
+        });
     }
 
     /**

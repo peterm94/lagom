@@ -22,27 +22,27 @@ export class Vector
 
     static zero(): Vector
     {
-        return new Vector(0, 0)
+        return new Vector(0, 0);
     };
 
     static left(): Vector
     {
-        return new Vector(-1, 0)
+        return new Vector(-1, 0);
     };
 
     static right(): Vector
     {
-        return new Vector(1, 0)
+        return new Vector(1, 0);
     };
 
     static up(): Vector
     {
-        return new Vector(0, -1)
+        return new Vector(0, -1);
     };
 
     static down(): Vector
     {
-        return new Vector(0, 1)
+        return new Vector(0, 1);
     };
 
     add(other: Vector): Vector
