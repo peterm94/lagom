@@ -26,7 +26,7 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
      * An array of types that this GlobalSystem will run on. This should remain static.
      * @returns An array of component types to run on during update().
      */
-    abstract types(): LagomType<Component>[]
+    abstract types(): LagomType<Component>[];
 
     /**
      * Call this in update() to retrieve the collection of components to run on.
@@ -118,8 +118,8 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
             // Add any existing components
             entity.components.forEach((component) => {
                 this.onComponentAdded(entity, component);
-            })
-        })
+            });
+        });
     }
 
     onRemoved()

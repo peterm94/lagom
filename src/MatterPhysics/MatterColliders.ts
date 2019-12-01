@@ -92,7 +92,7 @@ export class MCollider extends Component
         else
         {
             Log.warn("Could not add Collider to Matter world instance. Ensure MatterEngine System is loaded before" +
-                         " creating a Collider.")
+                         " creating a Collider.");
         }
     }
 

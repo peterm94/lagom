@@ -68,7 +68,7 @@ export abstract class LifecycleObject
 /**
  * Type for internal ECS updates.
  */
-export type PendingUpdate = { state: ObjectState, object: LifecycleObject }
+export type PendingUpdate = { state: ObjectState, object: LifecycleObject };
 
 
 /**
@@ -145,4 +145,4 @@ export interface Renderable
  * Type for our object constructors. Allows for abstract constructor types.
  * https://stackoverflow.com/questions/52349758/how-does-type-constructort-function-prototype-t-apply-to-abstract-c
  */
-export type LagomType<T> = Function & { prototype: T }
+export type LagomType<T> = Function & { prototype: T };

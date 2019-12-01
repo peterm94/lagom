@@ -65,7 +65,7 @@ export class MathUtil
      */
     static lerp(start: number, end: number, amount: number): number
     {
-        return (1 - amount) * start + amount * end
+        return (1 - amount) * start + amount * end;
     }
 
     /**

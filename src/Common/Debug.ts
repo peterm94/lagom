@@ -65,7 +65,7 @@ class FpsUpdater extends System
 
     private rollAverage(prevAvg: number, newVal: number): number
     {
-        return (prevAvg * (this.samples - 1) + newVal) / this.samples
+        return (prevAvg * (this.samples - 1) + newVal) / this.samples;
     }
 
     fixedUpdate(delta: number): void

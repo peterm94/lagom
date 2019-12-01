@@ -29,8 +29,8 @@ export enum AnimationEnd
 export interface AnimatedSpriteConfig extends SpriteConfig
 {
     /**
-    * Speed at which the animation will play.
-    */
+     * Speed at which the animation will play.
+     */
     animationSpeed?: number;
 
     /**

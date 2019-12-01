@@ -133,7 +133,7 @@ export class Game extends ContainerLifecycleObject
         {
             this.loader.load(() => {
                 this.startInternal();
-            })
+            });
         }
         else
         {
@@ -145,7 +145,7 @@ export class Game extends ContainerLifecycleObject
     {
         // Start the update loop
         this.lastFrameTime = Date.now();
-        this.updateLoop()
+        this.updateLoop();
     }
 
     update(delta: number): void
