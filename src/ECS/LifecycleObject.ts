@@ -7,6 +7,7 @@ import {Log} from "../Common/Util";
 export abstract class LifecycleObject
 {
     parent!: LifecycleObject;
+    active = true;
 
     /**
      * Retrieve the parent. If this object is not part of the ECS, it will throw an exception.
@@ -37,6 +38,7 @@ export abstract class LifecycleObject
      */
     onRemoved()
     {
+        this.active = false;
     }
 
     /**

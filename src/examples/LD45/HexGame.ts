@@ -4,7 +4,6 @@ import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {FollowCamera} from "../../Common/CameraUtil";
-import {Diagnostics} from "../../Common/Debug";
 import {EnemyMarkerSystem} from "./Entities/Enemy";
 import {
     ClearMovement,
@@ -105,25 +104,6 @@ export class HexMainScene extends Scene
     {
         super.onAdded();
 
-        this.addEntity(new Background());
-        // this.addEntity(new Diagnostics("white", 10, false));
-        this.addEntity(new Player(this.camera.halfWidth, this.camera.halfHeight));
-
-        this.addEntity(makeFloater(new ShieldHex(null, new Hex(0, 0, 0)), 640, 360));
-        this.addEntity(makeFloater(new ShieldHex(null, new Hex(0, 0, 0)), 640, 360));
-        this.addEntity(makeFloater(new LaserTurretHex(null, new Hex(0, 0, 0)), 640, 360));
-        this.addEntity(makeFloater(new LaserTurretHex(null, new Hex(0, 0, 0)), 640, 360));
-        this.addEntity(makeFloater(new StructureHex(null, new Hex(0, 0, 0)), 640, 360));
-        this.addEntity(makeFloater(new StructureHex(null, new Hex(0, 0, 0)), 640, 360));
-        this.addEntity(makeFloater(new StructureHex(null, new Hex(0, 0, 0)), 640, 360));
-        this.addEntity(makeFloater(new StructureHex(null, new Hex(0, 0, 0)), 640, 360));
-        this.addEntity(makeFloater(new ThrusterHex(null, new Hex(0, 0, 0)), 640, 360));
-        this.addEntity(makeFloater(new ThrusterHex(null, new Hex(0, 0, 0)), 640, 360));
-
-        this.addEntity(new Intro());
-
-        this.addEntity(new GameDirector());
-
         this.addSystem(new YouWinListener());
         this.addSystem(new IntroListener());
         this.addSystem(new GameOverListener());
@@ -150,5 +130,24 @@ export class HexMainScene extends Scene
         this.addGlobalSystem(new ScreenShaker());
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new FrameTriggerSystem());
+
+        this.addEntity(new Background());
+        // this.addEntity(new Diagnostics("white", 10, false));
+        this.addEntity(new Player(this.camera.halfWidth, this.camera.halfHeight));
+
+        makeFloater(this.addEntity(new ShieldHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new ShieldHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new LaserTurretHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new LaserTurretHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new StructureHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new StructureHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new StructureHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new StructureHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new ThrusterHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new ThrusterHex(null, new Hex(0, 0, 0))), 640, 360);
+
+        this.addEntity(new Intro());
+
+        this.addEntity(new GameDirector());
     }
 }
