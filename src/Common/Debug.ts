@@ -8,30 +8,6 @@ import {Game} from "../ECS/Game";
 import {LagomType} from "../ECS/LifecycleObject";
 
 
-/**
- * Entity that adds FPS information to the canvas.
- */
-export class Diagnostics extends GUIEntity
-{
-    onAdded()
-    {
-        super.onAdded();
-
-        this.addComponent(new FpsTracker(this.verbose));
-        this.addComponent(new TextDisp(0, 0, "", new PIXI.TextStyle({fontSize: this.textSize, fill: this.textCol})));
-
-        const scene = this.getScene();
-        scene.addSystem(new FpsUpdater());
-    }
-
-    constructor(private readonly textCol: string,
-                private readonly textSize: number = 10,
-                private verbose: boolean = false)
-    {
-        super("diagnostics");
-    }
-}
-
 class FpsTracker extends Component
 {
     constructor(readonly verbose: boolean)
@@ -42,8 +18,8 @@ class FpsTracker extends Component
 
 class FpsUpdater extends System
 {
-    printFrame: number = 10;
-    frameCount: number = 0;
+    printFrame = 10;
+    frameCount = 0;
 
     private game!: Game;
 
@@ -107,7 +83,7 @@ class FpsUpdater extends System
                         + `// ${this.avgRender.toFixed(2)}ms`
                         + `\nTotalFrameTime: ${this.game.diag.totalFrameTime.toFixed(2)}ms `
                         + `// ${this.avgFrame.toFixed(2)}ms`
-                        + `\nEntities: ${this.game.currentScene.entities.length}`
+                        + `\nEntities: ${this.game.currentScene.entities.length}`;
                 }
             });
         }
@@ -116,5 +92,30 @@ class FpsUpdater extends System
     types(): LagomType<Component>[]
     {
         return [TextDisp, FpsTracker];
+    }
+}
+
+
+/**
+ * Entity that adds FPS information to the canvas.
+ */
+export class Diagnostics extends GUIEntity
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addComponent(new FpsTracker(this.verbose));
+        this.addComponent(new TextDisp(0, 0, "", new PIXI.TextStyle({fontSize: this.textSize, fill: this.textCol})));
+
+        const scene = this.getScene();
+        scene.addSystem(new FpsUpdater());
+    }
+
+    constructor(private readonly textCol: string,
+                private readonly textSize: number = 10,
+                private verbose: boolean = false)
+    {
+        super("diagnostics");
     }
 }

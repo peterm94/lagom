@@ -3,7 +3,7 @@ import {Key} from "./Key";
 /**
  * Type definitions for pixi.js-keyboard.
  */
-declare module Keyboard
+declare namespace Keyboard
 {
     /**
      * Check if a key has been pressed down in this frame.

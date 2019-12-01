@@ -20,6 +20,8 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
 
     fixedUpdate(delta: number): void
     {
+        // Fixed update is called with a fixed data.
+        // Default implementation provided because it isn't usually required.
     }
 
     /**
@@ -34,17 +36,17 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
      * types() returns [Sprite, Collider], the function will be passed two arrays, (sprites: Sprite[], colliders:
      * Collider[]).
      */
-    protected runOnComponents(f: Function)
+    protected runOnComponents(f: Function): void
     {
         f(...Array.from(this.runOn.values()));
     }
 
-    protected runOnComponentsWithSystem(f: Function)
+    protected runOnComponentsWithSystem(f: Function): void
     {
         f(this, ...Array.from(this.runOn.values()));
     }
 
-    private onComponentAdded(entity: Entity, component: Component)
+    private onComponentAdded(entity: Entity, component: Component): void
     {
         // Check if we care about this type at all
         const type = this.types().find((val) => {
@@ -64,7 +66,7 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
         compMap.push(component);
     }
 
-    private onComponentRemoved(entity: Entity, component: Component)
+    private onComponentRemoved(entity: Entity, component: Component): void
     {
         // Check if we care about this type at all
         const type = this.types().find((val) => {
@@ -73,7 +75,7 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
 
         if (type === undefined) return;
 
-        let components = this.runOn.get(type.prototype);
+        const components = this.runOn.get(type.prototype);
 
         // Nothing registered, return
         if (components === undefined) return;
@@ -82,20 +84,20 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
         Util.remove(components, component);
     }
 
-    private onEntityAdded(caller: Scene, entity: Entity)
+    private onEntityAdded(caller: Scene, entity: Entity): void
     {
         // Register for component changes
         entity.componentAddedEvent.register(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.register(this.onComponentRemoved.bind(this));
     }
 
-    private onEntityRemoved(caller: Scene, entity: Entity)
+    private onEntityRemoved(caller: Scene, entity: Entity): void
     {
         entity.componentAddedEvent.deregister(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.deregister(this.onComponentRemoved.bind(this));
     }
 
-    addedToScene(scene: Scene)
+    addedToScene(scene: Scene): void
     {
         // make each component map
         this.types().forEach(type => {
@@ -117,7 +119,7 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
         });
     }
 
-    onRemoved()
+    onRemoved(): void
     {
         super.onRemoved();
 

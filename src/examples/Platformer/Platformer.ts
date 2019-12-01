@@ -11,7 +11,6 @@ import {Component} from "../../ECS/Component";
 import {LagomType} from "../../ECS/LifecycleObject";
 import {System} from "../../ECS/System";
 import {TiledMapLoader} from "../../Common/TiledMapLoader";
-import world1 from "./resources/World1.json";
 import world2 from "./resources/World2.json";
 import {Diagnostics} from "../../Common/Debug";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
@@ -249,6 +248,7 @@ class PlayerAnimationSystem extends System
 
     update(delta: number): void
     {
+        // Not required
     }
 }
 
@@ -272,6 +272,7 @@ class GravitySystem extends System
 
     update(delta: number): void
     {
+        // Not required
     }
 }
 
@@ -290,7 +291,7 @@ class PlayerMover extends System
         this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider) => {
             if (Game.keyboard.isKeyPressed(Key.ArrowUp, Key.KeyW))
             {
-                if (!collider.place_free(0, 2))
+                if (!collider.placeFree(0, 2))
                 {
                     body.addForce(0, this.jumpPower);
                     jumpSound.play();

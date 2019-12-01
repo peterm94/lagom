@@ -13,7 +13,7 @@ export class CollisionMatrix
      * @param l1 The first layer.
      * @param l2 The second layer.
      */
-    addCollision(l1: number, l2: number)
+    addCollision(l1: number, l2: number): void
     {
         if (!this.validLayer(l1) || !this.validLayer(l2))
         {

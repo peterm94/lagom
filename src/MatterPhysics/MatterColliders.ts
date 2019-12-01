@@ -34,11 +34,13 @@ export class MCollider extends Component
      *
      * @param body The matter-js physics body. If providing options, collisionFilter and isSensor should be omitted
      * in favour of the constructor arguments.
+     * @param xOffset Anchor x offset from position.
+     * @param yOffset Anchor y offset from position.
      * @param options Options for the body. Includes the layer that this collider is on, if the body is a sensor or
      * a real object, and if the body is static or not.
      */
     constructor(readonly body: Matter.Body, readonly xOffset: number, readonly yOffset: number,
-                options: { layer: number, isSensor?: boolean, isStatic?: boolean })
+                options: { layer: number; isSensor?: boolean; isStatic?: boolean })
     {
         super();
         this.body.isSensor = options.isSensor || false;
@@ -48,7 +50,7 @@ export class MCollider extends Component
         this.layer = options.layer;
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
 
@@ -71,7 +73,7 @@ export class MCollider extends Component
             };
 
             // Add a backref to the body for the component.
-            (this.body as any).lagom_component = this;
+            (this.body as any).lagomComponent = this;
 
             // Sync the body to the current position of the entity in real space.
             Matter.Body.setStatic(this.body, this.body.isStatic);
@@ -96,7 +98,7 @@ export class MCollider extends Component
         }
     }
 
-    onRemoved()
+    onRemoved(): void
     {
         super.onRemoved();
 

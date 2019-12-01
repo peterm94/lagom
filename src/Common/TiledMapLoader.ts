@@ -38,29 +38,29 @@ export class TiledMapLoader
 
 export interface TiledMap
 {
-    height: number,
-    layers: TiledLayer[],
-    nextobjectid: number,
-    orientation: string,
-    renderorder: string,
-    tiledversion: string,
-    tileheight: number,
-    tilesets: { firstgid: number, source: string }[],
-    tilewidth: number,
-    type: string,
-    version: number,
-    width: number
+    height: number;
+    layers: TiledLayer[];
+    nextobjectid: number;
+    orientation: string;
+    renderorder: string;
+    tiledversion: string;
+    tileheight: number;
+    tilesets: { firstgid: number; source: string }[];
+    tilewidth: number;
+    type: string;
+    version: number;
+    width: number;
 }
 
 export interface TiledLayer
 {
-    data: number[],
-    height: number,
-    name: string,
-    opacity: number,
-    type: string,
-    visible: boolean,
-    width: number,
-    x: number,
-    y: number
+    data: number[];
+    height: number;
+    name: string;
+    opacity: number;
+    type: string;
+    visible: boolean;
+    width: number;
+    x: number;
+    y: number;
 }

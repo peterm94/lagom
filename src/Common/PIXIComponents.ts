@@ -17,7 +17,7 @@ export abstract class PIXIGraphicsComponent extends PIXIComponent<PIXI.Graphics>
     static readonly defaultLine = 0xFF3300;
     static readonly defaultFill = null;
 
-    constructor(fillColour: number | null, lineColour: number)
+    protected constructor(fillColour: number | null, lineColour: number)
     {
         super(new PIXI.Graphics());
 

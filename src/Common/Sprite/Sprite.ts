@@ -22,7 +22,7 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
      * Apply a set of configuration to the Sprite.
      * @param config Configuration to apply.
      */
-    public applyConfig(config: SpriteConfig)
+    public applyConfig(config: SpriteConfig): void
     {
         if (config.xOffset !== undefined) this.pixiObj.x = config.xOffset;
         if (config.yOffset !== undefined) this.pixiObj.y = config.yOffset;

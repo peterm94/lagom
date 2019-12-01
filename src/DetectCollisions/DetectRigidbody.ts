@@ -22,32 +22,32 @@ export class DetectRigidbody extends Component
         super();
     }
 
-    move(x: number, y: number)
+    move(x: number, y: number): void
     {
         this.pendingX += x;
         this.pendingY += y;
     }
 
-    stop()
+    stop(): void
     {
         this.pendingX = 0;
         this.pendingY = 0;
     }
 
-    addForce(x: number, y: number)
+    addForce(x: number, y: number): void
     {
         // F = ma -> a = F/m
         this.forceX += x;
         this.forceY += y;
     }
 
-    setImpulse(x: number, y: number)
+    setImpulse(x: number, y: number): void
     {
         this.velocityX = x;
         this.velocityY = y;
     }
 
-    applyForce(delta: number)
+    applyForce(delta: number): void
     {
         // Linear acceleration
         const accX = this.forceX / this.mass;

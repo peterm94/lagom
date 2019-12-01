@@ -1,11 +1,11 @@
 import * as PIXI from "pixi.js";
 import {Game} from "../ECS/Game";
 import {Diagnostics} from "../Common/Debug";
-import spr_asteroid from './resources/asteroid.png'
-import spr_asteroid2 from './resources/asteroid2.png'
-import spr_asteroid3 from './resources/asteroid3.png'
-import spr_ship from './resources/ship.png'
-import spr_bullet from './resources/bullet.png'
+import spr_asteroid from './resources/asteroid.png';
+import spr_asteroid2 from './resources/asteroid2.png';
+import spr_asteroid3 from './resources/asteroid3.png';
+import spr_ship from './resources/ship.png';
+import spr_bullet from './resources/bullet.png';
 import {MathUtil} from "../Common/Util";
 import {MatterEngine} from "../MatterPhysics/MatterPhysics";
 import * as Matter from "matter-js";
@@ -53,17 +53,6 @@ class MainScene extends Scene
 
         const game = this.getGame();
 
-        this.addEntity(new Ship(game.renderer.screen.width / 2,
-                                game.renderer.screen.height / 2));
-
-        for (let i = 0; i < 10; i++)
-        {
-            this.addEntity(new Asteroid(Math.random() * game.renderer.screen.width,
-                                        Math.random() * game.renderer.screen.height,
-                                        3))
-        }
-
-        this.addEntity(new Diagnostics("white"));
         this.addSystem(new ShipMover());
         this.addSystem(new ConstantMover());
         this.addSystem(new ScreenWrapper());
@@ -76,6 +65,18 @@ class MainScene extends Scene
         matrix.addCollision(CollLayers.Asteroid, CollLayers.Bullet);
 
         this.addGlobalSystem(new MatterEngine(matrix));
+
+        this.addEntity(new Ship(game.renderer.screen.width / 2,
+                                game.renderer.screen.height / 2));
+
+        for (let i = 0; i < 10; i++)
+        {
+            this.addEntity(new Asteroid(Math.random() * game.renderer.screen.width,
+                                        Math.random() * game.renderer.screen.height,
+                                        3));
+        }
+        this.addEntity(new Diagnostics("white"));
+
     }
 }
 
@@ -166,8 +167,8 @@ class Bullet extends Entity
 class WrapSprite extends Sprite
 {
     private static count = 0;
-    xId: string = `__wrapSprite${++WrapSprite.count}`;
-    yId: string = `__wrapSprite${++WrapSprite.count}`;
+    xId = `__wrapSprite${++WrapSprite.count}`;
+    yId = `__wrapSprite${++WrapSprite.count}`;
     xChild: PIXI.Sprite | null = null;
     yChild: PIXI.Sprite | null = null;
 
@@ -239,7 +240,7 @@ class DestroyOffScreen extends System
             {
                 entity.destroy();
             }
-        })
+        });
     }
 }
 
@@ -253,7 +254,7 @@ class AsteroidSplitter extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
-            const currSize = (<Asteroid>entity).size;
+            const currSize = (entity as Asteroid).size;
 
             if (currSize > 1)
             {
@@ -261,7 +262,7 @@ class AsteroidSplitter extends System
                 this.getScene().addEntity(new Asteroid(entity.transform.x, entity.transform.y, currSize - 1));
             }
             entity.destroy();
-        })
+        });
     }
 }
 
@@ -288,8 +289,8 @@ class ScreenWrapper extends System
                 collider.body,
                 Matter.Vector.create(
                     (collider.body.position.x + this.renderer.screen.width) % this.renderer.screen.width,
-                    (collider.body.position.y + this.renderer.screen.height) % this.renderer.screen.height))
-        })
+                    (collider.body.position.y + this.renderer.screen.height) % this.renderer.screen.height));
+        });
     }
 }
 
@@ -337,7 +338,7 @@ class SpriteWrapper extends System
             {
                 yChild.position.y = entity.transform.position.y + this.renderer.screen.height;
             }
-        })
+        });
     }
 }
 
@@ -412,7 +413,7 @@ class ShipMover extends System
             {
                 this.getScene().addEntity(new Bullet(entity.transform.x,
                                                      entity.transform.y,
-                                                     entity.transform.rotation))
+                                                     entity.transform.rotation));
             }
         });
     }

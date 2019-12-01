@@ -1,17 +1,13 @@
 import * as React from 'react';
 import {Game} from "../ECS/Game";
 
-interface IMainProps
-{
-    game: Game;
-}
 
-export class LagomGameComponent extends React.Component<IMainProps, {}>
+export class LagomGameComponent extends React.Component<{ game: Game }, {}>
 {
     game: Game;
     gameCanvas: HTMLDivElement | null = null;
 
-    constructor(props: IMainProps)
+    constructor(props: { game: Game })
     {
         super(props);
         this.game = props.game;
@@ -21,7 +17,7 @@ export class LagomGameComponent extends React.Component<IMainProps, {}>
     /**
      * After mounting, add the Pixi Renderer to the div and start the Application.
      */
-    componentDidMount()
+    componentDidMount(): void
     {
         if (this.gameCanvas !== null)
         {
@@ -30,7 +26,7 @@ export class LagomGameComponent extends React.Component<IMainProps, {}>
         this.game.start();
     }
 
-    componentWillUnmount()
+    componentWillUnmount(): void
     {
         // ??
     }
@@ -40,7 +36,7 @@ export class LagomGameComponent extends React.Component<IMainProps, {}>
      */
     render()
     {
-        let component = this;
+        const component = this;
         return (
             <div ref={(thisDiv) => {
                 component.gameCanvas = thisDiv

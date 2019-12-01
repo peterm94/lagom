@@ -67,7 +67,7 @@ export class CameraDemo extends Game
 
 export class CameraDemoScene extends Scene
 {
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
 
@@ -106,7 +106,7 @@ class Square extends Entity
     {
         super.onAdded();
 
-        const collider = this.addComponent(new RectCollider(0, 0, 32, 32, this.layer));
+        this.addComponent(new RectCollider(0, 0, 32, 32, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
         this.addComponent(new RenderRect(0, 0, 32, 32));
@@ -127,7 +127,7 @@ class CircleBoy extends Entity
     {
         super.onAdded();
 
-        const collider = this.addComponent(new CircleCollider(0, 0, 100, this.layer));
+        this.addComponent(new CircleCollider(0, 0, 100, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
         this.addComponent(new RenderCircle(0, 0, 100));

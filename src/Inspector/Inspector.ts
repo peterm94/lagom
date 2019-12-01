@@ -4,18 +4,6 @@ import {Component} from "../ECS/Component";
 import {computed, observable, runInAction} from "mobx";
 import {Entity} from "../ECS/Entity";
 
-class EntityStuff
-{
-    @observable x: number = 0;
-    @observable y: number = 0;
-
-    constructor(x: number, y: number)
-    {
-        this.x = x;
-        this.y = y;
-    }
-}
-
 export type InspectorEntity = [string, string]
 
 export class InspectorSystem extends GlobalSystem
@@ -28,7 +16,7 @@ export class InspectorSystem extends GlobalSystem
         return Array.from(this.entityNameMap.entries())
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
         const scene = this.getScene();
@@ -44,6 +32,7 @@ export class InspectorSystem extends GlobalSystem
 
     public update(delta: number): void
     {
+        // Not required
     }
 
     types(): LagomType<Component>[]

@@ -165,7 +165,7 @@ export class Scene extends LifecycleObject implements Updatable
         return entity;
     }
 
-    removeEntity(entity: Entity)
+    removeEntity(entity: Entity): void
     {
         Log.trace("Removing entity from scene.", entity.name);
 

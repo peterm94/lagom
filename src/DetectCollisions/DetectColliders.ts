@@ -10,11 +10,11 @@ import {DetectCollisionSystem} from "./DetectCollisions";
 export abstract class DetectCollider extends Component
 {
     private engine: DetectCollisionSystem | null = null;
-    readonly onCollision: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
-    readonly onCollisionEnter: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
+    readonly onCollision: Observable<DetectCollider, { other: DetectCollider; result: Result }> = new Observable();
+    readonly onCollisionEnter: Observable<DetectCollider, { other: DetectCollider; result: Result }> = new Observable();
     readonly onCollisionExit: Observable<DetectCollider, DetectCollider> = new Observable();
-    readonly onTrigger: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
-    readonly onTriggerEnter: Observable<DetectCollider, { other: DetectCollider, result: Result }> = new Observable();
+    readonly onTrigger: Observable<DetectCollider, { other: DetectCollider; result: Result }> = new Observable();
+    readonly onTriggerEnter: Observable<DetectCollider, { other: DetectCollider; result: Result }> = new Observable();
     readonly onTriggerExit: Observable<DetectCollider, DetectCollider> = new Observable();
 
     collidersLastFrame: DetectCollider[] = [];
@@ -25,7 +25,7 @@ export abstract class DetectCollider extends Component
     {
         super();
         // Add a backref
-        (this.body as any).lagom_component = this;
+        (this.body as any).lagomComponent = this;
     }
 
     onAdded(): void
@@ -70,9 +70,9 @@ export abstract class DetectCollider extends Component
         }
     }
 
-    place_free(dx: number, dy: number): boolean
+    placeFree(dx: number, dy: number): boolean
     {
-        if (this.engine) return this.engine.place_free(this, dx, dy);
+        if (this.engine) return this.engine.placeFree(this, dx, dy);
         return true;
     }
 }
@@ -82,7 +82,7 @@ export abstract class DetectCollider extends Component
  */
 export class CircleCollider extends DetectCollider
 {
-    constructor(xOff: number, yOff: number, radius: number, layer: number, isTrigger: boolean = false)
+    constructor(xOff: number, yOff: number, radius: number, layer: number, isTrigger = false)
     {
         super(new Circle(0, 0, radius), xOff, yOff, layer, isTrigger);
     }
@@ -93,7 +93,7 @@ export class CircleCollider extends DetectCollider
  */
 export class PointCollider extends DetectCollider
 {
-    constructor(xOff: number, yOff: number, layer: number, isTrigger: boolean = false)
+    constructor(xOff: number, yOff: number, layer: number, isTrigger = false)
     {
         super(new Point(0, 0), xOff, yOff, layer, isTrigger);
     }
@@ -105,7 +105,7 @@ export class PointCollider extends DetectCollider
 export class PolyCollider extends DetectCollider
 {
     constructor(xOff: number, yOff: number, points: number[][], layer: number,
-                rotation: number = 0, isTrigger: boolean = false)
+                rotation = 0, isTrigger = false)
     {
         // NOTE: The order of the points matters, the library is bugged, this function ensures they are anticlockwise.
         super(new Polygon(xOff, yOff, PolyCollider.reorderVertices(points), rotation), xOff, yOff, layer, isTrigger);
@@ -117,7 +117,7 @@ export class PolyCollider extends DetectCollider
      * @param vertices Vertices to reorder.
      * @returns Correctly ordered vertices.
      */
-    protected static reorderVertices(vertices: number[][])
+    protected static reorderVertices(vertices: number[][]): number[][]
     {
         const area = PolyCollider.findArea(vertices);
         if (area < 0)

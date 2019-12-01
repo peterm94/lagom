@@ -7,7 +7,7 @@ import {MathUtil} from "./Util";
  */
 export class Camera
 {
-    angle: number = 0;
+    angle = 0;
     readonly scene: Scene;
     readonly width: number;
     readonly height: number;
@@ -60,7 +60,7 @@ export class Camera
      * @param offsetX Offset X amount.
      * @param offsetY Offset Y amount.
      */
-    move(x: number, y: number, offsetX: number = 0, offsetY: number = 0)
+    move(x: number, y: number, offsetX = 0, offsetY = 0): void
     {
         // Move the scene the change amount
         this.scene.sceneNode.position.x = -x + offsetX;
@@ -73,7 +73,7 @@ export class Camera
      * @param y Y point to move to.
      * @param lerpAmt The liner interpolation percentage to move.
      */
-    moveTowards(x: number, y: number, lerpAmt: number = 0.5)
+    moveTowards(x: number, y: number, lerpAmt = 0.5): void
     {
         const xdist = x + this.scene.sceneNode.position.x;
         const ydist = y + this.scene.sceneNode.position.y;
@@ -87,7 +87,7 @@ export class Camera
      * @param x X amount to move the camera.
      * @param y Y amount to move the camera.
      */
-    translate(x: number, y: number)
+    translate(x: number, y: number): void
     {
         // Move the scene the change amount
         this.scene.sceneNode.position.x -= x;
@@ -98,19 +98,19 @@ export class Camera
      * Rotate the viewport. The rotation will be applied from the top left corner.
      * @param angle Angle in degrees to set the rotation to.
      */
-    rotate(angle: number)
+    rotate(angle: number): void
     {
         this.scene.sceneNode.angle = angle;
         this.angle = angle;
     }
 
-    rotate2(angle: number)
+    rotate2(angle: number): void
     {
         const rads = MathUtil.degToRad(angle);
 
         // Translate to top left corner (origin)
-        let transX = -this.halfWidth;
-        let transY = -this.halfWidth;
+        const transX = -this.halfWidth;
+        const transY = -this.halfWidth;
 
         // Rotate
         this.scene.sceneNode.angle += angle;
@@ -128,7 +128,7 @@ export class Camera
      * @param offsetX The X offset from the top left corner.
      * @param offsetY The Y offset from the top left corner.
      */
-    rotateAround(angle: number, offsetX: number = 0, offsetY: number = 0)
+    rotateAround(angle: number, offsetX = 0, offsetY = 0): void
     {
         // TODO this does not work if the camera moves at all.
         this.scene.sceneNode.pivot.set(offsetX, offsetY);

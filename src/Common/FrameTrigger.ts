@@ -10,8 +10,8 @@ export abstract class FrameTrigger<T> extends Component
 {
     onTrigger: Observable<FrameTrigger<T>, T> = new Observable();
 
-    nextTriggerTime: number = -1;
-    triggerInterval: number = 0;
+    nextTriggerTime = -1;
+    triggerInterval = 0;
 
     abstract payload(): T;
 
@@ -21,7 +21,7 @@ export abstract class FrameTrigger<T> extends Component
         this.triggerInterval = triggerInterval;
     }
 
-    reset()
+    reset(): void
     {
         this.nextTriggerTime = -1;
     }
@@ -30,7 +30,7 @@ export abstract class FrameTrigger<T> extends Component
 
 export class FrameTriggerSystem extends GlobalSystem
 {
-    private elapsed: number = 0;
+    private elapsed = 0;
 
     types(): LagomType<Component>[]
     {
@@ -42,7 +42,7 @@ export class FrameTriggerSystem extends GlobalSystem
         this.elapsed += delta;
 
         this.runOnComponentsWithSystem((system: FrameTriggerSystem, triggers: FrameTrigger<any>[]) => {
-            for (let trigger of triggers)
+            for (const trigger of triggers)
             {
                 if (trigger.nextTriggerTime === -1)
                 {

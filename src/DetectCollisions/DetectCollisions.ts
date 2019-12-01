@@ -1,5 +1,5 @@
 import {Component} from "../ECS/Component";
-import {Log, Util} from "../Common/Util";
+import {Util} from "../Common/Util";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
 import {LagomType} from "../ECS/LifecycleObject";
@@ -27,7 +27,7 @@ export class DetectCollisionSystem extends System
         return [DetectCollider, DetectRigidbody];
     }
 
-    update(delta: number): void
+    update(): void
     {
         // We don't do this around here.
     }
@@ -35,169 +35,170 @@ export class DetectCollisionSystem extends System
     fixedUpdate(delta: number): void
     {
         // New thing. Move incrementally, alternating x/y until we are either at the destination or have hit something.
-        this.runOnEntitiesWithSystem((system: DetectCollisionSystem, entity: Entity, collider: DetectCollider, body: DetectRigidbody) => {
+        this.runOnEntitiesWithSystem(
+            (system: DetectCollisionSystem, entity: Entity, collider: DetectCollider, body: DetectRigidbody) => {
 
-            // Skip updating static bodies. They should not be moved. We may add kinematic bodies later that allow
-            // movement that aren't affected by physics.
-            if (body.isStatic) return;
+                // Skip updating static bodies. They should not be moved. We may add kinematic bodies later that allow
+                // movement that aren't affected by physics.
+                if (body.isStatic) return;
 
-            body.applyForce(delta);
+                body.applyForce(delta);
 
-            const collidersLastFrame = collider.collidersLastFrame;
-            const triggersLastFrame = collider.triggersLastFrame;
+                const collidersLastFrame = collider.collidersLastFrame;
+                const triggersLastFrame = collider.triggersLastFrame;
 
-            collider.collidersLastFrame = [];
-            collider.triggersLastFrame = [];
+                collider.collidersLastFrame = [];
+                collider.triggersLastFrame = [];
 
-            // TODO this is dirty, do it properly. Probably best to bundle up all events and do them at the end of
-            //  the processing frame. This also has the advantage of not messing with anything while movement is in
-            //  progress.
-            const collidersThisFrame: DetectCollider[] = [];
-            const triggersThisFrame: DetectCollider[] = [];
+                // TODO this is dirty, do it properly. Probably best to bundle up all events and do them at the end of
+                //  the processing frame. This also has the advantage of not messing with anything while movement is in
+                //  progress.
+                const collidersThisFrame: DetectCollider[] = [];
+                const triggersThisFrame: DetectCollider[] = [];
 
-            const xDir = Math.sign(body.pendingX);
-            let xMag = Math.abs(body.pendingX);
-            const yDir = Math.sign(body.pendingY);
-            let yMag = Math.abs(body.pendingY);
+                const xDir = Math.sign(body.pendingX);
+                let xMag = Math.abs(body.pendingX);
+                const yDir = Math.sign(body.pendingY);
+                let yMag = Math.abs(body.pendingY);
 
-            while (xMag > 0 || yMag > 0)
-            {
-
-                // TODO I am not sure where to do this, but we need to stop looping if the thing was destroyed
-                //  during iteration (which is likely on a collision frame)
-                if (!entity.active || !body.active || !collider.active ) return;
-
-                if (xMag > 0)
+                while (xMag > 0 || yMag > 0)
                 {
-                    const dx = Math.min(xMag, system.step);
-                    collider.body.x += dx * xDir;
-
-                    // Do collision check + resolution
-                    system.detectSystem.update();
 
                     // TODO I am not sure where to do this, but we need to stop looping if the thing was destroyed
                     //  during iteration (which is likely on a collision frame)
-                    if (!entity.active || !body.active || !collider.active ) return;
-                    const potentials = collider.body.potentials();
-                    for (let potential of potentials)
+                    if (!entity.active || !body.active || !collider.active) return;
+
+                    if (xMag > 0)
                     {
-                        const otherComp = (potential as any).lagom_component as DetectCollider;
-                        const result = new Result();
+                        const dx = Math.min(xMag, system.step);
+                        collider.body.x += dx * xDir;
 
-                        // Check layers, then do actual collision check
-                        if (system.collisionMatrix.canCollide(collider.layer, otherComp.layer)
-                            && collider.body.collides(potential, result))
+                        // Do collision check + resolution
+                        system.detectSystem.update();
+
+                        // TODO I am not sure where to do this, but we need to stop looping if the thing was destroyed
+                        //  during iteration (which is likely on a collision frame)
+                        if (!entity.active || !body.active || !collider.active) return;
+                        const potentials = collider.body.potentials();
+                        for (const potential of potentials)
                         {
-                            // Check if we are a trigger. If we are, don't move out of the collision.
-                            if (!collider.isTrigger && !otherComp.isTrigger)
+                            const otherComp = (potential as any).lagomComponent as DetectCollider;
+                            const result = new Result();
+
+                            // Check layers, then do actual collision check
+                            if (system.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                                && collider.body.collides(potential, result))
                             {
-                                // Move out of the collision, we are done in this direction.
-                                collider.body.x -= result.overlap_x * result.overlap;
-                                xMag = 0;
-                                body.velocityX = 0;
-
-                                if (!collidersThisFrame.includes(otherComp))
+                                // Check if we are a trigger. If we are, don't move out of the collision.
+                                if (!collider.isTrigger && !otherComp.isTrigger)
                                 {
-                                    collidersThisFrame.push(otherComp);
+                                    // Move out of the collision, we are done in this direction.
+                                    collider.body.x -= result.overlap_x * result.overlap;
+                                    xMag = 0;
+                                    body.velocityX = 0;
 
-                                    DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                                                              otherComp, collider, result);
-                                    // DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                    //                                           collider, otherComp, result);
+                                    if (!collidersThisFrame.includes(otherComp))
+                                    {
+                                        collidersThisFrame.push(otherComp);
+
+                                        DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                                  otherComp, collider, result);
+                                        // DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                        //                                           collider, otherComp, result);
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                if (!triggersThisFrame.includes(otherComp))
+                                else
                                 {
-                                    triggersThisFrame.push(otherComp);
-                                    DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
-                                                                            otherComp, collider, result);
-                                    // DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
-                                    //                                         collider, otherComp, result);
+                                    if (!triggersThisFrame.includes(otherComp))
+                                    {
+                                        triggersThisFrame.push(otherComp);
+                                        DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                                                                otherComp, collider, result);
+                                        // DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                        //                                         collider, otherComp, result);
+                                    }
                                 }
                             }
                         }
+                        xMag -= dx;
                     }
-                    xMag -= dx;
-                }
 
-                if (yMag > 0)
-                {
-                    const dy = Math.min(yMag, system.step);
-                    collider.body.y += dy * yDir;
-
-                    // Do collision check + resolution
-                    system.detectSystem.update();
-
-                    // TODO I am not sure where to do this, but we need to stop looping if the thing was destroyed
-                    //  during iteration (which is likely on a collision frame)
-                    if (!entity.active || !body.active || !collider.active ) return;
-                    const potentials = collider.body.potentials();
-                    for (let potential of potentials)
+                    if (yMag > 0)
                     {
-                        const otherComp = (potential as any).lagom_component;
-                        const result = new Result();
+                        const dy = Math.min(yMag, system.step);
+                        collider.body.y += dy * yDir;
 
-                        // Check layers, then do actual collision check
-                        if (system.collisionMatrix.canCollide(collider.layer, otherComp.layer)
-                            && collider.body.collides(potential, result))
+                        // Do collision check + resolution
+                        system.detectSystem.update();
+
+                        // TODO I am not sure where to do this, but we need to stop looping if the thing was destroyed
+                        //  during iteration (which is likely on a collision frame)
+                        if (!entity.active || !body.active || !collider.active) return;
+                        const potentials = collider.body.potentials();
+                        for (const potential of potentials)
                         {
-                            // Check if we are a trigger. If we are, don't move out of the collision.
-                            if (!collider.isTrigger && !otherComp.isTrigger)
-                            {
-                                // Move out of the collision, we are done in this direction.
-                                collider.body.y -= result.overlap_y * result.overlap;
-                                yMag = 0;
-                                body.velocityY = 0;
+                            const otherComp = (potential as any).lagomComponent;
+                            const result = new Result();
 
-                                if (!collidersThisFrame.includes(otherComp))
-                                {
-                                    collidersThisFrame.push(otherComp);
-                                    DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                                                              otherComp, collider, result);
-                                    // DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
-                                    //                                           collider, otherComp, result);
-                                }
-                            }
-                            else
+                            // Check layers, then do actual collision check
+                            if (system.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                                && collider.body.collides(potential, result))
                             {
-                                if (!triggersThisFrame.includes(otherComp))
+                                // Check if we are a trigger. If we are, don't move out of the collision.
+                                if (!collider.isTrigger && !otherComp.isTrigger)
                                 {
-                                    triggersThisFrame.push(otherComp);
-                                    DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
-                                                                            otherComp, collider, result);
-                                    // DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
-                                    //                                         collider, otherComp, result);
+                                    // Move out of the collision, we are done in this direction.
+                                    collider.body.y -= result.overlap_y * result.overlap;
+                                    yMag = 0;
+                                    body.velocityY = 0;
+
+                                    if (!collidersThisFrame.includes(otherComp))
+                                    {
+                                        collidersThisFrame.push(otherComp);
+                                        DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                                                                  otherComp, collider, result);
+                                        // DetectCollisionSystem.fireCollisionEvents(collidersLastFrame,
+                                        //                                           collider, otherComp, result);
+                                    }
+                                }
+                                else
+                                {
+                                    if (!triggersThisFrame.includes(otherComp))
+                                    {
+                                        triggersThisFrame.push(otherComp);
+                                        DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                                                                otherComp, collider, result);
+                                        // DetectCollisionSystem.fireTriggerEvents(triggersLastFrame,
+                                        //                                         collider, otherComp, result);
+                                    }
                                 }
                             }
                         }
+                        yMag -= dy;
                     }
-                    yMag -= dy;
                 }
-            }
 
-            // Trigger the exist event for anything that is no longer colliding
-            collidersLastFrame.forEach(val => collider.onCollisionExit.trigger(collider, val));
-            triggersLastFrame.forEach(val => collider.onTriggerExit.trigger(collider, val));
+                // Trigger the exist event for anything that is no longer colliding
+                collidersLastFrame.forEach(val => collider.onCollisionExit.trigger(collider, val));
+                triggersLastFrame.forEach(val => collider.onTriggerExit.trigger(collider, val));
 
-            // Do a final update of the system.
-            system.detectSystem.update();
+                // Do a final update of the system.
+                system.detectSystem.update();
 
-            // Update the body properties.
-            body.pendingY = 0;
-            body.pendingX = 0;
-            body.dxLastFrame = (collider.body.x - collider.xOff) - entity.transform.x;
-            body.dyLastFrame = (collider.body.y - collider.yOff) - entity.transform.y;
+                // Update the body properties.
+                body.pendingY = 0;
+                body.pendingX = 0;
+                body.dxLastFrame = (collider.body.x - collider.xOff) - entity.transform.x;
+                body.dyLastFrame = (collider.body.y - collider.yOff) - entity.transform.y;
 
-            // Update the entity position.
-            entity.transform.x = collider.body.x - collider.xOff;
-            entity.transform.y = collider.body.y - collider.yOff;
-        });
+                // Update the entity position.
+                entity.transform.x = collider.body.x - collider.xOff;
+                entity.transform.y = collider.body.y - collider.yOff;
+            });
     }
 
     private static fireCollisionEvents(collidersLastFrame: DetectCollider[], otherComp: DetectCollider,
-                                       collider: DetectCollider, result: Result)
+                                       collider: DetectCollider, result: Result): void
     {
         if (collidersLastFrame.includes(otherComp))
         {
@@ -214,7 +215,7 @@ export class DetectCollisionSystem extends System
     }
 
     private static fireTriggerEvents(triggersLastFrame: DetectCollider[], otherComp: DetectCollider,
-                                     collider: DetectCollider, result: Result)
+                                     collider: DetectCollider, result: Result): void
     {
         if (triggersLastFrame.includes(otherComp))
         {
@@ -230,19 +231,19 @@ export class DetectCollisionSystem extends System
         collider.triggersLastFrame.push(otherComp);
     }
 
-    addBody(body: DetectCollider)
+    addBody(body: DetectCollider): void
     {
         this.detectSystem.insert(body.body);
         this.detectSystem.update();
     }
 
-    removeBody(body: DetectCollider)
+    removeBody(body: DetectCollider): void
     {
         this.detectSystem.remove(body.body);
         this.detectSystem.update();
     }
 
-    place_free(collider: DetectCollider, dx: number, dy: number): boolean
+    placeFree(collider: DetectCollider, dx: number, dy: number): boolean
     {
         // Try moving to the destination.
         const currX = collider.body.x;
@@ -254,9 +255,9 @@ export class DetectCollisionSystem extends System
         this.detectSystem.update();
 
         const potentials = collider.body.potentials();
-        for (let potential of potentials)
+        for (const potential of potentials)
         {
-            const otherComp = (potential as any).lagom_component as DetectCollider;
+            const otherComp = (potential as any).lagomComponent as DetectCollider;
 
             if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                 && collider.body.collides(potential))

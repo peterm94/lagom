@@ -68,7 +68,7 @@ export class AnimatedSpriteController extends AnimatedSprite
         }
     }
 
-    private spriteChangeFrame(caller: FrameTrigger<number>, animationFrame: number)
+    private spriteChangeFrame(caller: FrameTrigger<number>, animationFrame: number): void
     {
         if (this.currentEventMap !== null)
         {
@@ -87,7 +87,7 @@ export class AnimatedSpriteController extends AnimatedSprite
      * @param reset Force reset. If true, will reset the animation. Otherwise, if the specified state is already
      * active, will do nothing.
      */
-    public setAnimation(stateId: number, reset: boolean = false)
+    public setAnimation(stateId: number, reset = false): void
     {
         // Check if we are already in the desired state.
         if (this._currentState === stateId && !reset) return;
@@ -112,7 +112,7 @@ export class AnimatedSpriteController extends AnimatedSprite
      * @param event The event to fire.
      */
     // TODO this needs to come in with the SpriteAnimation object.
-    addEvent(animationId: number, frame: number, event: () => void)
+    addEvent(animationId: number, frame: number, event: () => void): void
     {
         const animation = this.events.get(animationId);
         if (animation === undefined)

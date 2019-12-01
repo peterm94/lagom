@@ -31,7 +31,7 @@ export class MatterEngine extends GlobalSystem
      */
     constructor(collisionMatrix: CollisionMatrix,
                 gravity: Matter.Vector = Matter.Vector.create(0, 0),
-                debug: boolean = false)
+                debug = false)
     {
         super();
 
@@ -47,8 +47,8 @@ export class MatterEngine extends GlobalSystem
             for (let i = 0; i < event.pairs.length; i++)
             {
                 const pair = event.pairs[i];
-                const compA = (pair.bodyA as any).lagom_component as MCollider;
-                const compB = (pair.bodyB as any).lagom_component as MCollider;
+                const compA = (pair.bodyA as any).lagomComponent as MCollider;
+                const compB = (pair.bodyB as any).lagomComponent as MCollider;
 
                 // Call the event for both colliders.
                 compA.onCollisionEnter.trigger(compA, compB);
@@ -65,8 +65,8 @@ export class MatterEngine extends GlobalSystem
             for (let i = 0; i < event.pairs.length; i++)
             {
                 const pair = event.pairs[i];
-                const compA = (pair.bodyA as any).lagom_component as MCollider;
-                const compB = (pair.bodyB as any).lagom_component as MCollider;
+                const compA = (pair.bodyA as any).lagomComponent as MCollider;
+                const compB = (pair.bodyB as any).lagomComponent as MCollider;
 
                 compA.onCollision.trigger(compA, compB);
                 compB.onCollision.trigger(compB, compA);
@@ -77,8 +77,8 @@ export class MatterEngine extends GlobalSystem
             for (let i = 0; i < event.pairs.length; i++)
             {
                 const pair = event.pairs[i];
-                const compA = (pair.bodyA as any).lagom_component as MCollider;
-                const compB = (pair.bodyB as any).lagom_component as MCollider;
+                const compA = (pair.bodyA as any).lagomComponent as MCollider;
+                const compB = (pair.bodyB as any).lagomComponent as MCollider;
 
                 compA.onCollisionExit.trigger(compA, compB);
                 compB.onCollisionExit.trigger(compB, compA);
@@ -101,6 +101,7 @@ export class MatterEngine extends GlobalSystem
 
     update()
     {
+        // Not required.
     }
 
     fixedUpdate(delta: number): void
@@ -112,7 +113,7 @@ export class MatterEngine extends GlobalSystem
         // Run over all colliders
         this.runOnComponents((colliders: MCollider[]) => {
             // Update Pixi positions to the matter positions
-            for (let collider of colliders)
+            for (const collider of colliders)
             {
                 const entity = collider.getEntity();
                 entity.transform.x = collider.body.position.x - collider.xOffset;

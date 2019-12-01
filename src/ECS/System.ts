@@ -12,7 +12,7 @@ export abstract class System extends LifecycleObject implements Updatable
 {
     private readonly runOn: Map<Entity, Component[]> = new Map();
 
-    private onComponentAdded(entity: Entity, component: Component)
+    private onComponentAdded(entity: Entity, component: Component): void
     {
         // Check if we care about this type at all
         if (this.types().find((val) => {
@@ -23,7 +23,7 @@ export abstract class System extends LifecycleObject implements Updatable
         }
 
         // Compute if we can run on this updated entity
-        let entry = this.runOn.get(entity);
+        const entry = this.runOn.get(entity);
 
         // We already have an entry, nothing to do!
         if (entry !== undefined) return;
@@ -51,7 +51,7 @@ export abstract class System extends LifecycleObject implements Updatable
         return ret;
     }
 
-    private onComponentRemoved(entity: Entity, component: Component)
+    private onComponentRemoved(entity: Entity, component: Component): void
     {
         // Check if we care about this type at all
         if (this.types().find((val) => {
@@ -80,14 +80,14 @@ export abstract class System extends LifecycleObject implements Updatable
         }
     }
 
-    private onEntityAdded(caller: Scene, entity: Entity)
+    private onEntityAdded(caller: Scene, entity: Entity): void
     {
         // Register for component changes
         entity.componentAddedEvent.register(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.register(this.onComponentRemoved.bind(this));
     }
 
-    private onEntityRemoved(caller: Scene, entity: Entity)
+    private onEntityRemoved(caller: Scene, entity: Entity): void
     {
         entity.componentAddedEvent.deregister(this.onComponentAdded.bind(this));
         entity.componentRemovedEvent.deregister(this.onComponentRemoved.bind(this));
@@ -96,7 +96,7 @@ export abstract class System extends LifecycleObject implements Updatable
         this.runOn.delete(entity);
     }
 
-    addedToScene(scene: Scene)
+    addedToScene(scene: Scene): void
     {
         scene.entityAddedEvent.register(this.onEntityAdded.bind(this));
         scene.entityRemovedEvent.register(this.onEntityRemoved.bind(this));
@@ -115,7 +115,7 @@ export abstract class System extends LifecycleObject implements Updatable
         });
     }
 
-    onRemoved()
+    onRemoved(): void
     {
         super.onRemoved();
 
@@ -134,6 +134,7 @@ export abstract class System extends LifecycleObject implements Updatable
 
     fixedUpdate(delta: number): void
     {
+        // Default empty implementation.
     }
 
     /**
@@ -149,14 +150,14 @@ export abstract class System extends LifecycleObject implements Updatable
      * For example, if types() is [Sprite, MCollider], the function arguments would look as follows: (entity:
      * Entity, sprite: Sprite, collider: MCollider).
      */
-    protected runOnEntities(f: Function)
+    protected runOnEntities(f: Function): void
     {
         this.runOn.forEach((value: Component[], key: Entity) => {
             f(key, ...value);
         });
     }
 
-    protected runOnEntitiesWithSystem(f: Function)
+    protected runOnEntitiesWithSystem(f: Function): void
     {
         this.runOn.forEach((value: Component[], key: Entity) => {
             f(this, key, ...value);

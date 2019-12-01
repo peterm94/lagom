@@ -95,17 +95,17 @@ export class Vector
 export class Rigidbody extends Component
 {
     readonly type: BodyType;
-    mass: number = 100;
+    mass = 100;
 
     // linear only for now
     velocity: Vector = Vector.zero();
 
     // linear xDrag coefficient
-    xDrag: number = 0.1;
-    yDrag: number = 0.1;
+    xDrag = 0.1;
+    yDrag = 0.1;
 
     // how affected by gravity are we?
-    gravityScale: number = 1;
+    gravityScale = 1;
 
 
     constructor(type: BodyType = BodyType.Dynamic)
@@ -114,7 +114,7 @@ export class Rigidbody extends Component
         this.type = type;
     }
 
-    addForce(force: Vector, impulse: boolean = false)
+    addForce(force: Vector, impulse = false): void
     {
         // No mass calculation
         if (impulse)
@@ -133,7 +133,7 @@ export class Rigidbody extends Component
      * @param vector
      * @param impulse
      */
-    addForceLocal(vector: Vector, impulse: boolean = false)
+    addForceLocal(vector: Vector, impulse = false): void
     {
         const angle = this.getEntity().transform.rotation;
 

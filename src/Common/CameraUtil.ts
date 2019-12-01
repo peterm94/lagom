@@ -20,22 +20,22 @@ export class FollowCamera extends System
 {
     private camera!: Camera;
 
-    centre: boolean = true;
-    xOffset: number = 0;
-    yOffset: number = 0;
-    lerpSpeed: number = 0.1;
+    centre = true;
+    xOffset = 0;
+    yOffset = 0;
+    lerpSpeed = 0.1;
 
 
-    constructor(options: CamOptions | null = null)
+    constructor(options?: CamOptions)
     {
         super();
 
         if (options)
         {
-            if (options.centre) this.centre = options.centre;
-            if (options.xOffset) this.xOffset = options.xOffset;
-            if (options.yOffset) this.yOffset = options.yOffset;
-            if (options.lerpSpeed) this.lerpSpeed = options.lerpSpeed;
+            if (options.centre !== undefined) this.centre = options.centre;
+            if (options.xOffset !== undefined) this.xOffset = options.xOffset;
+            if (options.yOffset !== undefined) this.yOffset = options.yOffset;
+            if (options.lerpSpeed !== undefined) this.lerpSpeed = options.lerpSpeed;
         }
     }
 
@@ -51,8 +51,9 @@ export class FollowCamera extends System
         return [FollowMe];
     }
 
-    update(delta: number): void
+    update(): void
     {
+        // no normal update required for this system
     }
 
     fixedUpdate(delta: number): void

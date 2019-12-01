@@ -23,7 +23,7 @@ import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectColliders";
 import {Key} from "../../Input/Key";
-import {Log, MathUtil} from "../../Common/Util";
+import {MathUtil} from "../../Common/Util";
 import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
 import {Timer, TimerSystem} from "../../Common/Timer";
 import {Observable} from "../../Common/Observer";
@@ -75,7 +75,7 @@ class Blob extends Entity
         super("blob", x, y);
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
         this.addComponent(new AnimatedSprite(enemiesSheet.textures([[0, 0], [1, 0]]), {animationSpeed: 300}));
@@ -86,7 +86,7 @@ class Blob extends Entity
 
 class MainScene extends Scene
 {
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
 
@@ -118,7 +118,7 @@ class MainScene extends Scene
         this.addEntity(new NextLevelTrigger(leftWallX, topY + gameHeight * 32));
     }
 
-    private createLevel()
+    private createLevel(): void
     {
         // Create the top layer
         this.addEntity(new Block(0, topY, 1, 0));
@@ -191,12 +191,12 @@ class NextLevelTrigger extends Entity
         super("level end trigger", x, y);
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
 
         const trigger = this.addComponent(new RectCollider(0, 0, 288, 32, Layers.EndTrigger, 0, true));
-        trigger.onTriggerEnter.register((caller, data) => {
+        trigger.onTriggerEnter.register(() => {
             // Restart the level
             this.getScene().getGame().setScene(new MainScene(this.getScene().getGame()));
         });
@@ -227,6 +227,7 @@ class SimpleGravity extends System
 
     update(delta: number): void
     {
+        // Not required
     }
 }
 
@@ -246,7 +247,7 @@ class PlayerMover extends System
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider, grav: GravityAware) => {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody) => {
 
             if (Game.keyboard.isKeyDown(Key.ArrowLeft, Key.KeyA))
             {
@@ -297,7 +298,7 @@ class Bullet extends Entity
         super("bullet", x, y);
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
         this.addComponent(new Sprite(bulletSheet.texture(0, 0), {xAnchor: 0.5}));
@@ -341,13 +342,13 @@ class PlayerGUI extends GUIEntity
         super("gui", 0, 0);
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
         const ammoDisp = this.addComponent(
             new TextDisp(0, 10, `Ammo: ${this.ammo.ammo}`, new PIXI.TextStyle({fill: 'red'})));
         this.ammo.onChange.register((_, num) => {
-            ammoDisp.pixiObj.text = `Ammo: ${num}`
+            ammoDisp.pixiObj.text = `Ammo: ${num}`;
         });
     }
 }
@@ -371,7 +372,7 @@ class Ammo extends Component
         this.onChange.trigger(this, value);
     }
 
-    private _ammo: number = 0;
+    private _ammo = 0;
 
     readonly onChange: Observable<Ammo, number> = new Observable();
 }
@@ -409,14 +410,14 @@ class Player extends Entity
         collider.onTriggerEnter.register(this.onHitThing.bind(this));
     }
 
-    onHitThing(coll: DetectCollider, res: { other: DetectCollider, result: Result })
+    onHitThing(coll: DetectCollider, res: { other: DetectCollider; result: Result }): void
     {
         // If we are above whatever we collided with, reset our ammo
         if (res.other.getEntity().transform.y > this.transform.y)
         {
             // Check we are actually above an entity, the other check may trigger on touching the side of walls.
             // Note this may match with something else.
-            if (true /*!coll.place_free(0, 1)*/)
+            if (true /*!coll.placeFree(0, 1)*/)
             {
                 const ammo = this.getComponent<Ammo>(Ammo);
                 if (ammo)

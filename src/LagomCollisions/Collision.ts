@@ -61,7 +61,7 @@ export class Collision
      * @returns True if the point is on the line, false otherwise.
      */
     static pointOnLine(px: number, py: number, x1: number, y1: number, x2: number, y2: number,
-                       tolerance: number = 0.1): boolean
+                       tolerance = 0.1): boolean
     {
         // Distance from each end to the point
         const d1 = MathUtil.pointDistance(px, py, x1, y1);
@@ -110,8 +110,8 @@ export class Collision
     static checkCollisionCircleCircle(c1: CircleCollider, c2: CircleCollider): boolean
     {
         // TODO check how offsets work.. i think global handles it but make sure
-        let p1 = c1.pixiObj.getGlobalPosition(undefined as any, true);
-        let p2 = c2.pixiObj.getGlobalPosition(undefined as any, true);
+        const p1 = c1.pixiObj.getGlobalPosition(undefined as any, true);
+        const p2 = c2.pixiObj.getGlobalPosition(undefined as any, true);
 
         const dst = MathUtil.distanceSquared(p1.x, p1.y, p2.x, p2.y);
         const rad = Math.pow(c1.radius + c2.radius, 2);
@@ -176,7 +176,7 @@ export abstract class Collider extends PIXIComponent<PIXI.Container>
     readonly collisionEvent: Observable<Collider, Collider> = new Observable();
     isTrigger: boolean;
 
-    protected constructor(trigger: boolean = true)
+    protected constructor(trigger = true)
     {
         super(Util.sortedContainer());
         this.isTrigger = trigger;
@@ -188,7 +188,7 @@ export class BoxCollider extends Collider
     width: number;
     height: number;
 
-    constructor(width: number, height: number, xoff: number = 0, yoff: number = 0, isTrigger: boolean = true)
+    constructor(width: number, height: number, xoff = 0, yoff = 0, isTrigger = true)
     {
         super(isTrigger);
         this.width = width;
@@ -198,7 +198,7 @@ export class BoxCollider extends Collider
         this.pixiObj.y += yoff;
     }
 
-    static fromSprite(sprite: Sprite, xoff: number = 0, yoff: number = 0, isTrigger: boolean = true): BoxCollider
+    static fromSprite(sprite: Sprite, xoff = 0, yoff = 0, isTrigger = true): BoxCollider
     {
         return new BoxCollider(sprite.pixiObj.width, sprite.pixiObj.height, xoff, yoff, isTrigger);
     }
@@ -208,7 +208,7 @@ export class CircleCollider extends Collider
 {
     radius: number;
 
-    constructor(radius: number, isTrigger: boolean = true)
+    constructor(radius: number, isTrigger = true)
     {
         super(isTrigger);
         this.radius = radius;

@@ -29,14 +29,14 @@ export abstract class LifecycleObject
     /**
      * Will be called when added to the Game.
      */
-    onAdded()
+    onAdded(): void
     {
     }
 
     /**
      * Will be called when removed from the Game.
      */
-    onRemoved()
+    onRemoved(): void
     {
         this.active = false;
     }
@@ -44,8 +44,9 @@ export abstract class LifecycleObject
     /**
      * Call this to destroy the object. Any dependent objects or children will also be destroyed.
      */
-    destroy()
+    destroy(): void
     {
+        // Default empty implementation.
     }
 }
 

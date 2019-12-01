@@ -11,10 +11,10 @@ const Mouse = require('pixi.js-mouse');
 
 class Diag
 {
-    renderTime: number = 0;
-    fixedUpdateTime: number = 0;
-    updateTime: number = 0;
-    totalFrameTime: number = 0;
+    renderTime = 0;
+    fixedUpdateTime = 0;
+    updateTime = 0;
+    totalFrameTime = 0;
 }
 
 /**
@@ -26,7 +26,7 @@ export class Game
     static keyboard = Keyboard;
 
     // Set this to true to end the game
-    gameOver: boolean = false;
+    gameOver = false;
 
     // Main PIXI renderer
     readonly renderer: PIXI.Renderer;
@@ -52,7 +52,7 @@ export class Game
     // Delta since the last frame update. This is *not* the delta of the ECS update, but the render loop.
     deltaTime = 0;
 
-    private updateLoop()
+    private updateLoop(): void
     {
         if (!this.gameOver)
         {
@@ -116,7 +116,7 @@ export class Game
     /**
      * Start the game loop.
      */
-    start()
+    start(): void
     {
         if (this.currentScene == null)
         {
@@ -136,7 +136,7 @@ export class Game
         }
     }
 
-    private startInternal()
+    private startInternal(): void
     {
         Log.info("Game started.");
 

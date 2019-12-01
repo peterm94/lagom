@@ -13,7 +13,7 @@ export class Timer<T> extends Component
     payload: T;
     repeat: boolean;
 
-    constructor(lengthMS: number, payload: T, repeat: boolean = false)
+    constructor(lengthMS: number, payload: T, repeat = false)
     {
         super();
         this.remainingMS = lengthMS;
@@ -33,7 +33,7 @@ export class TimerSystem extends GlobalSystem
     update(delta: number): void
     {
         this.runOnComponents((timers: Timer<unknown>[]) => {
-            for (let timer of timers)
+            for (const timer of timers)
             {
                 timer.remainingMS -= delta;
 
@@ -66,7 +66,7 @@ export class AsyncTimer
         this.update(0);
     }
 
-    private update(elapsedMS: number)
+    private update(elapsedMS: number): void
     {
         this.remainingMS -= elapsedMS;
 

@@ -23,8 +23,8 @@ export class ScreenShake extends Component
  */
 export class ScreenShaker extends GlobalSystem
 {
-    intensity: number = 0;
-    duration: number = 0;
+    intensity = 0;
+    duration = 0;
 
     types(): LagomType<Component>[]
     {
@@ -34,7 +34,7 @@ export class ScreenShaker extends GlobalSystem
     update(delta: number): void
     {
         this.runOnComponents((shakers: ScreenShake[]) => {
-            for (let shaker of shakers)
+            for (const shaker of shakers)
             {
                 // TODO this isn't perfect, if more than 1 are called, the will be combined
                 this.intensity = shaker.intensity > this.intensity ? shaker.intensity : this.intensity;

@@ -274,9 +274,7 @@ class ScoreSystem extends System
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity,
-                            body: DetectRigidbody,
-                            ball: BallMovement) => {
+        this.runOnEntities((entity: Entity) => {
             if (entity.transform.x < 0)
             {
                 this.score.player2Scored();

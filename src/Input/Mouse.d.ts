@@ -1,7 +1,7 @@
 /**
  * Type definitions for pixi.js-mouse.
  */
-declare module Mouse
+declare namespace Mouse
 {
     /**
      * Check if a button pressed down in this frame.

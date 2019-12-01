@@ -1,54 +1,11 @@
 import {Entity} from "../ECS/Entity";
 import * as PIXI from "pixi.js";
 
-export class Util
-{
-    /**
-     * Convenience list removal function.
-     * @param list The list to remove an element from.
-     * @param element The element to remove.
-     * @returns True on successful deletion, false if the element did not exist.
-     */
-    static remove<T>(list: T[], element: T): boolean
-    {
-        const idx = list.indexOf(element);
-
-        if (idx > -1)
-        {
-            list.splice(idx, 1);
-            return true;
-        }
-
-        return false;
-    }
-
-    static move(e: Entity, dist: number)
-    {
-        const mx = MathUtil.lengthDirX(dist, e.transform.rotation);
-        const my = MathUtil.lengthDirY(dist, e.transform.rotation);
-
-        e.transform.x += mx;
-        e.transform.y += my;
-    }
-
-    static sortedContainer(): PIXI.Container
-    {
-        const container = new PIXI.Container();
-        container.sortableChildren = true;
-        container.sortDirty = true;
-        return container;
-    }
-
-    static choose<T>(...options: T[]): T
-    {
-        return options[MathUtil.randomRange(0, options.length)];
-    }
-}
 
 export class MathUtil
 {
     // Conversion constant for degrees to radians.
-    private static conv: number = 0.0174532925;
+    private static conv = 0.0174532925;
 
     /**
      * Convert a degree to a radian.
@@ -160,7 +117,7 @@ export class MathUtil
         return -Math.atan2((y2 - y1), (x2 - x1));
     }
 
-    static floatEquals(f1: number, f2: number, tolerance: number = 0.001): boolean
+    static floatEquals(f1: number, f2: number, tolerance = 0.001): boolean
     {
         return Math.abs(f1 - f2) < tolerance;
     }
@@ -183,6 +140,51 @@ export class MathUtil
     }
 }
 
+
+export class Util
+{
+    /**
+     * Convenience list removal function.
+     * @param list The list to remove an element from.
+     * @param element The element to remove.
+     * @returns True on successful deletion, false if the element did not exist.
+     */
+    static remove<T>(list: T[], element: T): boolean
+    {
+        const idx = list.indexOf(element);
+
+        if (idx > -1)
+        {
+            list.splice(idx, 1);
+            return true;
+        }
+
+        return false;
+    }
+
+    static move(e: Entity, dist: number)
+    {
+        const mx = MathUtil.lengthDirX(dist, e.transform.rotation);
+        const my = MathUtil.lengthDirY(dist, e.transform.rotation);
+
+        e.transform.x += mx;
+        e.transform.y += my;
+    }
+
+    static sortedContainer(): PIXI.Container
+    {
+        const container = new PIXI.Container();
+        container.sortableChildren = true;
+        container.sortDirty = true;
+        return container;
+    }
+
+    static choose<T>(...options: T[]): T
+    {
+        return options[MathUtil.randomRange(0, options.length)];
+    }
+}
+
 enum LogLevel
 {
     NONE,
@@ -197,7 +199,7 @@ export class Log
 {
     static logLevel: LogLevel = LogLevel.WARN;
 
-    static error(...msg: any[])
+    static error(...msg: any[]): void
     {
         if (this.logLevel >= LogLevel.ERROR)
         {
@@ -205,7 +207,7 @@ export class Log
         }
     }
 
-    static warn(...msg: any[])
+    static warn(...msg: any[]): void
     {
         if (this.logLevel >= LogLevel.WARN)
         {
@@ -213,7 +215,7 @@ export class Log
         }
     }
 
-    static info(...msg: any[])
+    static info(...msg: any[]): void
     {
         if (this.logLevel >= LogLevel.INFO)
         {
@@ -221,7 +223,7 @@ export class Log
         }
     }
 
-    static debug(...msg: any[])
+    static debug(...msg: any[]): void
     {
         if (this.logLevel >= LogLevel.DEBUG)
         {
@@ -229,12 +231,19 @@ export class Log
         }
     }
 
-    static trace(...msg: any[])
+    static trace(...msg: any[]): void
     {
         if (this.logLevel >= LogLevel.ALL)
         {
             console.debug("%cTRACE", 'color: #65c4ff', ...msg);
         }
+    }
+}
+
+class MapEntry<K, V>
+{
+    constructor(readonly key: K, readonly value: V)
+    {
     }
 }
 
@@ -262,20 +271,13 @@ export class MultiMap<K, V>
         return this.entries.find(entry => entry.key === key && entry.value === value) !== undefined;
     }
 
-    public remove(key: K, value: V)
+    public remove(key: K, value: V): void
     {
         Util.remove(this.entries, new MapEntry<K, V>(key, value));
     }
 
-    public put(key: K, value: V)
+    public put(key: K, value: V): void
     {
         this.entries.push(new MapEntry<K, V>(key, value));
-    }
-}
-
-class MapEntry<K, V>
-{
-    constructor(readonly key: K, readonly value: V)
-    {
     }
 }

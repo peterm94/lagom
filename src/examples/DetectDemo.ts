@@ -2,9 +2,6 @@ import {Scene} from "../ECS/Scene";
 import {Game} from "../ECS/Game";
 import {Entity} from "../ECS/Entity";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
-import {
-    DetectCollisionSystem
-} from "../DetectCollisions/DetectCollisions";
 import {Component} from "../ECS/Component";
 import {System} from "../ECS/System";
 import {Result} from "detect-collisions";
@@ -80,7 +77,7 @@ class Square extends Entity
     {
         super.onAdded();
 
-        const collider = this.addComponent(new RectCollider(0, 0, 32, 32, this.layer));
+        this.addComponent(new RectCollider(0, 0, 32, 32, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
         this.addComponent(new RenderRect(0, 0, 32, 32));
@@ -101,7 +98,7 @@ class CircleBoy extends Entity
     {
         super.onAdded();
 
-        const collider = this.addComponent(new CircleCollider(0, 0, 100, this.layer));
+        this.addComponent(new CircleCollider(0, 0, 100, this.layer));
 
         // this.addComponent(new Sprite(loader.resources[spr_block].texture));
         this.addComponent(new RenderCircle(0, 0, 100));
@@ -127,7 +124,7 @@ class Player extends Entity
             new RectCollider(0, 0, 32, 32, this.layer));
 
         collider.onCollision.register((caller: DetectCollider,
-                                       res: { other: DetectCollider, result: Result }) => {
+                                       res: { other: DetectCollider; result: Result }) => {
             this.transform.x -= res.result.overlap * res.result.overlap_x;
             this.transform.y -= res.result.overlap * res.result.overlap_y;
         });

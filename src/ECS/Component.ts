@@ -25,7 +25,7 @@ export abstract class Component extends LifecycleObject
         return this.getEntity().getScene();
     }
 
-    destroy()
+    destroy(): void
     {
         super.destroy();
         this.getEntity().removeComponent(this, true);
@@ -45,13 +45,13 @@ export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Compon
         this.pixiObj = pixiComp;
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
         this.getEntity().transform.addChild(this.pixiObj);
     }
 
-    onRemoved()
+    onRemoved(): void
     {
         super.onRemoved();
         this.getEntity().transform.removeChild(this.pixiObj);

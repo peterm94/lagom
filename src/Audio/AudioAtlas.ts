@@ -5,7 +5,7 @@ import {Howl} from 'howler';
  */
 export class AudioAtlas
 {
-    readonly sounds: Map<String, Howl> = new Map();
+    readonly sounds: Map<string, Howl> = new Map();
 
     /**
      * Load an audio file for use.

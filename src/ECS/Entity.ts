@@ -24,8 +24,8 @@ export class Entity extends LifecycleObject
     readonly components: Component[] = [];
 
     transform: PIXI.Container;
-    layer: number = 0;
-    private _depth: number = 0;
+    layer = 0;
+    private _depth = 0;
 
     private static _next_id = 0;
 
@@ -36,7 +36,7 @@ export class Entity extends LifecycleObject
      * @param y The starting y position.
      * @param depth Entity depth. Used for draw order.
      */
-    constructor(name: string, x: number = 0, y: number = 0, depth: number = 0)
+    constructor(name: string, x = 0, y = 0, depth = 0)
     {
         super();
         this.name = name;
@@ -66,7 +66,7 @@ export class Entity extends LifecycleObject
         return component;
     }
 
-    removeComponent(component: Component, doRemove: boolean)
+    removeComponent(component: Component, doRemove: boolean): void
     {
         Log.trace("Removing component from entity.", component);
 
@@ -114,7 +114,7 @@ export class Entity extends LifecycleObject
         }
     }
 
-    onRemoved()
+    onRemoved(): void
     {
         super.onRemoved();
 
@@ -128,7 +128,7 @@ export class Entity extends LifecycleObject
         }
     }
 
-    destroy()
+    destroy(): void
     {
         super.destroy();
 

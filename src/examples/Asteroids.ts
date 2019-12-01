@@ -1,11 +1,11 @@
 import * as PIXI from "pixi.js";
 import {Game} from "../ECS/Game";
 import {Diagnostics} from "../Common/Debug";
-import spr_asteroid from './resources/asteroid.png'
-import spr_asteroid2 from './resources/asteroid2.png'
-import spr_asteroid3 from './resources/asteroid3.png'
-import spr_ship from './resources/ship.png'
-import spr_bullet from './resources/bullet.png'
+import spr_asteroid from './resources/asteroid.png';
+import spr_asteroid2 from './resources/asteroid2.png';
+import spr_asteroid3 from './resources/asteroid3.png';
+import spr_ship from './resources/ship.png';
+import spr_bullet from './resources/bullet.png';
 import {Log, MathUtil, Util} from "../Common/Util";
 import {CircleCollider, Collider, CollisionSystem} from "../LagomCollisions/Collision";
 import {BodyType, PhysicsSystem, Rigidbody, Vector} from "../LagomPhysics/Physics";
@@ -53,23 +53,12 @@ export class Asteroids extends Game
 
 class AsteroidsScene extends Scene
 {
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
 
         const game = this.getGame();
 
-        this.addEntity(new Ship(game.renderer.screen.width / 2,
-                                game.renderer.screen.height / 2));
-
-        for (let i = 0; i < 10; i++)
-        {
-            this.addEntity(new Asteroid(Math.random() * game.renderer.screen.width,
-                                        Math.random() * game.renderer.screen.height,
-                                        3))
-        }
-
-        this.addEntity(new Diagnostics("white"));
         this.addSystem(new ShipMover());
         this.addSystem(new ConstantMover());
         this.addSystem(new ScreenWrapper());
@@ -84,19 +73,30 @@ class AsteroidsScene extends Scene
         Log.debug(collisions);
 
         this.addGlobalSystem(new CollisionSystem(collisions));
+
+        this.addEntity(new Ship(game.renderer.screen.width / 2,
+                                game.renderer.screen.height / 2));
+
+        for (let i = 0; i < 10; i++)
+        {
+            this.addEntity(new Asteroid(Math.random() * game.renderer.screen.width,
+                                        Math.random() * game.renderer.screen.height,
+                                        3));
+        }
+
+        this.addEntity(new Diagnostics("white"));
     }
 }
 
 class Ship extends Entity
 {
-
     constructor(x: number, y: number)
     {
         super("ship", x, y);
         this.layer = Layers.Ship;
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
         this.addComponent(new WrapSprite(loader.resources[spr_ship].texture));
@@ -122,7 +122,7 @@ class Asteroid extends Entity
         this.size = size;
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
 
@@ -156,7 +156,7 @@ class Bullet extends Entity
         this.layer = Layers.Bullet;
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
         this.addComponent(new Sprite(loader.resources[spr_bullet].texture));
@@ -165,7 +165,7 @@ class Bullet extends Entity
         this.addComponent(new ScreenContained());
     }
 
-    private static onHit(caller: Collider, other: Collider)
+    private static onHit(caller: Collider, other: Collider): void
     {
         const otherEntity = other.getEntity();
         if (otherEntity instanceof Asteroid)
@@ -180,8 +180,8 @@ class WrapSprite extends Sprite
 {
 
     private static count = 0;
-    xId: string = `__wrapSprite${++WrapSprite.count}`;
-    yId: string = `__wrapSprite${++WrapSprite.count}`;
+    xId = `__wrapSprite${++WrapSprite.count}`;
+    yId = `__wrapSprite${++WrapSprite.count}`;
     xChild: PIXI.Sprite | null = null;
     yChild: PIXI.Sprite | null = null;
 
@@ -381,7 +381,7 @@ class ConstantMover extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity, motion: ConstantMotion) => {
-            Util.move(entity, motion.speed * delta)
+            Util.move(entity, motion.speed * delta);
         });
     }
 }
@@ -422,7 +422,7 @@ class ShipMover extends System
             if (Keyboard.isKeyPressed('Space'))
             {
                 this.getScene().addEntity(
-                    new Bullet(entity.transform.x, entity.transform.y, entity.transform.rotation))
+                    new Bullet(entity.transform.x, entity.transform.y, entity.transform.rotation));
             }
         });
     }

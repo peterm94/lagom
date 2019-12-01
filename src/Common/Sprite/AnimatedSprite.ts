@@ -46,15 +46,15 @@ export class AnimatedSprite extends FrameTrigger<number>
 {
     animationEndAction: AnimationEnd = AnimationEnd.LOOP;
 
-    private frameIndex: number = -1;
-    private frameAdvancer: number = 1;
+    private frameIndex = -1;
+    private frameAdvancer = 1;
     public sprite: Sprite | null = null;
 
     /**
      * Apply configuration to this AnimatedSprite.
      * @param config Any desired configuration options.
      */
-    public applyConfig(config: AnimatedSpriteConfig)
+    public applyConfig(config: AnimatedSpriteConfig): void
     {
         if (this.sprite) this.sprite.applyConfig(config);
 
@@ -66,7 +66,7 @@ export class AnimatedSprite extends FrameTrigger<number>
     /**
      * Reset the state of the FrameTrigger. This will also reset the sprite to the first animation frame.
      */
-    reset()
+    reset(): void
     {
         super.reset();
 
@@ -123,7 +123,7 @@ export class AnimatedSprite extends FrameTrigger<number>
     }
 
 
-    onAdded()
+    onAdded(): void
     {
         // TODO i can't wait to make this a nested guy :)
         super.onAdded();
@@ -131,7 +131,7 @@ export class AnimatedSprite extends FrameTrigger<number>
         this.reset();
     }
 
-    onRemoved()
+    onRemoved(): void
     {
         super.onRemoved();
         if (this.sprite) this.sprite.destroy();

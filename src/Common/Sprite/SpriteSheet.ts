@@ -59,7 +59,7 @@ export class SpriteSheet
     textures(frames: [number, number][], width?: number, height?: number): PIXI.Texture[]
     {
         const textures = [];
-        for (let frame of frames)
+        for (const frame of frames)
         {
             textures.push(this.texture(frame[0], frame[1], width, height));
         }
@@ -78,7 +78,8 @@ export class SpriteSheet
     {
         const textures = [];
 
-        for (let i = start; i <= end; i++) {
+        for (let i = start; i <= end; i++)
+        {
             textures.push(this.texture(i, row, width, height))
         }
 
