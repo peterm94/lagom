@@ -27,6 +27,8 @@ export class Entity extends ContainerLifecycleObject
     layer: number = 0;
     private _depth: number = 0;
 
+    private static _next_id = 0;
+
     /**
      * Create a new entity. It must be added to a Game to actually do anything.
      * @param name The name of the entity. Used for lookups.
@@ -38,7 +40,7 @@ export class Entity extends ContainerLifecycleObject
     {
         super();
         this.name = name;
-        this.id = Math.random().toString(16);
+        this.id = (Entity._next_id++).toString(16);
 
         this.transform = Util.sortedContainer();
         this.transform.x = x;

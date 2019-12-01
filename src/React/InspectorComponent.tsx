@@ -77,7 +77,7 @@ class EcsEntityDetails extends React.PureComponent<{ entity: InspectorEntity, in
     }
 }
 
-export class DylanInspectorComponent extends React.PureComponent<{ game: Game }>
+export class InspectorComponent extends React.PureComponent<{ game: Game }>
 {
     private inspector = this.props.game.currentScene.addGlobalSystem(new DylanInspectorSystem());
 

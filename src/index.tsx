@@ -9,7 +9,7 @@ import './App.css';
 import {Col, Container, Row} from "reactstrap";
 import {Box, Grommet} from "grommet";
 // import {InspectorComponent} from "./React/InspectorComponents";
-import {DylanInspectorComponent} from "./React/DylanInspectorComponent";
+import {InspectorComponent} from "./React/InspectorComponent";
 import {Inspector} from "./Inspector/Inspector";
 import { configure } from "mobx";
 
@@ -38,7 +38,7 @@ const App = () => (
                     <LagomGameComponent game={game}/>
                 </Box>
                 <Box width="medium" background="light-2">
-                    <DylanInspectorComponent game={game}/>
+                    <InspectorComponent game={game}/>
                 </Box>
             </Box>
         </Box>
