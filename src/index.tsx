@@ -38,7 +38,7 @@ const App = () => (
                     <LagomGameComponent game={game}/>
                 </Box>
                 <Box width="medium" background="light-2">
-                    <InspectorComponent game={game}/>
+                    {/*<InspectorComponent game={game}/>*/}
                 </Box>
             </Box>
         </Box>
