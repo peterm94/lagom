@@ -24,12 +24,14 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
      */
     public applyConfig(config: SpriteConfig)
     {
-        if (config.xOffset) this.pixiObj.x = config.xOffset;
-        if (config.yOffset) this.pixiObj.y = config.yOffset;
-        if (config.xAnchor) this.pixiObj.anchor.x = config.xAnchor;
-        if (config.yAnchor) this.pixiObj.anchor.y = config.yAnchor;
-        if (config.xScale) this.pixiObj.scale.x = config.xScale;
-        if (config.yScale) this.pixiObj.scale.y = config.yScale;
+        if (config.xOffset !== undefined) this.pixiObj.x = config.xOffset;
+        if (config.yOffset !== undefined) this.pixiObj.y = config.yOffset;
+        if (config.xAnchor !== undefined) this.pixiObj.anchor.x = config.xAnchor;
+        if (config.yAnchor !== undefined) this.pixiObj.anchor.y = config.yAnchor;
+        if (config.xScale !== undefined) this.pixiObj.scale.x = config.xScale;
+        if (config.yScale !== undefined) this.pixiObj.scale.y = config.yScale;
+        if (config.rotation !== undefined) this.pixiObj.rotation = config.rotation;
+        if (config.alpha !== undefined) this.pixiObj.alpha = config.alpha;
     }
 }
 
@@ -50,4 +52,8 @@ export interface SpriteConfig
     xScale?: number;
     /** Texture scaling in the Y direction. A negative number will flip the texture. */
     yScale?: number;
+    /** The rotation of the sprite in radians. */
+    rotation?: number;
+    /** The opacity of the sprite. 0 = transparent, 100 = opaque. */
+    alpha?: number;
 }

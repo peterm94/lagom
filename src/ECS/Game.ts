@@ -31,6 +31,9 @@ export class Game extends ContainerLifecycleObject
     // Main PIXI renderer
     readonly renderer: PIXI.Renderer;
 
+    // PIXI interaction manager
+    readonly manager: PIXI.interaction.InteractionManager;
+
     // Currently loaded scene.
     currentScene!: Scene;
 
@@ -112,6 +115,8 @@ export class Game extends ContainerLifecycleObject
 
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
+
+        this.manager = new PIXI.interaction.InteractionManager(this.renderer);
 
         // If we just want to run it raw, we can enable this again.
         // document.body.appendChild(this.renderer.view);

@@ -106,7 +106,8 @@ class FpsUpdater extends System
                         + `\nRenderTime: ${this.game.diag.renderTime.toFixed(2)}ms `
                         + `// ${this.avgRender.toFixed(2)}ms`
                         + `\nTotalFrameTime: ${this.game.diag.totalFrameTime.toFixed(2)}ms `
-                        + `// ${this.avgFrame.toFixed(2)}ms`;
+                        + `// ${this.avgFrame.toFixed(2)}ms`
+                        + `\nEntities: ${this.game.currentScene.entities.length}`
                 }
             });
         }

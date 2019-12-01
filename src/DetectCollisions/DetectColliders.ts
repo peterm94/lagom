@@ -46,9 +46,19 @@ export abstract class DetectCollider extends Component
         this.engine.addBody(this);
     }
 
+    private alreadyRemoved = false;
+
     onRemoved(): void
     {
         super.onRemoved();
+
+        // TODO this needs to be checked in the lifecycle, not here. Make that a set?
+        if (this.alreadyRemoved)
+        {
+            Log.error("attempting to remove previously removed object");
+            return;
+        }
+        this.alreadyRemoved = true;
 
         if (this.engine !== null)
         {

@@ -20,11 +20,14 @@ export class Entity extends ContainerLifecycleObject
     readonly componentRemovedEvent: Observable<Entity, Component> = new Observable();
 
     readonly name: string;
+    readonly id: string;
     readonly components: Component[] = [];
 
     transform: PIXI.Container;
     layer: number = 0;
     private _depth: number = 0;
+
+    private static _next_id = 0;
 
     /**
      * Create a new entity. It must be added to a Game to actually do anything.
@@ -37,6 +40,7 @@ export class Entity extends ContainerLifecycleObject
     {
         super();
         this.name = name;
+        this.id = (Entity._next_id++).toString(16);
 
         this.transform = Util.sortedContainer();
         this.transform.x = x;

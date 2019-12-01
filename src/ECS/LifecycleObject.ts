@@ -86,8 +86,6 @@ export abstract class ContainerLifecycleObject extends LifecycleObject implement
 
         for (let item of pending)
         {
-            Log.debug(item);
-
             switch (item.state)
             {
                 case ObjectState.PENDING_REMOVE:
