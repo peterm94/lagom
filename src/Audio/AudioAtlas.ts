@@ -20,7 +20,7 @@ export class AudioAtlas
         const resource = new Howl({src: audioResource});
         this.sounds.set(key, resource);
 
-        return resource
+        return resource;
     }
 
     /**

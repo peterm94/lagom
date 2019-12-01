@@ -46,9 +46,9 @@ export class AnimatedSprite extends FrameTrigger<number>
 {
     animationEndAction: AnimationEnd = AnimationEnd.LOOP;
 
-    private frameIndex: number = 0;
+    private frameIndex: number = -1;
     private frameAdvancer: number = 1;
-    private _sprite: Sprite | null = null;
+    public sprite: Sprite | null = null;
 
     /**
      * Apply configuration to this AnimatedSprite.
@@ -56,11 +56,11 @@ export class AnimatedSprite extends FrameTrigger<number>
      */
     public applyConfig(config: AnimatedSpriteConfig)
     {
-        if (this._sprite) this._sprite.applyConfig(config);
+        if (this.sprite) this.sprite.applyConfig(config);
 
         // Do animated sprite stuff
-        if (config.animationSpeed) this.triggerInterval = config.animationSpeed;
-        if (config.animationEndAction) this.animationEndAction = config.animationEndAction;
+        if (config.animationSpeed !== undefined) this.triggerInterval = config.animationSpeed;
+        if (config.animationEndAction !== undefined) this.animationEndAction = config.animationEndAction;
     }
 
     /**
@@ -70,7 +70,7 @@ export class AnimatedSprite extends FrameTrigger<number>
     {
         super.reset();
 
-        this.frameIndex = 0;
+        this.frameIndex = -1;
         this.frameAdvancer = 1;
     }
 
@@ -105,7 +105,7 @@ export class AnimatedSprite extends FrameTrigger<number>
                         break;
                     // Stop the advancer and lock the frame to the current one.
                     case AnimationEnd.STOP:
-                        nextFrame -= this.frameAdvancer;
+                        nextFrame = currFrame;
                         this.frameAdvancer = 0;
                         break;
                 }
@@ -113,7 +113,7 @@ export class AnimatedSprite extends FrameTrigger<number>
 
             this.frameIndex = nextFrame;
 
-            if (this._sprite) this._sprite.pixiObj.texture = this.textures[this.frameIndex];
+            if (this.sprite) this.sprite.pixiObj.texture = this.textures[this.frameIndex];
         });
     }
 
@@ -127,13 +127,13 @@ export class AnimatedSprite extends FrameTrigger<number>
     {
         // TODO i can't wait to make this a nested guy :)
         super.onAdded();
-        this._sprite = this.getEntity().addComponent(new Sprite(this.textures[this.frameIndex], this.config));
+        this.sprite = this.getEntity().addComponent(new Sprite(this.textures[this.frameIndex], this.config));
         this.reset();
     }
 
     onRemoved()
     {
         super.onRemoved();
-        if (this._sprite) this._sprite.destroy();
+        if (this.sprite) this.sprite.destroy();
     }
 }

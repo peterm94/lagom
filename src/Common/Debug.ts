@@ -65,7 +65,7 @@ class FpsUpdater extends System
 
     private rollAverage(prevAvg: number, newVal: number): number
     {
-        return (prevAvg * (this.samples - 1) + newVal) / this.samples
+        return (prevAvg * (this.samples - 1) + newVal) / this.samples;
     }
 
     fixedUpdate(delta: number): void
@@ -107,6 +107,7 @@ class FpsUpdater extends System
                         + `// ${this.avgRender.toFixed(2)}ms`
                         + `\nTotalFrameTime: ${this.game.diag.totalFrameTime.toFixed(2)}ms `
                         + `// ${this.avgFrame.toFixed(2)}ms`
+                        + `\nEntities: ${this.game.currentScene.entities.length}`
                 }
             });
         }

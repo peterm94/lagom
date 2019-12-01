@@ -31,6 +31,9 @@ export class Game
     // Main PIXI renderer
     readonly renderer: PIXI.Renderer;
 
+    // PIXI interaction manager
+    readonly manager: PIXI.interaction.InteractionManager;
+
     // Currently loaded scene.
     currentScene!: Scene;
 
@@ -107,6 +110,7 @@ export class Game
     {
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
+        this.manager = new PIXI.interaction.InteractionManager(this.renderer);
     }
 
     /**
@@ -124,7 +128,7 @@ export class Game
         {
             this.loader.load(() => {
                 this.startInternal();
-            })
+            });
         }
         else
         {
@@ -138,7 +142,7 @@ export class Game
 
         // Start the update loop
         this.lastFrameTime = Date.now();
-        this.updateLoop()
+        this.updateLoop();
     }
 
     private updateInternal(delta: number): void

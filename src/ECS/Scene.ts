@@ -33,6 +33,9 @@ export class Scene extends LifecycleObject implements Updatable
     readonly systems: System[] = [];
     readonly globalSystems: GlobalSystem[] = [];
 
+    // Milliseconds
+    readonly updateWarnThreshold = 5;
+
     readonly camera: Camera;
 
     constructor(readonly game: Game)
@@ -53,10 +56,26 @@ export class Scene extends LifecycleObject implements Updatable
     update(delta: number): void
     {
         // Update global systems
-        this.globalSystems.forEach(system => system.update(delta));
+        this.globalSystems.forEach(system => {
+            const now = Date.now();
+            system.update(delta);
+            const time = Date.now() - now;
+            if (time > this.updateWarnThreshold)
+            {
+                Log.warn(`GlobalSystem update took ${time}ms`, system);
+            }
+        });
 
         // Update normal systems
-        this.systems.forEach(system => system.update(delta));
+        this.systems.forEach(system => {
+            const now = Date.now();
+            system.update(delta);
+            const time = Date.now() - now;
+            if (time > this.updateWarnThreshold)
+            {
+                Log.warn(`System update took ${time}ms`, system);
+            }
+        });
     }
 
     fixedUpdate(delta: number): void

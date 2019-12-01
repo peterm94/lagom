@@ -38,6 +38,11 @@ export class Util
         container.sortDirty = true;
         return container;
     }
+
+    static choose<T>(...options: T[]): T
+    {
+        return options[MathUtil.randomRange(0, options.length)];
+    }
 }
 
 export class MathUtil
@@ -64,7 +69,23 @@ export class MathUtil
      */
     static lerp(start: number, end: number, amount: number): number
     {
-        return (1 - amount) * start + amount * end
+        return (1 - amount) * start + amount * end;
+    }
+
+    /**
+     * Linearly interpolate between two angles (in radians).
+     *
+     * @param start The angle to start from.
+     * @param end The target angle.
+     * @param amount The percentage to interpolate by.
+     */
+    static angleLerp(start: number, end: number, amount: number): number
+    {
+        const max = Math.PI * 2;
+
+        const delta = (end - start) % max;
+        const shortDistance = 2 * delta % max - delta;
+        return start + shortDistance * amount;
     }
 
     /**
@@ -126,7 +147,7 @@ export class MathUtil
     }
 
     /**
-     * Calculate the direction of a vector descibed by two points on the line.
+     * Calculate the direction of a vector described by two points on the line.
      * @param x1 Point 1 x.
      * @param y1 Point 1 y.
      * @param x2 Point 2 x.
@@ -153,6 +174,13 @@ export class MathUtil
     {
         return Math.floor(Math.random() * (max - min)) + min;
     }
+
+    static clamp(value: number, min: number, max: number): number
+    {
+        if (value < min) return min;
+        if (value > max) return max;
+        return value;
+    }
 }
 
 enum LogLevel
@@ -167,7 +195,7 @@ enum LogLevel
 
 export class Log
 {
-    static logLevel: LogLevel = LogLevel.ALL;
+    static logLevel: LogLevel = LogLevel.NONE;
 
     static error(...msg: any[])
     {
