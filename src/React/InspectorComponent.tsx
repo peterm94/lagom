@@ -3,12 +3,12 @@ import {Box, Button, Collapsible, Text} from "grommet";
 import {FormDown, FormNext} from "grommet-icons";
 import {Game} from "../ECS/Game";
 import {observer, useLocalStore} from "mobx-react";
-import {DylanInspectorSystem, InspectorEntity} from "../Inspector/DylanInspector";
+import {InspectorSystem, InspectorEntity} from "../Inspector/Inspector";
 import {observable, runInAction} from "mobx";
 import {useObserver} from 'mobx-react-lite';
 import {Component} from "../ECS/Component";
 
-const EcsEntity = ({entity, inspector}: { entity: InspectorEntity, inspector: DylanInspectorSystem }) => {
+const EcsEntity = ({entity, inspector}: { entity: InspectorEntity, inspector: InspectorSystem }) => {
 
     const open = useLocalStore(() => ({
         isOpen: false,
@@ -40,7 +40,7 @@ const EcsEntity = ({entity, inspector}: { entity: InspectorEntity, inspector: Dy
 };
 
 @observer
-class EcsEntityDetails extends React.PureComponent<{ entity: InspectorEntity, inspector: DylanInspectorSystem }>
+class EcsEntityDetails extends React.PureComponent<{ entity: InspectorEntity, inspector: InspectorSystem }>
 {
     componentDidMount()
     {
@@ -79,7 +79,7 @@ class EcsEntityDetails extends React.PureComponent<{ entity: InspectorEntity, in
 
 export class InspectorComponent extends React.PureComponent<{ game: Game }>
 {
-    private inspector = this.props.game.currentScene.addGlobalSystem(new DylanInspectorSystem());
+    private inspector = this.props.game.currentScene.addGlobalSystem(new InspectorSystem());
 
     public render()
     {
@@ -90,7 +90,7 @@ export class InspectorComponent extends React.PureComponent<{ game: Game }>
 }
 
 @observer
-class EntityList extends React.PureComponent<{ inspector: DylanInspectorSystem }>
+class EntityList extends React.PureComponent<{ inspector: InspectorSystem }>
 {
     public render()
     {

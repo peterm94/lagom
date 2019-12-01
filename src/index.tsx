@@ -6,11 +6,7 @@ import {LagomGameComponent} from "./React/LagomGameComponent";
 import {HexGame} from "./examples/LD45/HexGame";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
-import {Col, Container, Row} from "reactstrap";
 import {Box, Grommet} from "grommet";
-// import {InspectorComponent} from "./React/InspectorComponents";
-import {InspectorComponent} from "./React/InspectorComponent";
-import {Inspector} from "./Inspector/Inspector";
 import { configure } from "mobx";
 
 // If you want your app to work offline and load faster, you can change

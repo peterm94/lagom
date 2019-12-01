@@ -1,7 +1,7 @@
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {LagomType} from "../ECS/LifecycleObject";
 import {Component} from "../ECS/Component";
-import {observable} from "mobx";
+import {computed, observable, runInAction} from "mobx";
 import {Entity} from "../ECS/Entity";
 
 class EntityStuff
@@ -16,30 +16,38 @@ class EntityStuff
     }
 }
 
-export class Inspector extends GlobalSystem
+export type InspectorEntity = [string, string]
+
+export class InspectorSystem extends GlobalSystem
 {
-    @observable public entities: string[] = [];
-    @observable public inspectingEntity: Entity | null = null;
-    @observable public entityStuff: EntityStuff = new EntityStuff(0, 0);
+    @observable public entityNameMap: Map<string, string> = new Map();
+    public entityMap: Map<string, Entity> = new Map();
 
-    update(delta: number): void
+    @computed get entityEntries(): InspectorEntity[]
     {
-        this.entities = this.getScene().entities.map(entity => entity.name);
+        return Array.from(this.entityNameMap.entries())
+    }
 
-        if (this.inspectingEntity)
-        {
-            this.entityStuff.x = this.inspectingEntity.transform.x;
-            this.entityStuff.y = this.inspectingEntity.transform.y;
-        }
+    onAdded()
+    {
+        super.onAdded();
+        const scene = this.getScene();
+        scene.entityAddedEvent.register((scene, entity) => runInAction("Add entity to inspector.", () => {
+            this.entityNameMap.set(entity.id, entity.name);
+            this.entityMap.set(entity.id, entity);
+        }));
+        scene.entityRemovedEvent.register((scene, entity) => runInAction("Remove entity from inspector.", () => {
+            this.entityNameMap.delete(entity.id);
+            this.entityMap.delete(entity.id);
+        }));
+    }
+
+    public update(delta: number): void
+    {
     }
 
     types(): LagomType<Component>[]
     {
         return [];
-    }
-
-    selectEntity(idx: number)
-    {
-        this.inspectingEntity = this.getScene().entities[idx];
     }
 }
