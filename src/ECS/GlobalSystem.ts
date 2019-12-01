@@ -95,13 +95,8 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
         entity.componentRemovedEvent.deregister(this.onComponentRemoved.bind(this));
     }
 
-    onAdded()
+    addedToScene(scene: Scene)
     {
-        super.onAdded();
-
-        const scene = this.getScene();
-        scene.globalSystems.push(this);
-
         // make each component map
         this.types().forEach(type => {
             this.runOn.set(type.prototype, []);

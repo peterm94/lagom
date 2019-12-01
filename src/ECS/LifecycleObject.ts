@@ -1,30 +1,13 @@
 import {Log} from "../Common/Util";
 
-export enum ObjectState
-{
-    ACTIVE,
-    INACTIVE,
-    PENDING_ACTIATE,
-    PENDING_DEACTIVATE,
-    PENDING_ADD,
-    PENDING_REMOVE
-}
 
 /**
  * Base class for any lifecycle-aware object.
  */
 export abstract class LifecycleObject
 {
-    parent: LifecycleObject | null = null;
-
-    /**
-     * Set the parent for this object.
-     * @param parent The parent.
-     */
-    setParent(parent: LifecycleObject)
-    {
-        this.parent = parent;
-    }
+    parent!: LifecycleObject;
+    active = true;
 
     /**
      * Retrieve the parent. If this object is not part of the ECS, it will throw an exception.
@@ -55,58 +38,13 @@ export abstract class LifecycleObject
      */
     onRemoved()
     {
+        this.active = false;
     }
 
     /**
      * Call this to destroy the object. Any dependent objects or children will also be destroyed.
      */
     destroy()
-    {
-    }
-}
-
-/**
- * Type for internal ECS updates.
- */
-export type PendingUpdate = { state: ObjectState, object: LifecycleObject };
-
-
-/**
- * Lifecycle object that can contain other objects. Used to keep the ECS hierarchy updated correctly.
- */
-export abstract class ContainerLifecycleObject extends LifecycleObject implements Updatable
-{
-    toUpdate: PendingUpdate[] = [];
-
-    update(delta: number): void
-    {
-        // Copy the pending map make a new one, allowing it to be used for the next frame.
-        const pending = this.toUpdate;
-        this.toUpdate = [];
-
-        for (let item of pending)
-        {
-            switch (item.state)
-            {
-                case ObjectState.PENDING_REMOVE:
-                {
-                    item.object.onRemoved();
-                    break;
-                }
-                case ObjectState.PENDING_ADD:
-                {
-                    item.object.onAdded();
-                    break;
-                }
-                default:
-                {
-                    Log.error("I DON'T KNOW WHAT TO DO");
-                }
-            }
-        }
-    }
-
-    fixedUpdate(delta: number): void
     {
     }
 }

@@ -1,5 +1,5 @@
 import {Component} from "../ECS/Component";
-import {Util} from "../Common/Util";
+import {Log, Util} from "../Common/Util";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
 import {LagomType} from "../ECS/LifecycleObject";
@@ -35,7 +35,7 @@ export class DetectCollisionSystem extends System
     fixedUpdate(delta: number): void
     {
         // New thing. Move incrementally, alternating x/y until we are either at the destination or have hit something.
-        this.runOnEntities((entity: Entity, collider: DetectCollider, body: DetectRigidbody) => {
+        this.runOnEntitiesWithSystem((system: DetectCollisionSystem, entity: Entity, collider: DetectCollider, body: DetectRigidbody) => {
 
             // Skip updating static bodies. They should not be moved. We may add kinematic bodies later that allow
             // movement that aren't affected by physics.
@@ -62,13 +62,22 @@ export class DetectCollisionSystem extends System
 
             while (xMag > 0 || yMag > 0)
             {
+
+                // TODO I am not sure where to do this, but we need to stop looping if the thing was destroyed
+                //  during iteration (which is likely on a collision frame)
+                if (!entity.active || !body.active || !collider.active ) return;
+
                 if (xMag > 0)
                 {
-                    const dx = Math.min(xMag, this.step);
+                    const dx = Math.min(xMag, system.step);
                     collider.body.x += dx * xDir;
 
                     // Do collision check + resolution
-                    this.detectSystem.update();
+                    system.detectSystem.update();
+
+                    // TODO I am not sure where to do this, but we need to stop looping if the thing was destroyed
+                    //  during iteration (which is likely on a collision frame)
+                    if (!entity.active || !body.active || !collider.active ) return;
                     const potentials = collider.body.potentials();
                     for (let potential of potentials)
                     {
@@ -76,7 +85,7 @@ export class DetectCollisionSystem extends System
                         const result = new Result();
 
                         // Check layers, then do actual collision check
-                        if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                        if (system.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                             && collider.body.collides(potential, result))
                         {
                             // Check if we are a trigger. If we are, don't move out of the collision.
@@ -115,11 +124,15 @@ export class DetectCollisionSystem extends System
 
                 if (yMag > 0)
                 {
-                    const dy = Math.min(yMag, this.step);
+                    const dy = Math.min(yMag, system.step);
                     collider.body.y += dy * yDir;
 
                     // Do collision check + resolution
-                    this.detectSystem.update();
+                    system.detectSystem.update();
+
+                    // TODO I am not sure where to do this, but we need to stop looping if the thing was destroyed
+                    //  during iteration (which is likely on a collision frame)
+                    if (!entity.active || !body.active || !collider.active ) return;
                     const potentials = collider.body.potentials();
                     for (let potential of potentials)
                     {
@@ -127,7 +140,7 @@ export class DetectCollisionSystem extends System
                         const result = new Result();
 
                         // Check layers, then do actual collision check
-                        if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
+                        if (system.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                             && collider.body.collides(potential, result))
                         {
                             // Check if we are a trigger. If we are, don't move out of the collision.
@@ -169,7 +182,7 @@ export class DetectCollisionSystem extends System
             triggersLastFrame.forEach(val => collider.onTriggerExit.trigger(collider, val));
 
             // Do a final update of the system.
-            this.detectSystem.update();
+            system.detectSystem.update();
 
             // Update the body properties.
             body.pendingY = 0;

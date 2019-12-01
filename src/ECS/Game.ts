@@ -1,6 +1,6 @@
 import * as PIXI from "pixi.js";
-import {ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
 import {Scene} from "./Scene";
+import {Log} from "../Common/Util";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
 // keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
@@ -20,7 +20,7 @@ class Diag
 /**
  * Game class, containing all high level framework references. Sets up the render window and controls updating the ECS.
  */
-export class Game extends ContainerLifecycleObject
+export class Game
 {
     static mouse = Mouse;
     static keyboard = Keyboard;
@@ -66,7 +66,7 @@ export class Game extends ContainerLifecycleObject
             while (this.elapsedSinceUpdate >= this.fixedDeltaMS)
             {
                 // call FixedUpdate() for the ECS
-                this.fixedUpdate(this.fixedDeltaMS);
+                this.fixedUpdateInternal(this.fixedDeltaMS);
 
                 this.elapsedSinceUpdate -= this.fixedDeltaMS;
                 this.timeMs += this.fixedDeltaMS;
@@ -74,7 +74,7 @@ export class Game extends ContainerLifecycleObject
             this.diag.fixedUpdateTime = Date.now() - now;
             // Call update() for the ECS
             now = Date.now();
-            this.update(this.deltaTime);
+            this.updateInternal(this.deltaTime);
             this.diag.updateTime = Date.now() - now;
 
             now = Date.now();
@@ -90,10 +90,9 @@ export class Game extends ContainerLifecycleObject
 
     /**
      * Create a new Game.
-     * @param scene The first scene to load.
      * @param options Options for the PIXI Renderer.
      */
-    constructor(scene: Scene, options?: {
+    constructor(options?: {
         width?: number;
         height?: number;
         view?: HTMLCanvasElement;
@@ -109,17 +108,9 @@ export class Game extends ContainerLifecycleObject
         context?: any;
     }, private readonly loader?: PIXI.Loader)
     {
-        super();
-
-        this.setScene(scene);
-
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
-
         this.manager = new PIXI.interaction.InteractionManager(this.renderer);
-
-        // If we just want to run it raw, we can enable this again.
-        // document.body.appendChild(this.renderer.view);
     }
 
     /**
@@ -127,6 +118,10 @@ export class Game extends ContainerLifecycleObject
      */
     start()
     {
+        if (this.currentScene == null)
+        {
+            throw new Error("Ensure a scene is set before starting the game.");
+        }
         // TODO remove this whole concept and do it like the platformer does.
         // If we need to load additional resources, do that.
         if (this.loader)
@@ -143,27 +138,26 @@ export class Game extends ContainerLifecycleObject
 
     private startInternal()
     {
+        Log.info("Game started.");
+
         // Start the update loop
         this.lastFrameTime = Date.now();
         this.updateLoop();
     }
 
-    update(delta: number): void
+    private updateInternal(delta: number): void
     {
-        super.update(delta);
-
         this.currentScene.update(delta);
 
         // TODO this is fine here, but we should document it. If something in fixedUpdate() is looking for keyboard
         //  events it is going to have a bad time.
+        // TODO put this in a system? in scene itself?
         Game.keyboard.update();
         Game.mouse.update();
     }
 
-    fixedUpdate(delta: number): void
+    private fixedUpdateInternal(delta: number): void
     {
-        super.fixedUpdate(delta);
-
         this.currentScene.fixedUpdate(delta);
     }
 
@@ -171,12 +165,13 @@ export class Game extends ContainerLifecycleObject
      * Set a scene to load. Will be started instantly.
      * @param scene The Scene to load.
      */
-    setScene(scene: Scene)
+    setScene<T extends Scene>(scene: T): T
     {
-        scene.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: scene});
+        // TODO clean up old scene?
         this.currentScene = scene;
 
-        // TODO what happens to the old scene?
+        Log.debug("Setting scene for game.", scene);
+        scene.onAdded();
+        return scene;
     }
 }

@@ -15,8 +15,7 @@ import {ScreenShake, ScreenShaker} from "../Common/Screenshake";
 import {FollowCamera, FollowMe} from "../Common/CameraUtil";
 import {CircleCollider, DetectCollider, RectCollider} from "../DetectCollisions/DetectColliders";
 import {DetectRigidbody} from "../DetectCollisions/DetectRigidbody";
-
-const Keyboard = require('pixi.js-keyboard');
+import {Key} from "../Input/Key";
 
 const loader = new PIXI.Loader();
 
@@ -51,19 +50,23 @@ class DrawBounds extends Entity
     }
 }
 
-export class CameraDemo extends Scene
+export class CameraDemo extends Game
 {
     constructor()
     {
-        super();
-
-        const game = new Game(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0xe0c723});
+        super({width: 512, height: 512, resolution: 1, backgroundColor: 0xe0c723},
+              loader);
 
         loader.add([spr_block]).load(() => {
-            game.start();
-        })
-    }
+            // TODO this is probably broken
+        });
 
+        this.setScene(new CameraDemoScene(this));
+    }
+}
+
+export class CameraDemoScene extends Scene
+{
     onAdded()
     {
         super.onAdded();
@@ -75,8 +78,6 @@ export class CameraDemo extends Scene
 
         this.addSystem(new PlayerMover());
 
-        // this.addSystem(new DetectCollisionsSystem(collisions));
-        // this.addSystem(new DetectCollisionSystem());
         this.addGlobalSystem(new ScreenShaker());
         this.addEntity(new Diagnostics("blue"));
         this.addEntity(new Square(50, 50));
@@ -87,8 +88,7 @@ export class CameraDemo extends Scene
 
         this.addEntity(new DrawTLC(""));
         this.addEntity(new DrawTLC("", 256, 256));
-        this.addEntity(new DrawBounds(""))
-
+        this.addEntity(new DrawBounds(""));
     }
 }
 
@@ -151,15 +151,13 @@ class Player extends Entity
         this.addComponent(new FollowMe());
         this.addComponent(new ScreenShake(5, 1));
 
-        const collider = this.addComponent(
-            new RectCollider(0, 0, 32, 32, this.layer));
-
-        collider.onCollision.register((caller: DetectCollider,
-                                       res: { other: DetectCollider, result: Result }) => {
+        this.addComponent(new RectCollider(0, 0, 32, 32, this.layer))
+            .onCollision.register((caller: DetectCollider,
+                                   res: { other: DetectCollider, result: Result }) => {
             this.transform.x -= res.result.overlap * res.result.overlap_x;
             this.transform.y -= res.result.overlap * res.result.overlap_y;
         });
-        // this.addComponent(new Sprite(loader.resources[spr_block].texture));
+
         this.addComponent(new RenderRect(0, 0, 32, 32));
     }
 }
@@ -180,24 +178,23 @@ class PlayerMover extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
-            if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
+            if (Game.keyboard.isKeyDown(Key.ArrowLeft, Key.KeyA))
             {
                 entity.transform.x -= this.speed * delta;
             }
-            if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
+            if (Game.keyboard.isKeyDown(Key.ArrowRight, Key.KeyD))
             {
                 entity.transform.x += this.speed * delta;
             }
-            if (Keyboard.isKeyDown('ArrowUp', 'KeyW'))
+            if (Game.keyboard.isKeyDown(Key.ArrowUp, Key.KeyW))
             {
                 entity.transform.y -= this.speed * delta;
             }
-            if (Keyboard.isKeyDown('ArrowDown', 'KeyS'))
+            if (Game.keyboard.isKeyDown(Key.ArrowDown, Key.KeyS))
             {
                 entity.transform.y += this.speed * delta;
             }
-
-            if (Keyboard.isKeyDown('Space'))
+            if (Game.keyboard.isKeyDown(Key.Space))
             {
                 entity.addComponent(new ScreenShake(2, 800));
             }

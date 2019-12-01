@@ -2,13 +2,13 @@ import {Observable} from "../Common/Observer";
 import * as PIXI from "pixi.js";
 import {Log, Util} from "../Common/Util";
 import {Component} from "./Component";
-import {LagomType, ContainerLifecycleObject, ObjectState} from "./LifecycleObject";
+import {LagomType, LifecycleObject} from "./LifecycleObject";
 import {Scene} from "./Scene";
 
 /**
  * Entity base class. Raw entities can be used or subclasses can be defined similarly to prefabs.
  */
-export class Entity extends ContainerLifecycleObject
+export class Entity extends LifecycleObject
 {
     set depth(value: number)
     {
@@ -55,9 +55,28 @@ export class Entity extends ContainerLifecycleObject
      */
     addComponent<T extends Component>(component: T): T
     {
-        component.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: component});
+        component.parent = this;
+
+        // Add to the entity component list
+        this.components.push(component);
+        this.componentAddedEvent.trigger(this, component);
+
+        component.onAdded();
+
         return component;
+    }
+
+    removeComponent(component: Component, doRemove: boolean)
+    {
+        Log.trace("Removing component from entity.", component);
+
+        if (doRemove && !Util.remove(this.components, component))
+        {
+            Log.warn("Attempting to remove Component that does not exist on Entity.", component, this);
+        }
+        this.componentRemovedEvent.trigger(this, component);
+
+        component.onRemoved();
     }
 
     /**
@@ -95,43 +114,30 @@ export class Entity extends ContainerLifecycleObject
         }
     }
 
-    onAdded()
-    {
-        super.onAdded();
-
-        // Add to the scene
-        const scene = this.getScene();
-        scene.entities.push(this);
-        scene.entityAddedEvent.trigger(scene, this);
-
-        // Add this PIXI container
-        this.rootNode().addChild(this.transform);
-    }
-
     onRemoved()
     {
         super.onRemoved();
 
-        const scene = this.getScene();
-        Util.remove(scene.entities, this);
-        scene.entityRemovedEvent.trigger(scene, this);
+        Log.trace("Destroying ", this.components);
 
-        // Remove the entire PIXI container
-        this.rootNode().removeChild(this.transform);
+        // Take any components with us
+        while (this.components.length > 0)
+        {
+            const val = this.components.pop();
+            if (val !== undefined) this.removeComponent(val, false);
+        }
     }
 
     destroy()
     {
         super.destroy();
 
-        Log.debug("Entity destroy() called for:", this.name);
-
-        // Take any components with us
-        this.components.forEach((val) => val.destroy());
-        this.getScene().toUpdate.push({state: ObjectState.PENDING_REMOVE, object: this});
+        // Destroy the entity.
+        this.getScene().removeEntity(this);
     }
 
-    protected rootNode(): PIXI.Container
+    // TODO package private?
+    rootNode(): PIXI.Container
     {
         return this.getScene().sceneNode;
     }
@@ -149,7 +155,7 @@ export class Entity extends ContainerLifecycleObject
  */
 export class GUIEntity extends Entity
 {
-    protected rootNode(): PIXI.Container
+    rootNode(): PIXI.Container
     {
         return this.getScene().guiNode;
     }

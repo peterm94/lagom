@@ -28,19 +28,23 @@ enum Layers
     Layer3
 }
 
-export class DetectDemo extends Scene
+export class DetectDemo extends Game
 {
     constructor()
     {
-        super();
-
-        const game = new Game(this, {width: 512, height: 512, resolution: 1, backgroundColor: 0xe0c723});
+        super({width: 512, height: 512, resolution: 1, backgroundColor: 0xe0c723}, loader);
 
         loader.add([spr_block]).load(() => {
-            game.start();
-        })
-    }
+            // TODO this is probably broken
+        });
 
+        this.setScene(new DetectDemoScene(this));
+    }
+}
+
+
+export class DetectDemoScene extends Scene
+{
     onAdded()
     {
         super.onAdded();

@@ -4,7 +4,6 @@ import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {FollowCamera} from "../../Common/CameraUtil";
-import {Diagnostics} from "../../Common/Debug";
 import {EnemyMarkerSystem} from "./Entities/Enemy";
 import {
     ClearMovement,
@@ -24,7 +23,7 @@ import {DamageSystem, HexEntity} from "./HexEntity";
 import {Background, TileMover} from "./Background";
 import {GameDirector} from "./Systems/GameDirector";
 import {EnemyAI} from "./Systems/EnemyAI";
-import {Intro} from "./Entities/Intro";
+import {Intro, IntroListener} from "./Entities/Intro";
 import {ShieldHex} from "./Entities/Shield";
 import {Hex} from "./Hexagons/Hex";
 import {CircleCollider} from "../../DetectCollisions/DetectColliders";
@@ -32,6 +31,8 @@ import {MathUtil} from "../../Common/Util";
 import {StructureHex} from "./Entities/Structure";
 import {ThrusterHex} from "./Entities/Thruster";
 import {LaserTurretHex} from "./Entities/Turrets/LaserTurretHex";
+import {YouWinListener} from "./Entities/YouWin";
+import {GameOverListener} from "./Entities/GameOver";
 
 export enum Layers
 {
@@ -62,13 +63,14 @@ export class HexGame extends Game
 {
     constructor()
     {
-        super(new HexMainScene(), {
-            width: 1280,
-            height: 720,
-            resolution: 1,
-            backgroundColor: 0xfff9ba,
-            antialias: false
-        })
+        super({
+                  width: 1280,
+                  height: 720,
+                  resolution: 1,
+                  backgroundColor: 0xfff9ba,
+                  antialias: false
+              });
+        this.setScene(new HexMainScene(this));
     }
 }
 
@@ -102,24 +104,9 @@ export class HexMainScene extends Scene
     {
         super.onAdded();
 
-        this.addEntity(new Background());
-        // this.addEntity(new Diagnostics("white", 10, false));
-        this.addEntity(new Player(this.camera.halfWidth, this.camera.halfHeight));
-
-        this.addEntity(makeFloater(new ShieldHex(null, new Hex(0,0,0)), 640, 360));
-        this.addEntity(makeFloater(new ShieldHex(null, new Hex(0,0,0)), 640, 360));
-        this.addEntity(makeFloater(new LaserTurretHex(null, new Hex(0,0,0)), 640, 360));
-        this.addEntity(makeFloater(new LaserTurretHex(null, new Hex(0,0,0)), 640, 360));
-        this.addEntity(makeFloater(new StructureHex(null, new Hex(0,0,0)), 640, 360));
-        this.addEntity(makeFloater(new StructureHex(null, new Hex(0,0,0)), 640, 360));
-        this.addEntity(makeFloater(new StructureHex(null, new Hex(0,0,0)), 640, 360));
-        this.addEntity(makeFloater(new StructureHex(null, new Hex(0,0,0)), 640, 360));
-        this.addEntity(makeFloater(new ThrusterHex(null, new Hex(0,0,0)), 640, 360));
-        this.addEntity(makeFloater(new ThrusterHex(null, new Hex(0,0,0)), 640, 360));
-
-        this.addEntity(new Intro());
-
-        this.addEntity(new GameDirector());
+        this.addSystem(new YouWinListener());
+        this.addSystem(new IntroListener());
+        this.addSystem(new GameOverListener());
 
         this.addSystem(new EnemyAI());
         this.addSystem(new PlayerControls());
@@ -143,5 +130,24 @@ export class HexMainScene extends Scene
         this.addGlobalSystem(new ScreenShaker());
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new FrameTriggerSystem());
+
+        this.addEntity(new Background());
+        // this.addEntity(new Diagnostics("white", 10, false));
+        this.addEntity(new Player(this.camera.halfWidth, this.camera.halfHeight));
+
+        makeFloater(this.addEntity(new ShieldHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new ShieldHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new LaserTurretHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new LaserTurretHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new StructureHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new StructureHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new StructureHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new StructureHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new ThrusterHex(null, new Hex(0, 0, 0))), 640, 360);
+        makeFloater(this.addEntity(new ThrusterHex(null, new Hex(0, 0, 0))), 640, 360);
+
+        this.addEntity(new Intro());
+
+        this.addEntity(new GameDirector());
     }
 }

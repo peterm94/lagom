@@ -64,6 +64,10 @@ export abstract class DetectCollider extends Component
         {
             this.engine.removeBody(this);
         }
+        else
+        {
+            Log.warn("Engine is null for Collider.", this);
+        }
     }
 
     place_free(dx: number, dy: number): boolean
@@ -164,7 +168,7 @@ export class PolyCollider extends DetectCollider
 export class RectCollider extends PolyCollider
 {
     constructor(xOff: number, yOff: number, width: number, height: number,
-                layer: number, rotation: number = 0, isTrigger: boolean = false)
+                layer: number, rotation = 0, isTrigger = false)
     {
         super(xOff, yOff, [[0, 0], [width, 0], [width, height], [0, height]], layer, rotation, isTrigger);
     }

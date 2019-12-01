@@ -125,6 +125,7 @@ export class AnimatedSprite extends FrameTrigger<number>
 
     onAdded()
     {
+        // TODO i can't wait to make this a nested guy :)
         super.onAdded();
         this.sprite = this.getEntity().addComponent(new Sprite(this.textures[this.frameIndex], this.config));
         this.reset();

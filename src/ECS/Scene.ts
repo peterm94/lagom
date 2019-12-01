@@ -1,5 +1,5 @@
 import * as PIXI from 'pixi.js';
-import {ContainerLifecycleObject, ObjectState, Updatable} from "./LifecycleObject";
+import {LifecycleObject, Updatable} from "./LifecycleObject";
 import {Entity} from "./Entity";
 import {System} from "./System";
 import {GlobalSystem} from "./GlobalSystem";
@@ -12,7 +12,7 @@ import {Log, Util} from "../Common/Util";
 /**
  * Scene object type. Should be the main interface used for games using the framework.
  */
-export class Scene extends ContainerLifecycleObject implements Updatable
+export class Scene extends LifecycleObject implements Updatable
 {
     // Some fancy entity events for anything that cares.
     readonly entityAddedEvent: Observable<Scene, Entity> = new Observable();
@@ -36,9 +36,9 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     // Milliseconds
     readonly updateWarnThreshold = 5;
 
-    camera!: Camera;
+    readonly camera: Camera;
 
-    constructor()
+    constructor(readonly game: Game)
     {
         super();
         this.pixiStage = Util.sortedContainer();
@@ -49,18 +49,12 @@ export class Scene extends ContainerLifecycleObject implements Updatable
         this.guiNode = Util.sortedContainer();
         this.guiNode.name = "gui";
         this.pixiStage.addChild(this.sceneNode, this.guiNode);
-    }
 
-    onAdded()
-    {
-        super.onAdded();
         this.camera = new Camera(this);
     }
 
     update(delta: number): void
     {
-        super.update(delta);
-
         // Update global systems
         this.globalSystems.forEach(system => {
             const now = Date.now();
@@ -72,9 +66,6 @@ export class Scene extends ContainerLifecycleObject implements Updatable
             }
         });
 
-        // Resolve updates for entities
-        this.entities.forEach(entity => entity.update(delta));
-
         // Update normal systems
         this.systems.forEach(system => {
             const now = Date.now();
@@ -85,18 +76,12 @@ export class Scene extends ContainerLifecycleObject implements Updatable
                 Log.warn(`System update took ${time}ms`, system);
             }
         });
-
     }
 
     fixedUpdate(delta: number): void
     {
-        super.fixedUpdate(delta);
-
         // Update global systems
         this.globalSystems.forEach(system => system.fixedUpdate(delta));
-
-        // Resolve updates for entities
-        this.entities.forEach(entity => entity.fixedUpdate(delta));
 
         // Update normal systems
         this.systems.forEach(system => system.fixedUpdate(delta));
@@ -109,33 +94,14 @@ export class Scene extends ContainerLifecycleObject implements Updatable
      */
     addSystem<T extends System>(system: T): T
     {
-        system.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
-        return system;
-    }
+        system.parent = this;
 
-    /**
-     * Add a global system to the Scene. These are not tied to entity processing.
-     * @param system The system to add.
-     * @returns The added system.
-     */
-    addGlobalSystem<T extends GlobalSystem>(system: T): T
-    {
-        system.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: system});
-        return system;
-    }
+        this.systems.push(system);
+        system.addedToScene(this);
 
-    /**
-     * Add an entity to the Scene.
-     * @param entity The entity to add.
-     * @returns The added entity.
-     */
-    addEntity<T extends Entity>(entity: T): T
-    {
-        entity.setParent(this);
-        this.toUpdate.push({state: ObjectState.PENDING_ADD, object: entity});
-        return entity;
+        system.onAdded();
+
+        return system;
     }
 
     /**
@@ -150,6 +116,23 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     }
 
     /**
+     * Add a global system to the Scene. These are not tied to entity processing.
+     * @param system The system to add.
+     * @returns The added system.
+     */
+    addGlobalSystem<T extends GlobalSystem>(system: T): T
+    {
+        system.parent = this;
+
+        this.globalSystems.push(system);
+        system.addedToScene(this);
+
+        system.onAdded();
+
+        return system;
+    }
+
+    /**
      * Get a GlobalSystem of the provided type.
      * @param type The type of system to search for.
      * @returns The found system or null.
@@ -158,6 +141,45 @@ export class Scene extends ContainerLifecycleObject implements Updatable
     {
         const found = this.globalSystems.find(value => value instanceof type);
         return found !== undefined ? found as T : null;
+    }
+
+
+    /**
+     * Add an entity to the Scene.
+     * @param entity The entity to add.
+     * @returns The added entity.
+     */
+    addEntity<T extends Entity>(entity: T): T
+    {
+        Log.debug("Adding entity to scene.", entity);
+        entity.parent = this;
+
+        this.entities.push(entity);
+        this.entityAddedEvent.trigger(this, entity);
+
+        // Add this PIXI container under the correct root node.
+        entity.rootNode().addChild(entity.transform);
+
+        entity.onAdded();
+
+        return entity;
+    }
+
+    removeEntity(entity: Entity)
+    {
+        Log.trace("Removing entity from scene.", entity.name);
+
+        if (!Util.remove(this.entities, entity))
+        {
+            Log.warn("Attempting to remove Entity that does not exist in Scene.", entity, this);
+        }
+
+        this.entityRemovedEvent.trigger(this, entity);
+
+        // Remove the entire PIXI container
+        entity.rootNode().removeChild(entity.transform);
+
+        entity.onRemoved();
     }
 
     /**
@@ -178,6 +200,6 @@ export class Scene extends ContainerLifecycleObject implements Updatable
      */
     getGame(): Game
     {
-        return this.getParent() as Game;
+        return this.game;
     }
 }
