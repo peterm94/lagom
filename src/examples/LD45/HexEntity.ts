@@ -107,6 +107,18 @@ export class HexRegister extends Component
     }
 }
 
+export class HexHP extends Component
+{
+
+    constructor(hp: number)
+    {
+        super();
+        this.hp = hp;
+    }
+
+    hp = 6;
+}
+
 export abstract class HexEntity extends Entity
 {
     protected constructor(name: string,
@@ -178,18 +190,6 @@ export abstract class HexEntity extends Entity
     }
 }
 
-export class HexHP extends Component
-{
-
-    constructor(hp: number)
-    {
-        super();
-        this.hp = hp;
-    }
-
-    hp: number = 6;
-}
-
 export class Damage extends Component
 {
     constructor(readonly amt: number = 3)
@@ -223,7 +223,7 @@ export class DamageSystem extends System
                 if (entity.name === "player")
                 {
                     // End the game.
-                    this.getScene().addEntity(new GameOver(entity.transform.x, entity.transform.y));
+                    this.getScene().addEntity(new GameOver());
                 }
 
                 this.entity.addComponent(new ScreenShake(0.8, 80));

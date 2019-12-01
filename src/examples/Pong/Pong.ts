@@ -1,18 +1,17 @@
-import { Game } from "../../ECS/Game";
-import { Scene } from "../../ECS/Scene";
-import { RenderRect, TextDisp } from "../../Common/PIXIComponents";
-import { Entity } from "../../ECS/Entity";
-import { System } from "../../ECS/System";
-import { Component } from "../../ECS/Component";
-import { LagomType } from "../../ECS/LifecycleObject";
-import { Key } from "../../Input/Key";
-import { DetectRigidbody } from "../../DetectCollisions/DetectRigidbody";
+import {Game} from "../../ECS/Game";
+import {Scene} from "../../ECS/Scene";
+import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
+import {Entity} from "../../ECS/Entity";
+import {System} from "../../ECS/System";
+import {Component} from "../../ECS/Component";
+import {LagomType} from "../../ECS/LifecycleObject";
+import {Key} from "../../Input/Key";
+import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import * as PIXI from "pixi.js";
-import { CollisionMatrix } from "../../LagomCollisions/CollisionMatrix";
-import { DetectCollisionSystem } from "../../DetectCollisions/DetectCollisions";
-import { RectCollider } from "../../DetectCollisions/DetectColliders";
-import { Diagnostics } from "../../Common/Debug";
-import { Observable } from "../../Common/Observer";
+import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
+import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
+import {RectCollider} from "../../DetectCollisions/DetectColliders";
+import {Observable} from "../../Common/Observer";
 
 enum Layers
 {
@@ -31,7 +30,8 @@ export class Pong extends Game
 {
     constructor()
     {
-        super(new MainScene(), {width: 800, height: 600, resolution: 1, backgroundColor: 0x000000});
+        super({width: 800, height: 600, resolution: 1, backgroundColor: 0x000000});
+        this.setScene(new MainScene(this));
     }
 }
 
@@ -63,6 +63,7 @@ class Paddle extends Entity
 {
     private static width = 30;
     private static height = 80;
+
     constructor(x: number, y: number, private side: PaddleSide)
     {
         super("paddle", x, y);
@@ -152,7 +153,7 @@ class BallMover extends System
                             body: DetectRigidbody,
                             ball: BallMovement) => {
             const bodyY = body.getEntity().transform.y;
-            if ( bodyY > this.bottomBounce || bodyY < this.topBounce)
+            if (bodyY > this.bottomBounce || bodyY < this.topBounce)
             {
                 ball.ySpeed *= -1;
             }
@@ -177,19 +178,19 @@ class Ball extends Entity
     {
         super.onAdded();
 
-        var rect = new RenderRect(0,0,10,10, 0xffffff, 0xffffff);
+        var rect = new RenderRect(0, 0, 10, 10, 0xffffff, 0xffffff);
         this.addComponent(rect);
         this.addComponent(new BallMovement());
-        
-        this.addComponent(new RectCollider(0,0, 10, 10, Layers.ball))
+
+        this.addComponent(new RectCollider(0, 0, 10, 10, Layers.ball))
             .onCollisionEnter.register(() => {
-                const movement = this.getComponent<BallMovement>(BallMovement)
-                if (movement != null)
-                {
-                    movement.xSpeed *= -1;
-                }
-            });
-        
+            const movement = this.getComponent<BallMovement>(BallMovement)
+            if (movement != null)
+            {
+                movement.xSpeed *= -1;
+            }
+        });
+
         this.addComponent(new DetectRigidbody());
     }
 }
@@ -197,6 +198,7 @@ class Ball extends Entity
 class Scoreboard extends Entity
 {
     score: Score;
+
     constructor(x: number, y: number)
     {
         super("scoreboard", x, y);
@@ -270,22 +272,23 @@ class ScoreSystem extends System
 
     types = () => [DetectRigidbody, BallMovement];
 
-    update(delta: number): void {
+    update(delta: number): void
+    {
         this.runOnEntities((entity: Entity,
-            body: DetectRigidbody,
-            ball: BallMovement) => {
-                if (entity.transform.x < 0)
-                {
-                    this.score.player2Scored();
-                    entity.destroy();
-                    this.getScene().addEntity(new Ball(400,200));
-                }
-                if (entity.transform.x > 800)
-                {
-                    this.score.player1Scored();
-                    entity.destroy();
-                    this.getScene().addEntity(new Ball(400,200)); 
-                }
-            });
+                            body: DetectRigidbody,
+                            ball: BallMovement) => {
+            if (entity.transform.x < 0)
+            {
+                this.score.player2Scored();
+                entity.destroy();
+                this.getScene().addEntity(new Ball(400, 200));
+            }
+            if (entity.transform.x > 800)
+            {
+                this.score.player1Scored();
+                entity.destroy();
+                this.getScene().addEntity(new Ball(400, 200));
+            }
+        });
     }
 }
