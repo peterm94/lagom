@@ -245,7 +245,7 @@ class DestroyOffScreen extends System
     {
         this.runOnEntities((entity: Entity) => {
             // TODO this function apparently takes null as a first parameter, but the typedef
-            // doesn't allow it. Submit an issue?
+            //  doesn't allow it. Submit an issue?
             const pos = entity.transform.getGlobalPosition(undefined as any, false);
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
