@@ -195,4 +195,24 @@ export class Entity extends LifecycleObject
 
         return child;
     }
+
+    findChildWithName<T extends Entity>(name: string): T | null
+    {
+        const found = this.children.find(value => value.name === name);
+        if (found !== undefined)
+        {
+            return found as T;
+        }
+
+        // Check children of children
+        for (const child of this.children)
+        {
+            const inner = child.findChildWithName(name);
+            if (inner !== null)
+            {
+                return inner as T;
+            }
+        }
+        return null;
+    }
 }

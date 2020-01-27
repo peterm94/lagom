@@ -70,10 +70,10 @@ class EcsEntityDetails extends React.PureComponent<{ entity: InspectorEntity, in
                             return value;
                         }
                         return undefined;
-                    }, 4)
+                    }, 4);
                 })}
             </div>
-        )
+        );
     }
 }
 
