@@ -162,6 +162,7 @@ export class Entity extends LifecycleObject
         }
 
         this.childRemoved.trigger(this, child);
+        this.scene.entityRemovedEvent.trigger(this.scene, child);
 
         this.transform.removeChild(child.transform);
 
@@ -181,6 +182,7 @@ export class Entity extends LifecycleObject
 
         this.children.push(child);
         this.childAdded.trigger(this, child);
+        this.scene.entityAddedEvent.trigger(this.scene, child);
 
         // Add the pixi container to my node.
         this.transform.addChild(child.transform);
