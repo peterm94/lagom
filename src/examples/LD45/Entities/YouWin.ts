@@ -1,4 +1,4 @@
-import {Entity, GUIEntity} from "../../../ECS/Entity";
+import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import winSpr from "../art/end.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
@@ -14,7 +14,7 @@ export class YouWinComp extends Component
 {
 }
 
-export class YouWin extends GUIEntity
+export class YouWin extends Entity
 {
     constructor()
     {

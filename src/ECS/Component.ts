@@ -7,13 +7,15 @@ import {Scene} from "./Scene";
  */
 export abstract class Component extends LifecycleObject
 {
+    parent!: Entity;
+
     /**
      * Get the entity that owns this component.
      * @returns The entity that this component is attached to.
      */
     getEntity(): Entity
     {
-        return this.getParent() as Entity;
+        return this.parent;
     }
 
     /**

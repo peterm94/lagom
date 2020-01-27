@@ -1,5 +1,4 @@
 import * as PIXI from "pixi.js";
-import {GUIEntity} from "../ECS/Entity";
 import {TextDisp} from "./PIXIComponents";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
@@ -99,7 +98,7 @@ class FpsUpdater extends System
 /**
  * Entity that adds FPS information to the canvas.
  */
-export class Diagnostics extends GUIEntity
+export class Diagnostics extends Entity
 {
     onAdded(): void
     {

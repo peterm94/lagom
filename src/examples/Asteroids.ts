@@ -84,7 +84,7 @@ class AsteroidsScene extends Scene
                                         3));
         }
 
-        this.addEntity(new Diagnostics("white"));
+        this.addGUIEntity(new Diagnostics("white"));
     }
 }
 
@@ -198,7 +198,7 @@ class WrapSprite extends Sprite
         this.yChild.name = this.yId;
         this.yChild.anchor.x = this.pixiObj.anchor.x;
         this.yChild.anchor.y = this.pixiObj.anchor.y;
-        this.getEntity().getScene().sceneNode.addChild(this.xChild, this.yChild);
+        this.getEntity().getScene().sceneNode.transform.addChild(this.xChild, this.yChild);
     }
 
     onRemoved(): void
@@ -206,8 +206,8 @@ class WrapSprite extends Sprite
         super.onRemoved();
         if (this.xChild != null && this.yChild != null)
         {
-            this.getEntity().getScene().sceneNode.removeChild(this.xChild);
-            this.getEntity().getScene().sceneNode.removeChild(this.yChild);
+            this.getEntity().getScene().sceneNode.transform.removeChild(this.xChild);
+            this.getEntity().getScene().sceneNode.transform.removeChild(this.yChild);
         }
     }
 }

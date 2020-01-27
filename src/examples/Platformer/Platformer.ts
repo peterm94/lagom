@@ -62,7 +62,7 @@ class MainScene extends Scene
     {
         super.onAdded();
 
-        this.addEntity(new Diagnostics("white", 8));
+        this.addGUIEntity(new Diagnostics("white", 8));
 
         this.addSystem(new PlayerMover());
         this.addSystem(new GravitySystem());

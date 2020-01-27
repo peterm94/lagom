@@ -12,6 +12,8 @@ export abstract class System extends LifecycleObject implements Updatable
 {
     private readonly runOn: Map<Entity, Component[]> = new Map();
 
+    scene !: Scene;
+
     private onComponentAdded(entity: Entity, component: Component): void
     {
         // Check if we care about this type at all
@@ -41,7 +43,7 @@ export abstract class System extends LifecycleObject implements Updatable
         const inTypes = this.types();
         const ret: Component[] = [];
 
-        for (let type of inTypes)
+        for (const type of inTypes)
         {
             const comp = entity.getComponent(type);
             if (comp == null) return null;
@@ -61,7 +63,7 @@ export abstract class System extends LifecycleObject implements Updatable
             return;
         }
 
-        let entry = this.runOn.get(entity);
+        const entry = this.runOn.get(entity);
 
         // Not actually registered, return
         if (entry === undefined) return;
@@ -170,6 +172,6 @@ export abstract class System extends LifecycleObject implements Updatable
      */
     getScene(): Scene
     {
-        return this.getParent() as Scene;
+        return this.scene;
     }
 }

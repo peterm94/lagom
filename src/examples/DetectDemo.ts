@@ -55,7 +55,7 @@ export class DetectDemoScene extends Scene
 
         // this.addSystem(new DetectCollisionsSystem(collisions));
         // this.addSystem(new DetectCollisionSystem());
-        this.addEntity(new Diagnostics("blue"));
+        this.addGUIEntity(new Diagnostics("blue"));
         this.addEntity(new Square(50, 50));
         this.addEntity(new CircleBoy(200, 200));
         this.addEntity(new Player("player", 100, 100));

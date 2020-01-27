@@ -75,7 +75,7 @@ class MainScene extends Scene
                                         Math.random() * game.renderer.screen.height,
                                         3));
         }
-        this.addEntity(new Diagnostics("white"));
+        this.addGUIEntity(new Diagnostics("white"));
 
     }
 }
@@ -185,7 +185,7 @@ class WrapSprite extends Sprite
         this.yChild.name = this.yId;
         this.yChild.anchor.x = this.pixiObj.anchor.x;
         this.yChild.anchor.y = this.pixiObj.anchor.y;
-        this.getEntity().getScene().sceneNode.addChild(this.xChild, this.yChild);
+        this.getEntity().getScene().sceneNode.transform.addChild(this.xChild, this.yChild);
     }
 
     onRemoved(): void
@@ -193,8 +193,8 @@ class WrapSprite extends Sprite
         super.onRemoved();
         if (this.xChild != null && this.yChild != null)
         {
-            this.getEntity().getScene().sceneNode.removeChild(this.xChild);
-            this.getEntity().getScene().sceneNode.removeChild(this.yChild);
+            this.getEntity().getScene().sceneNode.transform.removeChild(this.xChild);
+            this.getEntity().getScene().sceneNode.transform.removeChild(this.yChild);
         }
     }
 }
@@ -313,8 +313,8 @@ class SpriteWrapper extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity, sprite: WrapSprite) => {
-            const xChild = this.getScene().sceneNode.getChildByName(sprite.xId);
-            const yChild = this.getScene().sceneNode.getChildByName(sprite.yId);
+            const xChild = this.getScene().sceneNode.transform.getChildByName(sprite.xId);
+            const yChild = this.getScene().sceneNode.transform.getChildByName(sprite.yId);
 
             xChild.rotation = entity.transform.rotation;
             yChild.rotation = entity.transform.rotation;

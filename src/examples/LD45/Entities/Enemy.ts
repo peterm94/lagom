@@ -1,4 +1,4 @@
-import {Entity, GUIEntity} from "../../../ECS/Entity";
+import {Entity} from "../../../ECS/Entity";
 import {DetectRigidbody} from "../../../DetectCollisions/DetectRigidbody";
 import {CircleCollider} from "../../../DetectCollisions/DetectColliders";
 import {Hex} from "../Hexagons/Hex";
@@ -12,7 +12,7 @@ import {StructureHex} from "./Structure";
 import purpleAlienSpr from '../art/purple_alien.png';
 import greenAlienSpr from '../art/green_alien.png';
 import markerSpr from '../art/enemy_marker.png';
-import {MathUtil, Util, Log} from "../../../Common/Util";
+import {MathUtil, Util} from "../../../Common/Util";
 import {neighbours, add} from "../Hexagons/HexUtil";
 import {ThrusterHex} from "./Thruster";
 import {ShieldHex} from "./Shield";
@@ -47,7 +47,7 @@ export class EnemyTag extends Component
     }
 }
 
-export class EnemyMarkerE extends GUIEntity
+export class EnemyMarkerE extends Entity
 {
     onAdded()
     {
@@ -63,7 +63,7 @@ export class EnemyMarker extends Component
     onAdded()
     {
         super.onAdded();
-        this.guiMarker = this.getScene().addEntity(new EnemyMarkerE("enemy_marker", 0, 0, DrawLayer.GUI));
+        this.guiMarker = this.getScene().addGUIEntity(new EnemyMarkerE("enemy_marker", 0, 0, DrawLayer.GUI));
     }
 
     onRemoved()
@@ -72,6 +72,27 @@ export class EnemyMarker extends Component
         this.guiMarker.destroy();
     }
 }
+
+export class EnemyHex extends HexEntity
+{
+    constructor(public owner: HexRegister, public hex: Hex, private sprite: Component)
+    {
+        super("purpleEnemy", owner, hex, 0);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        this.addComponent(this.sprite);
+    }
+
+    onRemoved()
+    {
+        super.onRemoved();
+        this.owner.getEntity().destroy();
+    }
+}
+
 
 export class Enemy extends Entity
 {
@@ -126,10 +147,10 @@ export class Enemy extends Entity
         while (points > 0)
         {
             // Where to put the new block
-            let hex = this.chooseHexLocation(register);
+            const hex = this.chooseHexLocation(register);
 
             // Pick which thing to put there
-            let hexEntity = this.buildRandomHexType(register, hex);
+            const hexEntity = this.buildRandomHexType(register, hex);
             points -= hexEntity.value;
 
             if (points > 0)
@@ -149,8 +170,8 @@ export class Enemy extends Entity
         {
             // Choose an entity to add a neighbour to
             const rando = MathUtil.randomRange(0, register.register.size);
-            let list = Array.from(register.register);
-            let hexEntity = list[rando][1];
+            const list = Array.from(register.register);
+            const hexEntity = list[rando][1];
 
             // choose which neighbour
             const randomFriend = MathUtil.randomRange(0, neighbours.length);
@@ -186,27 +207,6 @@ export class Enemy extends Entity
     }
 }
 
-export class EnemyHex extends HexEntity
-{
-    constructor(public owner: HexRegister, public hex: Hex, private sprite: Component)
-    {
-        super("purpleEnemy", owner, hex, 0);
-    }
-
-    onAdded()
-    {
-        super.onAdded();
-        this.addComponent(this.sprite);
-    }
-
-    onRemoved()
-    {
-        super.onRemoved();
-        this.owner.getEntity().destroy();
-    }
-}
-
-
 export class EnemyMarkerSystem extends System
 {
     readonly outerTolerance = 64;
@@ -219,8 +219,8 @@ export class EnemyMarkerSystem extends System
         const camPos = cam.position();
 
         this.runOnEntitiesWithSystem((system: EnemyMarkerSystem, entity: Entity, marker: EnemyMarker) => {
-            let enemyPosX = marker.getEntity().transform.x - camPos.x;
-            let enemyPosY = marker.getEntity().transform.y - camPos.y;
+            const enemyPosX = marker.getEntity().transform.x - camPos.x;
+            const enemyPosY = marker.getEntity().transform.y - camPos.y;
 
             let screenSpaceX = -camPos.x + entity.transform.x;
             let screenSpaceY = -camPos.y + entity.transform.y;

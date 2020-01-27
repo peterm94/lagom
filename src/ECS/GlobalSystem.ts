@@ -12,6 +12,8 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
     // TODO the key type is technically wrong, but it works because types aren't real
     private readonly runOn: Map<{ new(): Component }, Component[]> = new Map();
 
+    scene !: Scene;
+
     /**
      * Update will be called every game tick.
      * @param delta The elapsed time since the last update call.
@@ -136,6 +138,6 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
      */
     getScene(): Scene
     {
-        return this.getParent() as Scene;
+        return this.scene;
     }
 }

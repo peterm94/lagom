@@ -22,10 +22,10 @@ export class Scene extends LifecycleObject implements Updatable
     readonly pixiStage: PIXI.Container;
 
     // Node for scene objects. This can be offset to simulate camera movement.
-    readonly sceneNode: PIXI.Container;
+    readonly sceneNode: Entity;
 
     // GUI top level node. This node should not be offset, allowing for static GUI elements.
-    readonly guiNode: PIXI.Container;
+    readonly guiNode: Entity;
 
     // TODO can these be sets? need unique, but update order needs to be defined :/ i need a comparator for each
     // type that can define it's order.
@@ -41,15 +41,22 @@ export class Scene extends LifecycleObject implements Updatable
     constructor(readonly game: Game)
     {
         super();
+
+        // Root pixi container for the entire scene.
         this.pixiStage = Util.sortedContainer();
 
-        // set up the nodes for the ECS to interact with and add them to PIXI.
-        this.sceneNode = Util.sortedContainer();
-        this.sceneNode.name = "scene";
-        this.guiNode = Util.sortedContainer();
-        this.guiNode.name = "gui";
-        this.pixiStage.addChild(this.sceneNode, this.guiNode);
+        // set up the root nodes for the ECS.
+        this.sceneNode = new Entity("SceneNode");
+        this.sceneNode.scene = this;
+        this.sceneNode.transform.name = "scene";
+        this.guiNode = new Entity("GUINode");
+        this.guiNode.transform.name = "gui";
+        this.guiNode.scene = this;
 
+        // Add them to the pixi stage.
+        this.pixiStage.addChild(this.sceneNode.transform, this.guiNode.transform);
+
+        // Add a camera
         this.camera = new Camera(this);
     }
 
@@ -94,7 +101,7 @@ export class Scene extends LifecycleObject implements Updatable
      */
     addSystem<T extends System>(system: T): T
     {
-        system.parent = this;
+        system.scene = this;
 
         this.systems.push(system);
         system.addedToScene(this);
@@ -122,7 +129,7 @@ export class Scene extends LifecycleObject implements Updatable
      */
     addGlobalSystem<T extends GlobalSystem>(system: T): T
     {
-        system.parent = this;
+        system.scene = this;
 
         this.globalSystems.push(system);
         system.addedToScene(this);
@@ -143,43 +150,24 @@ export class Scene extends LifecycleObject implements Updatable
         return found !== undefined ? found as T : null;
     }
 
-
-    /**
-     * Add an entity to the Scene.
-     * @param entity The entity to add.
-     * @returns The added entity.
-     */
     addEntity<T extends Entity>(entity: T): T
     {
-        Log.debug("Adding entity to scene.", entity);
-        entity.parent = this;
-
-        this.entities.push(entity);
-        this.entityAddedEvent.trigger(this, entity);
-
-        // Add this PIXI container under the correct root node.
-        entity.rootNode().addChild(entity.transform);
-
-        entity.onAdded();
-
-        return entity;
+        return this.sceneNode.addChild(entity);
     }
 
     removeEntity(entity: Entity): void
     {
-        Log.trace("Removing entity from scene.", entity.name);
+        this.sceneNode.removeChild(entity);
+    }
 
-        if (!Util.remove(this.entities, entity))
-        {
-            Log.warn("Attempting to remove Entity that does not exist in Scene.", entity, this);
-        }
+    addGUIEntity<T extends Entity>(entity: T): T
+    {
+        return this.guiNode.addChild(entity);
+    }
 
-        this.entityRemovedEvent.trigger(this, entity);
-
-        // Remove the entire PIXI container
-        entity.rootNode().removeChild(entity.transform);
-
-        entity.onRemoved();
+    removeGUIEntity(entity: Entity): void
+    {
+        this.guiNode.removeChild(entity);
     }
 
     /**

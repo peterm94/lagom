@@ -1,9 +1,9 @@
 import {Observable} from "../Common/Observer";
-import * as PIXI from "pixi.js";
 import {Log, Util} from "../Common/Util";
 import {Component} from "./Component";
 import {LagomType, LifecycleObject} from "./LifecycleObject";
 import {Scene} from "./Scene";
+import * as PIXI from "pixi.js";
 
 /**
  * Entity base class. Raw entities can be used or subclasses can be defined similarly to prefabs.
@@ -23,11 +23,12 @@ export class Entity extends LifecycleObject
     readonly id: string;
     readonly components: Component[] = [];
 
-    transform: PIXI.Container;
     layer = 0;
     private _depth = 0;
 
     private static _next_id = 0;
+
+    scene!: Scene;
 
     /**
      * Create a new entity. It must be added to a Game to actually do anything.
@@ -42,7 +43,6 @@ export class Entity extends LifecycleObject
         this.name = name;
         this.id = (Entity._next_id++).toString(16);
 
-        this.transform = Util.sortedContainer();
         this.transform.x = x;
         this.transform.y = y;
         this.depth = depth;
@@ -133,30 +133,60 @@ export class Entity extends LifecycleObject
         super.destroy();
 
         // Destroy the entity.
-        this.getScene().removeEntity(this);
-    }
-
-    // TODO package private?
-    rootNode(): PIXI.Container
-    {
-        return this.getScene().sceneNode;
+        if (this.parent != null)
+        {
+            this.parent.removeChild(this);
+        }
     }
 
     getScene(): Scene
     {
-        // TODO this needs to change if we have nested entities.
-        return this.getParent() as Scene;
+        return this.scene;
     }
-}
 
-/**
- * Entity type that is not tied to a 'Game' object. Positions etc. will remain fixed and not move with the viewport
- * position. Use this to render to absolute positions on the canvas (e.g. GUI text).
- */
-export class GUIEntity extends Entity
-{
-    rootNode(): PIXI.Container
+    parent: Entity | null = null;
+    children: Entity[] = [];
+
+    transform: PIXI.Container = Util.sortedContainer();
+
+    readonly childAdded: Observable<Entity, Entity> = new Observable();
+    readonly childRemoved: Observable<Entity, Entity> = new Observable();
+
+    removeChild(child: Entity): void
     {
-        return this.getScene().guiNode;
+        Log.trace("Removing child object.", child);
+
+        if (!Util.remove(this.children, child))
+        {
+            Log.warn("Attempting to remove child that does not exist in container.", child, this);
+        }
+
+        this.childRemoved.trigger(this, child);
+
+        this.transform.removeChild(child.transform);
+
+        child.onRemoved();
+    }
+
+    /**
+     * Add an child to the container.
+     * @param child The child to add.
+     * @returns The added child.
+     */
+    addChild<T extends Entity>(child: T): T
+    {
+        Log.debug("Adding new child object.", child);
+        child.parent = this;
+        child.scene = this.scene;
+
+        this.children.push(child);
+        this.childAdded.trigger(this, child);
+
+        // Add the pixi container to my node.
+        this.transform.addChild(child.transform);
+
+        child.onAdded();
+
+        return child;
     }
 }
