@@ -156,8 +156,10 @@ export class Entity extends LifecycleObject
     {
         Log.trace("Removing child object.", child);
 
+        Util.remove(this.scene.entities, child);
         if (!Util.remove(this.children, child))
         {
+            // TODO we probably don't trigger everything after this if the case is hit?
             Log.warn("Attempting to remove child that does not exist in container.", child, this);
         }
 
@@ -179,6 +181,8 @@ export class Entity extends LifecycleObject
         Log.debug("Adding new child object.", child);
         child.parent = this;
         child.scene = this.scene;
+
+        this.scene.entities.push(child);
 
         this.children.push(child);
         this.childAdded.trigger(this, child);

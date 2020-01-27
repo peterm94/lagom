@@ -27,9 +27,11 @@ export class Scene extends LifecycleObject implements Updatable
     // GUI top level node. This node should not be offset, allowing for static GUI elements.
     readonly guiNode: Entity;
 
+    // TODO I don't know if I want this to stick around forever. Need systems to be able to see all entities.
+    readonly entities: Entity[] = [];
+
     // TODO can these be sets? need unique, but update order needs to be defined :/ i need a comparator for each
     // type that can define it's order.
-    readonly entities: Entity[] = [];
     readonly systems: System[] = [];
     readonly globalSystems: GlobalSystem[] = [];
 
