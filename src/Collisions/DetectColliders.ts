@@ -1,29 +1,31 @@
 import {Body, Circle, Point, Polygon, Result} from "detect-collisions";
-import {Component} from "../ECS/Component";
+import {PIXIComponent} from "../ECS/Component";
 import {Observable} from "../Common/Observer";
 import {Log} from "../Common/Util";
-import {DetectCollisionSystem} from "./DetectCollisions";
+import {DiscreteCollisionSystem} from "./DetectCollisions";
 
 /**
  * Collider types for this collision system.
  */
-export abstract class DetectCollider extends Component
+export abstract class DetectCollider2 extends PIXIComponent<PIXI.Container>
 {
-    private engine: DetectCollisionSystem | null = null;
-    readonly onCollision: Observable<DetectCollider, { other: DetectCollider; result: Result }> = new Observable();
-    readonly onCollisionEnter: Observable<DetectCollider, { other: DetectCollider; result: Result }> = new Observable();
-    readonly onCollisionExit: Observable<DetectCollider, DetectCollider> = new Observable();
-    readonly onTrigger: Observable<DetectCollider, { other: DetectCollider; result: Result }> = new Observable();
-    readonly onTriggerEnter: Observable<DetectCollider, { other: DetectCollider; result: Result }> = new Observable();
-    readonly onTriggerExit: Observable<DetectCollider, DetectCollider> = new Observable();
+    readonly onTrigger: Observable<DetectCollider2, { other: DetectCollider2; result: Result }> = new Observable();
+    readonly onTriggerEnter: Observable<DetectCollider2, { other: DetectCollider2; result: Result }> = new Observable();
+    readonly onTriggerExit: Observable<DetectCollider2, DetectCollider2> = new Observable();
 
-    collidersLastFrame: DetectCollider[] = [];
-    triggersLastFrame: DetectCollider[] = [];
+    triggersLastFrame: DetectCollider2[] = [];
 
-    protected constructor(readonly body: Body, readonly xOff: number, readonly yOff: number, readonly layer: number,
-                          readonly isTrigger: boolean)
+    protected constructor(private readonly engine: DiscreteCollisionSystem,
+                          readonly body: Body, readonly xOff: number,
+                          readonly yOff: number, readonly layer: number)
     {
-        super();
+        super(new PIXI.Container());
+
+        this.pixiObj.position.x = xOff;
+        this.pixiObj.position.y = yOff;
+
+        // TODO rotation, as usual. Needs to be used everywhere too
+
         // Add a backref
         (this.body as any).lagomComponent = this;
     }
@@ -32,11 +34,9 @@ export abstract class DetectCollider extends Component
     {
         super.onAdded();
 
-        this.engine = this.getEntity().getScene().getSystem(DetectCollisionSystem);
-
         if (this.engine == null)
         {
-            Log.warn("A DetectCollisionsSystem must be added to the Scene before a DetectCollider is added.");
+            Log.warn("A DetectCollisionsSystem must be added to the Scene before a DetectCollider2 is added.");
             return;
         }
 
@@ -76,40 +76,52 @@ export abstract class DetectCollider extends Component
         if (this.engine) return this.engine.placeFree(this, dx, dy);
         return true;
     }
+
+    /**
+     * Sync the collider position with it's anchor object in the scene.
+     */
+    updatePosition(): void
+    {
+        const pt = new PIXI.Point();
+        // TODO check if we need to perform this update. I suspect we do.
+        this.pixiObj.getGlobalPosition(pt, true);
+        this.body.x = pt.x;
+        this.body.y = pt.y;
+    }
 }
 
 /**
  * Circle collider type.
  */
-export class CircleCollider extends DetectCollider
+export class CircleCollider extends DetectCollider2
 {
-    constructor(xOff: number, yOff: number, radius: number, layer: number, isTrigger = false)
+    constructor(system: DiscreteCollisionSystem, xOff: number, yOff: number, radius: number, layer: number)
     {
-        super(new Circle(0, 0, radius), xOff, yOff, layer, isTrigger);
+        super(system, new Circle(0, 0, radius), xOff, yOff, layer);
     }
 }
 
 /**
  * Point collider type.
  */
-export class PointCollider extends DetectCollider
+export class PointCollider extends DetectCollider2
 {
-    constructor(xOff: number, yOff: number, layer: number, isTrigger = false)
+    constructor(system: DiscreteCollisionSystem, xOff: number, yOff: number, layer: number)
     {
-        super(new Point(0, 0), xOff, yOff, layer, isTrigger);
+        super(system, new Point(0, 0), xOff, yOff, layer);
     }
 }
 
 /**
  * Polygon collider. Please only use convex shapes.
  */
-export class PolyCollider extends DetectCollider
+export class PolyCollider extends DetectCollider2
 {
-    constructor(xOff: number, yOff: number, points: number[][], layer: number,
-                rotation = 0, isTrigger = false)
+    constructor(system: DiscreteCollisionSystem, xOff: number, yOff: number, points: number[][], layer: number,
+                rotation = 0)
     {
         // NOTE: The order of the points matters, the library is bugged, this function ensures they are anticlockwise.
-        super(new Polygon(xOff, yOff, PolyCollider.reorderVertices(points), rotation), xOff, yOff, layer, isTrigger);
+        super(system, new Polygon(xOff, yOff, PolyCollider.reorderVertices(points), rotation), xOff, yOff, layer);
     }
 
     /**
@@ -168,9 +180,9 @@ export class PolyCollider extends DetectCollider
  */
 export class RectCollider extends PolyCollider
 {
-    constructor(xOff: number, yOff: number, width: number, height: number,
-                layer: number, rotation = 0, isTrigger = false)
+    constructor(system: DiscreteCollisionSystem, xOff: number, yOff: number, width: number, height: number,
+                layer: number, rotation = 0)
     {
-        super(xOff, yOff, [[0, 0], [width, 0], [width, height], [0, height]], layer, rotation, isTrigger);
+        super(system, xOff, yOff, [[0, 0], [width, 0], [width, height], [0, height]], layer, rotation);
     }
 }

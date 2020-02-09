@@ -144,6 +144,7 @@ export class Entity extends LifecycleObject
         return this.scene;
     }
 
+    // This should only be null for a tree root (i.e. the scene root nodes)
     parent: Entity | null = null;
     children: Entity[] = [];
 
@@ -156,12 +157,14 @@ export class Entity extends LifecycleObject
     {
         Log.trace("Removing child object.", child);
 
-        Util.remove(this.scene.entities, child);
         if (!Util.remove(this.children, child))
         {
-            // TODO we probably don't trigger everything after this if the case is hit?
+            // TODO check this return, it is a pretty significant behaviour change.
             Log.warn("Attempting to remove child that does not exist in container.", child, this);
+            return;
         }
+
+        Util.remove(this.scene.entities, child);
 
         this.childRemoved.trigger(this, child);
         this.scene.entityRemovedEvent.trigger(this.scene, child);

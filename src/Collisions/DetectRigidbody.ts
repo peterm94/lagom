@@ -1,4 +1,32 @@
 import {Component} from "../ECS/Component";
+import {DetectCollider} from "./DetectColliders";
+
+enum CollisionMode
+{
+    Discrete,
+    Continuous
+}
+
+export class Rigidbody extends Component
+{
+    colliders: DetectCollider[] = [];
+
+    pendingX = 0;
+    pendingY = 0;
+
+    constructor(readonly isStatic: boolean = false, readonly collisionMode: CollisionMode= CollisionMode.Discrete)
+    {
+        super();
+    }
+
+    move(x: number, y: number): void
+    {
+        this.pendingX += x;
+        this.pendingY += y;
+    }
+
+    // TODO rotate?
+}
 
 export class DetectRigidbody extends Component
 {
