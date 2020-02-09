@@ -5,7 +5,10 @@ import {LagomType} from "../../ECS/LifecycleObject";
 import {Component} from "../../ECS/Component";
 import {Entity} from "../../ECS/Entity";
 import {Key} from "../../Input/Key";
-import {RenderCircle, RenderRect} from "../../Common/PIXIComponents";
+import {RenderCircle} from "../../Common/PIXIComponents";
+import {DiscreteCollisionSystem} from "../../Collisions/DetectCollisions";
+import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
+import {CircleCollider} from "../../Collisions/DetectColliders";
 
 const Keyboard = require('pixi.js-keyboard');
 
@@ -62,6 +65,9 @@ class CompositionScene extends Scene
     {
         super.onAdded();
 
+        const matrix = new CollisionMatrix();
+        matrix.addCollision(0, 0);
+        const collSystem = this.addGlobalSystem(new DiscreteCollisionSystem(matrix));
 
         const e = this.addEntity(new Entity("hello", 50, 50));
 
@@ -70,10 +76,24 @@ class CompositionScene extends Scene
 
         this.addSystem(new Mover());
 
-        const c1 = e.addChild(new Entity("c1"));
+        const c1 = e.addChild(new Entity("c1", 20, 0));
         c1.addComponent(new RenderCircle(0, 0, 5, 0x222255));
-        c1.transform.position.x = 10;
+        c1.addComponent(new CircleCollider(collSystem, 0, 0, 10, 0));
 
+
+        const e2 = this.addEntity(new Entity("e2", 100, 100));
+        const e2col = e2.addComponent(new CircleCollider(collSystem, 0, 0, 20, 0));
+
+        e2.addComponent(new RenderCircle(0, 0, 20, null, 0x00FF00));
+
+        e2col.onTriggerEnter.register((caller) => {
+            caller.getEntity().getComponent<RenderCircle>(RenderCircle)?.destroy();
+            caller.getEntity().addComponent(new RenderCircle(0, 0, 20, null, 0xFF0000));
+        });
+        e2col.onTriggerExit.register((caller) => {
+            caller.getEntity().getComponent<RenderCircle>(RenderCircle)?.destroy();
+            caller.getEntity().addComponent(new RenderCircle(0, 0, 20, null, 0x00FF00));
+        });
     }
 }
 

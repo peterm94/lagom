@@ -82,11 +82,27 @@ export class Entity extends LifecycleObject
     /**
      * Get all components of a given type.
      * @param type The type of component to search for.
+     * @param checkChildren Set to true if child entities should be checked as well. This will recurse to the bottom
+     * of the entity tree.
      * @returns An array of all matching components.
      */
-    getComponentsOfType<T extends Component>(type: LagomType<Component>): T[]
+    getComponentsOfType<T extends Component>(type: LagomType<Component>, checkChildren = false): T[]
     {
-        return this.components.filter(value => value instanceof type) as T[];
+        const components = this.components.filter(value => value instanceof type) as T[];
+
+        if (checkChildren)
+        {
+            // Check all children and add to result set.
+            this.children.forEach(child => {
+                const childComps = child.getComponentsOfType<T>(type, true);
+                for (const childComp of childComps)
+                {
+                    components.push(childComp);
+                }
+            });
+        }
+
+        return components;
     }
 
     /**

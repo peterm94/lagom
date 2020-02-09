@@ -4,6 +4,9 @@ import {Observable} from "../Common/Observer";
 import {Log} from "../Common/Util";
 import {DiscreteCollisionSystem} from "./DetectCollisions";
 
+import * as PIXI from "pixi.js";
+
+
 /**
  * Collider types for this collision system.
  */
