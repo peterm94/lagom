@@ -6,7 +6,7 @@ import {Component} from "../../ECS/Component";
 import {Entity} from "../../ECS/Entity";
 import {Key} from "../../Input/Key";
 import {RenderCircle} from "../../Common/PIXIComponents";
-import {DiscreteCollisionSystem} from "../../Collisions/DetectCollisions";
+import {ContinuousCollisionSystem, Rigidbody} from "../../Collisions/DetectCollisions";
 import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
 import {CircleCollider} from "../../Collisions/DetectColliders";
 
@@ -21,7 +21,7 @@ class Mover extends System
 {
     types(): LagomType<Component>[]
     {
-        return [MoveMe];
+        return [Rigidbody, MoveMe];
     }
 
     update(delta: number): void
@@ -29,22 +29,26 @@ class Mover extends System
         const spd = 0.1;
         const rotSpd = 0.005;
 
-        this.runOnEntities((entity: Entity) => {
+        this.runOnEntities((entity: Entity, body: Rigidbody) => {
             if (Keyboard.isKeyDown(Key.KeyA))
             {
-                entity.transform.position.x -= spd * delta;
+                body.move(-spd * delta, 0);
+                // entity.transform.position.x -= spd * delta;
             }
             if (Keyboard.isKeyDown(Key.KeyD))
             {
-                entity.transform.position.x += spd * delta;
+                body.move(spd * delta, 0);
+                // entity.transform.position.x += spd * delta;
             }
             if (Keyboard.isKeyDown(Key.KeyW))
             {
-                entity.transform.position.y -= spd * delta;
+                body.move(0, -spd * delta);
+                // entity.transform.position.y -= spd * delta;
             }
             if (Keyboard.isKeyDown(Key.KeyS))
             {
-                entity.transform.position.y += spd * delta;
+                body.move(0, spd * delta);
+                // entity.transform.position.y += spd * delta;
             }
             if (Keyboard.isKeyDown(Key.KeyQ))
             {
@@ -56,7 +60,6 @@ class Mover extends System
             }
         });
     }
-
 }
 
 class CompositionScene extends Scene
@@ -67,12 +70,13 @@ class CompositionScene extends Scene
 
         const matrix = new CollisionMatrix();
         matrix.addCollision(0, 0);
-        const collSystem = this.addGlobalSystem(new DiscreteCollisionSystem(matrix));
+        const collSystem = this.addGlobalSystem(new ContinuousCollisionSystem(matrix));
 
         const e = this.addEntity(new Entity("hello", 50, 50));
 
         e.addComponent(new RenderCircle(0, 0, 10));
         e.addComponent(new MoveMe());
+        e.addComponent(new Rigidbody());
 
         this.addSystem(new Mover());
 
@@ -80,11 +84,11 @@ class CompositionScene extends Scene
         c1.addComponent(new RenderCircle(0, 0, 5, 0x222255));
         c1.addComponent(new CircleCollider(collSystem, 0, 0, 10, 0));
 
-
         const e2 = this.addEntity(new Entity("e2", 100, 100));
         const e2col = e2.addComponent(new CircleCollider(collSystem, 0, 0, 20, 0));
 
         e2.addComponent(new RenderCircle(0, 0, 20, null, 0x00FF00));
+        e2.addComponent(new Rigidbody());
 
         e2col.onTriggerEnter.register((caller) => {
             caller.getEntity().getComponent<RenderCircle>(RenderCircle)?.destroy();

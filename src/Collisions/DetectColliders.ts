@@ -2,7 +2,7 @@ import {Body, Circle, Point, Polygon, Result} from "detect-collisions";
 import {PIXIComponent} from "../ECS/Component";
 import {Observable} from "../Common/Observer";
 import {Log} from "../Common/Util";
-import {DiscreteCollisionSystem} from "./DetectCollisions";
+import {CollisionSystem} from "./DetectCollisions";
 
 import * as PIXI from "pixi.js";
 
@@ -18,7 +18,7 @@ export abstract class DetectCollider2 extends PIXIComponent<PIXI.Container>
 
     triggersLastFrame: DetectCollider2[] = [];
 
-    protected constructor(private readonly engine: DiscreteCollisionSystem,
+    protected constructor(private readonly engine: CollisionSystem,
                           readonly body: Body, readonly xOff: number,
                           readonly yOff: number, readonly layer: number)
     {
@@ -98,7 +98,7 @@ export abstract class DetectCollider2 extends PIXIComponent<PIXI.Container>
  */
 export class CircleCollider extends DetectCollider2
 {
-    constructor(system: DiscreteCollisionSystem, xOff: number, yOff: number, radius: number, layer: number)
+    constructor(system: CollisionSystem, xOff: number, yOff: number, radius: number, layer: number)
     {
         super(system, new Circle(0, 0, radius), xOff, yOff, layer);
     }
@@ -109,7 +109,7 @@ export class CircleCollider extends DetectCollider2
  */
 export class PointCollider extends DetectCollider2
 {
-    constructor(system: DiscreteCollisionSystem, xOff: number, yOff: number, layer: number)
+    constructor(system: CollisionSystem, xOff: number, yOff: number, layer: number)
     {
         super(system, new Point(0, 0), xOff, yOff, layer);
     }
@@ -120,7 +120,7 @@ export class PointCollider extends DetectCollider2
  */
 export class PolyCollider extends DetectCollider2
 {
-    constructor(system: DiscreteCollisionSystem, xOff: number, yOff: number, points: number[][], layer: number,
+    constructor(system: CollisionSystem, xOff: number, yOff: number, points: number[][], layer: number,
                 rotation = 0)
     {
         // NOTE: The order of the points matters, the library is bugged, this function ensures they are anticlockwise.
@@ -183,7 +183,7 @@ export class PolyCollider extends DetectCollider2
  */
 export class RectCollider extends PolyCollider
 {
-    constructor(system: DiscreteCollisionSystem, xOff: number, yOff: number, width: number, height: number,
+    constructor(system: CollisionSystem, xOff: number, yOff: number, width: number, height: number,
                 layer: number, rotation = 0)
     {
         super(system, xOff, yOff, [[0, 0], [width, 0], [width, height], [0, height]], layer, rotation);

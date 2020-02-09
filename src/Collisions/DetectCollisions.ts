@@ -1,4 +1,4 @@
-import {Util} from "../Common/Util";
+import {Log, Util} from "../Common/Util";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
 import {DetectCollider2} from "./DetectColliders";
@@ -79,11 +79,13 @@ export abstract class CollisionSystem extends GlobalSystem
                     if (triggersLastFrame.includes(otherComp))
                     {
                         // Still inside the trigger.
+                        Log.trace("onTrigger");
                         collider.onTrigger.trigger(collider, {other: otherComp, result: result});
                     }
                     else
                     {
                         // New event detected.
+                        Log.trace("onTriggerEnter");
                         collider.onTriggerEnter.trigger(collider, {other: otherComp, result: result});
                     }
 
@@ -134,6 +136,12 @@ export class Rigidbody extends Component
 
     pendingX = 0;
     pendingY = 0;
+
+    move(x: number, y: number): void
+    {
+        this.pendingX += x;
+        this.pendingY += y;
+    }
 
     onAdded(): void
     {
@@ -209,7 +217,7 @@ export class ContinuousCollisionSystem extends CollisionSystem
             {
                 // TODO could do this with trig instead of doing x/y independently, not sure if worth. Will slow it
                 //  down, but be more accurate for things moving diagonally.
-                while (body.active && body.pendingX !== 0 || body.pendingY !== 0)
+                while (body.active && (body.pendingX !== 0 || body.pendingY !== 0))
                 {
                     // Figure out the next movement. We do this in the loop so we can adapt to changes.
                     const xDir = Math.sign(body.pendingX);
@@ -231,6 +239,7 @@ export class ContinuousCollisionSystem extends CollisionSystem
                     // Check collisions for all children.
                     this.doCollisionCheck(body.affectedColliders);
                 }
+                this.doCollisionCheck(body.affectedColliders);
             }
         });
     }
