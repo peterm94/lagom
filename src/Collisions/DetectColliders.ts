@@ -6,6 +6,18 @@ import {CollisionSystem} from "./DetectCollisions";
 
 import * as PIXI from "pixi.js";
 
+export enum CollisionType
+{
+    Discrete,
+    Continuous
+}
+
+export interface ColliderOptions
+{
+    layer: number;
+    xOff?: number;
+    yOff?: number;
+}
 
 /**
  * Collider types for this collision system.
@@ -17,15 +29,21 @@ export abstract class DetectCollider2 extends PIXIComponent<PIXI.Container>
     readonly onTriggerExit: Observable<DetectCollider2, DetectCollider2> = new Observable();
 
     triggersLastFrame: DetectCollider2[] = [];
+    readonly layer: number;
+    private readonly xOff: number;
+    private readonly yOff: number;
 
-    protected constructor(private readonly engine: CollisionSystem,
-                          readonly body: Body, readonly xOff: number,
-                          readonly yOff: number, readonly layer: number)
+    protected constructor(private readonly engine: CollisionSystem, readonly body: Body, options: ColliderOptions)
     {
         super(new PIXI.Container());
 
-        this.pixiObj.position.x = xOff;
-        this.pixiObj.position.y = yOff;
+        this.xOff = options.xOff !== undefined ? options.xOff : 0;
+        this.yOff = options.yOff !== undefined ? options.yOff : 0;
+
+        this.pixiObj.position.x = this.xOff;
+        this.pixiObj.position.y = this.yOff;
+
+        this.layer = options.layer;
 
         // TODO rotation, as usual. Needs to be used everywhere too
 
@@ -43,9 +61,7 @@ export abstract class DetectCollider2 extends PIXIComponent<PIXI.Container>
             return;
         }
 
-        this.body.x = this.getEntity().transform.x + this.xOff;
-        this.body.y = this.getEntity().transform.y + this.yOff;
-
+        this.updatePosition();
         this.engine.addBody(this);
     }
 
@@ -93,14 +109,19 @@ export abstract class DetectCollider2 extends PIXIComponent<PIXI.Container>
     }
 }
 
+export interface CircleColliderOptions extends ColliderOptions
+{
+    radius: number;
+}
+
 /**
  * Circle collider type.
  */
 export class CircleCollider extends DetectCollider2
 {
-    constructor(system: CollisionSystem, xOff: number, yOff: number, radius: number, layer: number)
+    constructor(system: CollisionSystem, options: CircleColliderOptions)
     {
-        super(system, new Circle(0, 0, radius), xOff, yOff, layer);
+        super(system, new Circle(0, 0, options.radius), options);
     }
 }
 
@@ -109,10 +130,16 @@ export class CircleCollider extends DetectCollider2
  */
 export class PointCollider extends DetectCollider2
 {
-    constructor(system: CollisionSystem, xOff: number, yOff: number, layer: number)
+    constructor(system: CollisionSystem, options: ColliderOptions)
     {
-        super(system, new Point(0, 0), xOff, yOff, layer);
+        super(system, new Point(0, 0), options);
     }
+}
+
+export interface PolyColliderInterface extends ColliderOptions
+{
+    points: number[][];
+    rotation: number;
 }
 
 /**
@@ -120,11 +147,11 @@ export class PointCollider extends DetectCollider2
  */
 export class PolyCollider extends DetectCollider2
 {
-    constructor(system: CollisionSystem, xOff: number, yOff: number, points: number[][], layer: number,
-                rotation = 0)
+    constructor(system: CollisionSystem, options: PolyColliderInterface)
     {
         // NOTE: The order of the points matters, the library is bugged, this function ensures they are anticlockwise.
-        super(system, new Polygon(xOff, yOff, PolyCollider.reorderVertices(points), rotation), xOff, yOff, layer);
+        // TODO not sure about the (x, y) here, it used to be (xOff, yOff), but I'm sure it was never tested.
+        super(system, new Polygon(0, 0, PolyCollider.reorderVertices(options.points), options.rotation), options);
     }
 
     /**
@@ -178,14 +205,23 @@ export class PolyCollider extends DetectCollider2
     }
 }
 
+export interface RectColliderOptions extends ColliderOptions
+{
+    width: number;
+    height: number;
+    rotation: number;
+}
+
 /**
  * Rectangle collider type.
  */
 export class RectCollider extends PolyCollider
 {
-    constructor(system: CollisionSystem, xOff: number, yOff: number, width: number, height: number,
-                layer: number, rotation = 0)
+    constructor(system: CollisionSystem, options: RectColliderOptions)
     {
-        super(system, xOff, yOff, [[0, 0], [width, 0], [width, height], [0, height]], layer, rotation);
+        super(system, {
+            points: [[0, 0], [options.width, 0], [options.width, options.height], [0, options.height]],
+            layer: options.layer, yOff: options.yOff, xOff: options.xOff, rotation: options.rotation
+        });
     }
 }

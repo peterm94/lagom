@@ -1,7 +1,7 @@
-import {Log, Util} from "../Common/Util";
+import {Util} from "../Common/Util";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
-import {DetectCollider2} from "./DetectColliders";
+import {CollisionType, DetectCollider2} from "./DetectColliders";
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Component} from "../ECS/Component";
 import {Entity} from "../ECS/Entity";
@@ -79,13 +79,11 @@ export abstract class CollisionSystem extends GlobalSystem
                     if (triggersLastFrame.includes(otherComp))
                     {
                         // Still inside the trigger.
-                        Log.trace("onTrigger");
                         collider.onTrigger.trigger(collider, {other: otherComp, result: result});
                     }
                     else
                     {
                         // New event detected.
-                        Log.trace("onTriggerEnter");
                         collider.onTriggerEnter.trigger(collider, {other: otherComp, result: result});
                     }
 
@@ -104,18 +102,28 @@ export abstract class CollisionSystem extends GlobalSystem
 }
 
 
-// Discrete system, no Rigidbody required. Entities can be moved by updating the transform as usual.
-// On Update, move all colliders to their world position.
+/**
+ * Discrete system, no Rigidbody required. Entities can be moved by updating the transform as usual. On FixedUpdate,
+ * move all colliders to their world position.
+ *
+ * Avoid fast moving objects, as they will easily clip through things. use the continuous implementation if required.
+ */
 export class DiscreteCollisionSystem extends CollisionSystem
 {
     types = () => [DetectCollider2];
 
-    // TODO move this to fixed update
     update(delta: number): void
     {
+        // This system operates in the fixed update.
+    }
+
+    fixedUpdate(delta: number): void
+    {
+        super.fixedUpdate(delta);
+
         this.runOnComponentsWithSystem((system: DiscreteCollisionSystem, colliders: DetectCollider2[]) => {
 
-            // Move them all to their new positions.
+            // Move them all to their new positions. This uses the current transform position.
             for (const collider of colliders)
             {
                 collider.updatePosition();
@@ -124,6 +132,7 @@ export class DiscreteCollisionSystem extends CollisionSystem
             // Do a detect update.
             system.detectSystem.update();
 
+            // Do collision checks.
             this.doCollisionCheck(colliders);
         });
     }
@@ -136,11 +145,23 @@ export class Rigidbody extends Component
 
     pendingX = 0;
     pendingY = 0;
+    // Degrees
+    pendingAngRotation = 0;
+
+    constructor(readonly collType: CollisionType = CollisionType.Discrete)
+    {
+        super();
+    }
 
     move(x: number, y: number): void
     {
         this.pendingX += x;
         this.pendingY += y;
+    }
+
+    rotate(degrees: number): void
+    {
+        this.pendingAngRotation += degrees;
     }
 
     onAdded(): void
@@ -199,47 +220,87 @@ export class Rigidbody extends Component
     }
 }
 
-// Continuous system. We cannot apply movement straight away, need to increment positions and check on an interval.
-// This gets tricky, because we can have child bodies and colliders as well. Need to updated each 'body'
-// independently, cascading all effects to child components. Not sure how to deal with update order here, can think
-// about that later.
+/**
+ * Continuous system. We cannot apply movement straight away, need to increment positions and check on an interval.
+ * This gets tricky, because we can have child bodies and colliders as well. Need to updated each 'body'
+ * independently, cascading all effects to child components. Not sure how to deal with update order here, can think
+ * about that later.
+ */
 export class ContinuousCollisionSystem extends CollisionSystem
 {
-    readonly step = 10;
+    constructor(collisionMatrix: CollisionMatrix, readonly step: number)
+    {
+        super(collisionMatrix);
+    }
 
     types = () => [Rigidbody];
 
     update(delta: number): void
     {
+        // Fixed timestep
+    }
+
+    fixedUpdate(delta: number): void
+    {
+        super.fixedUpdate(delta);
+
         this.runOnComponentsWithSystem((system: ContinuousCollisionSystem, bodies: Rigidbody[]) => {
 
             for (const body of bodies)
             {
-                // TODO could do this with trig instead of doing x/y independently, not sure if worth. Will slow it
-                //  down, but be more accurate for things moving diagonally.
-                while (body.active && (body.pendingX !== 0 || body.pendingY !== 0))
+                // Discrete or not moving, just move to final position and do the checks.
+                if (body.collType === CollisionType.Discrete ||
+                    (body.pendingY === 0 && body.pendingX === 0 && body.pendingAngRotation === 0))
                 {
-                    // Figure out the next movement. We do this in the loop so we can adapt to changes.
-                    const xDir = Math.sign(body.pendingX);
-                    const yDir = Math.sign(body.pendingY);
-                    const dx = Math.min(Math.abs(body.pendingX), system.step) * xDir;
-                    const dy = Math.min(Math.abs(body.pendingY), system.step) * yDir;
+                    // Move to final positions.
+                    body.parent.transform.x += body.pendingX;
+                    body.parent.transform.y += body.pendingY;
+                    body.parent.transform.angle += body.pendingAngRotation;
+                    body.pendingX = 0;
+                    body.pendingY = 0;
+                    body.pendingAngRotation = 0;
 
-                    body.pendingX -= dx;
-                    body.pendingY -= dy;
-
-                    // Move by the increment.
-                    body.parent.transform.x += dx;
-                    body.parent.transform.y += dy;
-
-                    // Update positions for all child colliders and update the model.
+                    // Update body positions and simulation.
                     body.updateAffected();
                     system.detectSystem.update();
 
-                    // Check collisions for all children.
+                    // Do checks.
                     this.doCollisionCheck(body.affectedColliders);
                 }
-                this.doCollisionCheck(body.affectedColliders);
+                else
+                {
+                    // TODO could do this with trig instead of doing x/y independently, not sure if worth. Will slow it
+                    //  down, but be more accurate for things moving diagonally.
+                    while (body.active && (body.pendingX !== 0 || body.pendingY !== 0 || body.pendingAngRotation !== 0))
+                    {
+                        // There is no delta usage here, we operate on a fixed timestep.
+                        // Figure out the next movement. We do this in the loop so we can adapt to changes.
+                        const xDir = Math.sign(body.pendingX);
+                        const yDir = Math.sign(body.pendingY);
+                        const rotDir = Math.sign(body.pendingAngRotation);
+
+                        const dx = Math.min(Math.abs(body.pendingX), system.step) * xDir;
+                        const dy = Math.min(Math.abs(body.pendingY), system.step) * yDir;
+                        const dRot = Math.min(Math.abs(body.pendingAngRotation), system.step) * rotDir;
+
+                        body.pendingX -= dx;
+                        body.pendingY -= dy;
+                        body.pendingAngRotation -= dRot;
+
+
+                        // Move by the increment.
+                        body.parent.transform.x += dx;
+                        body.parent.transform.y += dy;
+                        body.parent.transform.angle += dRot;
+
+                        // Update positions for all child colliders and update the model.
+                        body.updateAffected();
+                        system.detectSystem.update();
+
+                        // Check collisions for all children.
+                        this.doCollisionCheck(body.affectedColliders);
+                    }
+                }
             }
         });
     }
