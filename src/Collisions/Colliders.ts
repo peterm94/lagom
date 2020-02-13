@@ -2,7 +2,7 @@ import {Body, Circle, Point, Polygon, Result} from "detect-collisions";
 import {PIXIComponent} from "../ECS/Component";
 import {Observable} from "../Common/Observer";
 import {Log} from "../Common/Util";
-import {CollisionSystem} from "./DetectCollisions";
+import {CollisionSystem} from "./CollisionSystems";
 
 import * as PIXI from "pixi.js";
 
@@ -22,13 +22,13 @@ export interface ColliderOptions
 /**
  * Collider types for this collision system.
  */
-export abstract class DetectCollider2 extends PIXIComponent<PIXI.Container>
+export abstract class Collider extends PIXIComponent<PIXI.Container>
 {
-    readonly onTrigger: Observable<DetectCollider2, { other: DetectCollider2; result: Result }> = new Observable();
-    readonly onTriggerEnter: Observable<DetectCollider2, { other: DetectCollider2; result: Result }> = new Observable();
-    readonly onTriggerExit: Observable<DetectCollider2, DetectCollider2> = new Observable();
+    readonly onTrigger: Observable<Collider, { other: Collider; result: Result }> = new Observable();
+    readonly onTriggerEnter: Observable<Collider, { other: Collider; result: Result }> = new Observable();
+    readonly onTriggerExit: Observable<Collider, Collider> = new Observable();
 
-    triggersLastFrame: DetectCollider2[] = [];
+    triggersLastFrame: Collider[] = [];
     readonly layer: number;
     private readonly xOff: number;
     private readonly yOff: number;
@@ -57,7 +57,7 @@ export abstract class DetectCollider2 extends PIXIComponent<PIXI.Container>
 
         if (this.engine == null)
         {
-            Log.warn("A DetectCollisionsSystem must be added to the Scene before a DetectCollider2 is added.");
+            Log.warn("A DetectCollisionsSystem must be added to the Scene before a Collider is added.");
             return;
         }
 
@@ -110,7 +110,7 @@ export interface CircleColliderOptions extends ColliderOptions
 /**
  * Circle collider type.
  */
-export class CircleCollider extends DetectCollider2
+export class CircleCollider extends Collider
 {
     constructor(system: CollisionSystem, options: CircleColliderOptions)
     {
@@ -121,7 +121,7 @@ export class CircleCollider extends DetectCollider2
 /**
  * Point collider type.
  */
-export class PointCollider extends DetectCollider2
+export class PointCollider extends Collider
 {
     constructor(system: CollisionSystem, options: ColliderOptions)
     {
@@ -138,7 +138,7 @@ export interface PolyColliderInterface extends ColliderOptions
 /**
  * Polygon collider. Please only use convex shapes.
  */
-export class PolyCollider extends DetectCollider2
+export class PolyCollider extends Collider
 {
     constructor(system: CollisionSystem, options: PolyColliderInterface)
     {

@@ -1,10 +1,9 @@
 import {Util} from "../Common/Util";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
-import {CollisionType, DetectCollider2} from "./DetectColliders";
+import {Collider, CollisionType} from "./Colliders";
 import {GlobalSystem} from "../ECS/GlobalSystem";
-import {Component} from "../ECS/Component";
-import {Entity} from "../ECS/Entity";
+import {Rigidbody} from "./Rigidbody";
 
 export abstract class CollisionSystem extends GlobalSystem
 {
@@ -15,20 +14,20 @@ export abstract class CollisionSystem extends GlobalSystem
         super();
     }
 
-    addBody(body: DetectCollider2): void
+    addBody(body: Collider): void
     {
         this.detectSystem.insert(body.body);
         this.detectSystem.update();
     }
 
-    removeBody(body: DetectCollider2): void
+    removeBody(body: Collider): void
     {
         this.detectSystem.remove(body.body);
         this.detectSystem.update();
     }
 
     // TODO this needs a rewrite
-    placeFree(collider: DetectCollider2, dx: number, dy: number): boolean
+    placeFree(collider: Collider, dx: number, dy: number): boolean
     {
         // Try moving to the destination.
         const currX = collider.body.x;
@@ -42,7 +41,7 @@ export abstract class CollisionSystem extends GlobalSystem
         const potentials = collider.body.potentials();
         for (const potential of potentials)
         {
-            const otherComp = (potential as any).lagomComponent as DetectCollider2;
+            const otherComp = (potential as any).lagomComponent as Collider;
 
             if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                 && collider.body.collides(potential))
@@ -60,7 +59,7 @@ export abstract class CollisionSystem extends GlobalSystem
         return true;
     }
 
-    protected doCollisionCheck(colliders: DetectCollider2[]): void
+    protected doCollisionCheck(colliders: Collider[]): void
     {
         for (const collider of colliders)
         {
@@ -70,7 +69,7 @@ export abstract class CollisionSystem extends GlobalSystem
             const potentials = collider.body.potentials();
             for (const potential of potentials)
             {
-                const otherComp = (potential as any).lagomComponent as DetectCollider2;
+                const otherComp = (potential as any).lagomComponent as Collider;
                 const result = new Result();
 
                 if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
@@ -110,7 +109,7 @@ export abstract class CollisionSystem extends GlobalSystem
  */
 export class DiscreteCollisionSystem extends CollisionSystem
 {
-    types = () => [DetectCollider2];
+    types = () => [Collider];
 
     update(delta: number): void
     {
@@ -121,7 +120,7 @@ export class DiscreteCollisionSystem extends CollisionSystem
     {
         super.fixedUpdate(delta);
 
-        this.runOnComponentsWithSystem((system: DiscreteCollisionSystem, colliders: DetectCollider2[]) => {
+        this.runOnComponentsWithSystem((system: DiscreteCollisionSystem, colliders: Collider[]) => {
 
             // Move them all to their new positions. This uses the current transform position.
             for (const collider of colliders)
@@ -138,93 +137,6 @@ export class DiscreteCollisionSystem extends CollisionSystem
     }
 }
 
-
-export class Rigidbody extends Component
-{
-    affectedColliders: DetectCollider2[] = [];
-
-    pendingX = 0;
-    pendingY = 0;
-    // Degrees
-    pendingAngRotation = 0;
-
-    constructor(readonly collType: CollisionType = CollisionType.Discrete)
-    {
-        super();
-    }
-
-    stop(): void
-    {
-        this.pendingX = 0;
-        this.pendingY = 0;
-    }
-
-    move(x: number, y: number): void
-    {
-        this.pendingX += x;
-        this.pendingY += y;
-    }
-
-    rotate(degrees: number): void
-    {
-        this.pendingAngRotation += degrees;
-    }
-
-    onAdded(): void
-    {
-        super.onAdded();
-
-        // Find any existing sibling or descendant colliders.
-        this.affectedColliders = this.parent.getComponentsOfType(DetectCollider2, true);
-
-        // Register event listeners for the whole tree from our parent down.
-        this.childAdd(this.parent, this.parent);
-    }
-
-    private childAdd(entity: Entity, child: Entity): void
-    {
-        // We need to watch the tree from this node down. Any new colliders need to be detected and added to this array.
-        child.componentAddedEvent.register(this.compAdd.bind(this));
-        child.childAdded.register(this.childAdd.bind(this));
-
-        // We also need to remove them when destroyed.
-        child.componentRemovedEvent.register(this.compRem.bind(this));
-        child.childRemoved.register(this.childRem.bind(this));
-    }
-
-    private compAdd(entity: Entity, component: Component): void
-    {
-        if (component instanceof DetectCollider2)
-        {
-            this.affectedColliders.push(component);
-        }
-    }
-
-    private childRem(entity: Entity, child: Entity): void
-    {
-        const childColls = child.getComponentsOfType<DetectCollider2>(DetectCollider2, true);
-        for (const childColl of childColls)
-        {
-            Util.remove(this.affectedColliders, childColl);
-        }
-    }
-
-    private compRem(entity: Entity, component: Component): void
-    {
-        if (component instanceof DetectCollider2)
-        {
-            Util.remove(this.affectedColliders, component);
-        }
-    }
-
-    updateAffected(): void
-    {
-        for (const affectedCollider of this.affectedColliders)
-        {
-            affectedCollider.updatePosition();
-        }
-    }
-}
 
 /**
  * Continuous system. We cannot apply movement straight away, need to increment positions and check on an interval.

@@ -6,10 +6,11 @@ import {Component} from "../../ECS/Component";
 import {Entity} from "../../ECS/Entity";
 import {Key} from "../../Input/Key";
 import {RenderCircle} from "../../Common/PIXIComponents";
-import {ContinuousCollisionSystem, Rigidbody} from "../../Collisions/DetectCollisions";
+import {ContinuousCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
-import {CircleCollider, CollisionType} from "../../Collisions/DetectColliders";
+import {CircleCollider, CollisionType} from "../../Collisions/Colliders";
 import {Log} from "../../Common/Util";
+import {Rigidbody} from "../../Collisions/Rigidbody";
 
 const Keyboard = require('pixi.js-keyboard');
 
