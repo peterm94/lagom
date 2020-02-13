@@ -260,6 +260,9 @@ export class ContinuousCollisionSystem extends CollisionSystem
                     body.pendingY = 0;
                     body.pendingAngRotation = 0;
 
+                    // This forces the move. Otherwise, not applied until the next render frame.
+                    body.parent.transform.updateTransform();
+
                     // Update body positions and simulation.
                     body.updateAffected();
                     system.detectSystem.update();
@@ -292,6 +295,9 @@ export class ContinuousCollisionSystem extends CollisionSystem
                         body.parent.transform.x += dx;
                         body.parent.transform.y += dy;
                         body.parent.transform.angle += dRot;
+
+                        // This forces the move. Otherwise, not applied until the next render frame.
+                        body.parent.transform.updateTransform();
 
                         // Update positions for all child colliders and update the model.
                         body.updateAffected();
