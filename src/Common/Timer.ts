@@ -20,6 +20,13 @@ export class Timer<T> extends Component
         this.payload = payload;
         this.repeat = repeat;
     }
+
+    onRemoved(): void
+    {
+        super.onRemoved();
+
+        this.onTrigger.releaseAll();
+    }
 }
 
 // This is frame synced. Could be an async call instead? Not sure if I want to do that though

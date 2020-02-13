@@ -25,6 +25,13 @@ export abstract class FrameTrigger<T> extends Component
     {
         this.nextTriggerTime = -1;
     }
+
+    onRemoved(): void
+    {
+        super.onRemoved();
+
+        this.onTrigger.releaseAll();
+    }
 }
 
 

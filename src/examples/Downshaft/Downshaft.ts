@@ -375,6 +375,12 @@ class Ammo extends Component
     private _ammo = 0;
 
     readonly onChange: Observable<Ammo, number> = new Observable();
+
+    onRemoved(): void
+    {
+        super.onRemoved();
+        this.onChange.releaseAll();
+    }
 }
 
 class Player extends Entity

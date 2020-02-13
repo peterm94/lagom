@@ -18,6 +18,8 @@ export class Entity extends LifecycleObject
 
     readonly componentAddedEvent: Observable<Entity, Component> = new Observable();
     readonly componentRemovedEvent: Observable<Entity, Component> = new Observable();
+    readonly childAdded: Observable<Entity, Entity> = new Observable();
+    readonly childRemoved: Observable<Entity, Entity> = new Observable();
 
     readonly name: string;
     readonly id: string;
@@ -29,6 +31,12 @@ export class Entity extends LifecycleObject
     private static _next_id = 0;
 
     scene!: Scene;
+
+    // This should only be null for a tree root (i.e. the scene root nodes)
+    parent: Entity | null = null;
+    children: Entity[] = [];
+
+    transform: PIXI.Container = Util.sortedContainer();
 
     /**
      * Create a new entity. It must be added to a Game to actually do anything.
@@ -136,6 +144,12 @@ export class Entity extends LifecycleObject
 
         Log.trace("Destroying ", this.components);
 
+        // Destroy any observers looking at us
+        this.componentAddedEvent.releaseAll();
+        this.componentRemovedEvent.releaseAll();
+        this.childAdded.releaseAll();
+        this.childRemoved.releaseAll();
+
         // Take any components with us
         while (this.components.length > 0)
         {
@@ -159,15 +173,6 @@ export class Entity extends LifecycleObject
     {
         return this.scene;
     }
-
-    // This should only be null for a tree root (i.e. the scene root nodes)
-    parent: Entity | null = null;
-    children: Entity[] = [];
-
-    transform: PIXI.Container = Util.sortedContainer();
-
-    readonly childAdded: Observable<Entity, Entity> = new Observable();
-    readonly childRemoved: Observable<Entity, Entity> = new Observable();
 
     removeChild(child: Entity): void
     {

@@ -192,4 +192,12 @@ export class Scene extends LifecycleObject implements Updatable
     {
         return this.game;
     }
+
+    onRemoved(): void
+    {
+        super.onRemoved();
+
+        this.entityAddedEvent.releaseAll();
+        this.entityRemovedEvent.releaseAll();
+    }
 }

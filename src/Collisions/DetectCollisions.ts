@@ -153,6 +153,12 @@ export class Rigidbody extends Component
         super();
     }
 
+    stop(): void
+    {
+        this.pendingX = 0;
+        this.pendingY = 0;
+    }
+
     move(x: number, y: number): void
     {
         this.pendingX += x;

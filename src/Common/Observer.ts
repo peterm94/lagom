@@ -2,6 +2,10 @@ import {Util} from "./Util";
 
 /**
  * Observable for custom events.
+ *
+ * If you create a new observable, ensure that when the owner is destroyed, releaseAll() is called. Otherwise, will
+ * leave dangling references.
+ *
  * @param C The caller.
  * @param T The event data.
  */
@@ -35,6 +39,14 @@ export class Observable<C, T>
     trigger(caller: C, data: T): void
     {
         this.observers.forEach(value => value(caller, data));
+    }
+
+    /**
+     * Release all Observers on this observable.
+     */
+    releaseAll(): void
+    {
+        this.observers.length = 0;
     }
 }
 

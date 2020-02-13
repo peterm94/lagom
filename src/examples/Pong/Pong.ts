@@ -261,6 +261,14 @@ class Score extends Component
 
     readonly onP1Score: Observable<Score, number> = new Observable();
     readonly onP2Score: Observable<Score, number> = new Observable();
+
+    onRemoved(): void
+    {
+        super.onRemoved();
+
+        this.onP1Score.releaseAll();
+        this.onP2Score.releaseAll();
+    }
 }
 
 class ScoreSystem extends System

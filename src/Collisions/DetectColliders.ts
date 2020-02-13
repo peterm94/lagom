@@ -65,20 +65,13 @@ export abstract class DetectCollider2 extends PIXIComponent<PIXI.Container>
         this.engine.addBody(this);
     }
 
-    private alreadyRemoved = false;
-
     onRemoved(): void
     {
         super.onRemoved();
 
-        // TODO I think this is fixed?
-        // TODO this needs to be checked in the lifecycle, not here. Make that a set?
-        if (this.alreadyRemoved)
-        {
-            Log.error("attempting to remove previously removed object");
-            return;
-        }
-        this.alreadyRemoved = true;
+        this.onTriggerEnter.releaseAll();
+        this.onTriggerExit.releaseAll();
+        this.onTrigger.releaseAll();
 
         if (this.engine !== null)
         {
