@@ -174,14 +174,18 @@ export class Scene extends LifecycleObject implements Updatable
 
     /**
      * Get an Entity with the given name. If multiple instances have the same name, only the first found will be
-     * returned.
+     * returned. Will not recurse. Use sceneNode.findChildWithName() directly if recursion is required.
+     *
      * @param name The name of the Entity to search for.
      * @returns The found Entity or null.
      */
     getEntityWithName<T extends Entity>(name: string): T | null
     {
-        const found = this.entities.find(value => value.name === name);
-        return found !== undefined ? found as T : null;
+        // Check the scene node first.
+        const node = this.sceneNode.findChildWithName(name);
+
+        // If not found, check GUI nodes, otherwise just return the found one.
+        return (node === null) ? this.guiNode.findChildWithName(name) : node as T;
     }
 
     /**

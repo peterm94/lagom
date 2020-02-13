@@ -34,8 +34,12 @@ class MoveMeConstMover extends System
 
     update(delta: number): void
     {
+    }
+
+    fixedUpdate(delta: number): void
+    {
         this.runOnEntities((e: Entity, body: Rigidbody) => {
-            body.move(0, -2 * delta);
+            body.move(0, -20 * delta);
         });
     }
 }
@@ -90,7 +94,6 @@ class Mover extends System
                     new CircleCollider(
                         this.scene.getGlobalSystem(ContinuousCollisionSystem) as ContinuousCollisionSystem,
                         {layer: 0, radius: 5})).onTriggerEnter.register((caller, data) => {
-                    Log.trace("fuck");
                     caller.parent.getComponent<MoveMeConst>(MoveMeConst)?.destroy();
                     const other = caller.parent.getComponent<Rigidbody>(Rigidbody);
                     if (other !== null) {
@@ -113,7 +116,7 @@ class CompositionScene extends Scene
 
         const matrix = new CollisionMatrix();
         matrix.addCollision(0, 0);
-        const collSystem = this.addGlobalSystem(new ContinuousCollisionSystem(matrix, 5));
+        const collSystem = this.addGlobalSystem(new ContinuousCollisionSystem(matrix, 10));
 
         this.addSystem(new MoveMeConstMover());
 
@@ -122,7 +125,7 @@ class CompositionScene extends Scene
 
         e.addComponent(new RenderCircle(0, 0, 10));
         e.addComponent(new MoveMe());
-        e.addComponent(new Rigidbody(CollisionType.Continuous));
+        e.addComponent(new Rigidbody(CollisionType.Discrete));
 
         this.addSystem(new Mover());
 
@@ -134,7 +137,7 @@ class CompositionScene extends Scene
         const e2col = e2.addComponent(new CircleCollider(collSystem, {radius: 20, layer: 0}));
 
         e2.addComponent(new RenderCircle(0, 0, 20, null, 0x00FF00));
-        e2.addComponent(new Rigidbody(CollisionType.Continuous));
+        e2.addComponent(new Rigidbody(CollisionType.Discrete));
 
         e2col.onTriggerEnter.register((caller) => {
             caller.getEntity().getComponent<RenderCircle>(RenderCircle)?.destroy();
