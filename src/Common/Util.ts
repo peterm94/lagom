@@ -1,6 +1,6 @@
 import {Entity} from "../ECS/Entity";
 import * as PIXI from "pixi.js";
-import {Vector} from "../LagomPhysics/Physics";
+import {Vector} from "./Vector";
 
 
 export class MathUtil
@@ -168,7 +168,7 @@ export class Util
         return false;
     }
 
-    static move(e: Entity, dist: number)
+    static move(e: Entity, dist: number): void
     {
         const mx = MathUtil.lengthDirX(dist, e.transform.rotation);
         const my = MathUtil.lengthDirY(dist, e.transform.rotation);
@@ -205,7 +205,7 @@ export class Log
 {
     static logLevel: LogLevel = LogLevel.DEBUG;
 
-    static error(...msg: any[]): void
+    static error(...msg: unknown[]): void
     {
         if (this.logLevel >= LogLevel.ERROR)
         {
@@ -213,7 +213,7 @@ export class Log
         }
     }
 
-    static warn(...msg: any[]): void
+    static warn(...msg: unknown[]): void
     {
         if (this.logLevel >= LogLevel.WARN)
         {
@@ -221,7 +221,7 @@ export class Log
         }
     }
 
-    static info(...msg: any[]): void
+    static info(...msg: unknown[]): void
     {
         if (this.logLevel >= LogLevel.INFO)
         {
@@ -229,7 +229,7 @@ export class Log
         }
     }
 
-    static debug(...msg: any[]): void
+    static debug(...msg: unknown[]): void
     {
         if (this.logLevel >= LogLevel.DEBUG)
         {
@@ -237,7 +237,7 @@ export class Log
         }
     }
 
-    static trace(...msg: any[]): void
+    static trace(...msg: unknown[]): void
     {
         if (this.logLevel >= LogLevel.ALL)
         {

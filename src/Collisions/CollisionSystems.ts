@@ -1,10 +1,9 @@
-import {Log, Util} from "../Common/Util";
-import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
+import {Util} from "../Common/Util";
+import {CollisionMatrix} from "./CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
 import {BodyType, Collider, LagomBody} from "./Colliders";
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Rigidbody} from "./Rigidbody";
-import {System} from "../ECS/System";
 
 export abstract class CollisionSystem extends GlobalSystem
 {

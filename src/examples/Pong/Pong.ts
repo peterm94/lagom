@@ -8,7 +8,7 @@ import {LagomType} from "../../ECS/LifecycleObject";
 import {Key} from "../../Input/Key";
 import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import * as PIXI from "pixi.js";
-import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
+import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {RectCollider} from "../../DetectCollisions/DetectColliders";
 import {Observable} from "../../Common/Observer";

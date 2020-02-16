@@ -1,6 +1,6 @@
 import {Hex} from "./Hex";
 import {FlatTop} from "./FlatTop";
-import {Vector} from "../../../LagomPhysics/Physics";
+import {Vector} from "../../../Common/Vector";
 
 /**
  * List of relative neighbouring hexes.

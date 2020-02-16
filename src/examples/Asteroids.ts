@@ -8,13 +8,13 @@ import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
 import {Scene} from "../ECS/Scene";
 import {LagomType} from "../ECS/LifecycleObject";
-import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
+import {CollisionMatrix} from "../Collisions/CollisionMatrix";
 import {Sprite} from "../Common/Sprite/Sprite";
 import {SpriteSheet} from "../Common/Sprite/SpriteSheet";
 import {CollisionSystem, ContinuousCollisionSystem} from "../Collisions/CollisionSystems";
 import {Rigidbody} from "../Collisions/Rigidbody";
 import {BodyType, CircleCollider, Collider, RectCollider} from "../Collisions/Colliders";
-import {SimplePhysics, SimplePhysicsBody} from "../LagomPhysics/SimplePhysics";
+import {SimplePhysics, SimplePhysicsBody} from "../Physics/SimplePhysics";
 import {Result} from "detect-collisions";
 import {Key} from "../Input/Key";
 

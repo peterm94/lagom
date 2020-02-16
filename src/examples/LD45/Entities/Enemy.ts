@@ -21,8 +21,8 @@ import {Sprite} from "../../../Common/Sprite/Sprite";
 import {System} from "../../../ECS/System";
 import {PlasmaCannonHex} from "./Turrets/PlasmaCannonHex";
 import {Movement} from "../Movement";
-import {Vector} from "../../../LagomPhysics/Physics";
 import {Timer} from "../../../Common/Timer";
+import {Vector} from "../../../Common/Vector";
 
 const purpleAlienSheet = new SpriteSheet(purpleAlienSpr, 32, 32);
 const greenAlienSheet = new SpriteSheet(greenAlienSpr, 32, 32);

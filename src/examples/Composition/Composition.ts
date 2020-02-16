@@ -7,7 +7,7 @@ import {Entity} from "../../ECS/Entity";
 import {Key} from "../../Input/Key";
 import {RenderCircle} from "../../Common/PIXIComponents";
 import {ContinuousCollisionSystem} from "../../Collisions/CollisionSystems";
-import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
+import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import {CircleCollider, BodyType} from "../../Collisions/Colliders";
 import {Log} from "../../Common/Util";
 import {Rigidbody} from "../../Collisions/Rigidbody";

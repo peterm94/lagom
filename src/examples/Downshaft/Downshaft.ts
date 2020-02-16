@@ -2,7 +2,7 @@ import * as PIXI from "pixi.js";
 
 import {Game} from "../../ECS/Game";
 import {Diagnostics} from "../../Common/Debug";
-import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
+import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import {Entity} from "../../ECS/Entity";
 import {System} from "../../ECS/System";
 import {Component} from "../../ECS/Component";

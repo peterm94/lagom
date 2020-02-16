@@ -9,7 +9,7 @@ import {MathUtil} from "../../Common/Util";
 import {Game} from "../../ECS/Game";
 import {Key} from "../../Input/Key";
 import {Button} from "../../Input/Button";
-import {Vector} from "../../LagomPhysics/Physics";
+import {Vector} from "../../Common/Vector";
 
 export class PlayerControlled extends Component
 {

@@ -1,6 +1,6 @@
 import {Component} from "../ECS/Component";
 import {Util} from "../Common/Util";
-import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
+import {CollisionMatrix} from "../Collisions/CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
 import {LagomType} from "../ECS/LifecycleObject";
 import {System} from "../ECS/System";
