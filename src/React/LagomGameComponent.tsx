@@ -32,14 +32,14 @@ export class LagomGameComponent extends React.Component<{ game: Game }, {}>
     }
 
     /**
-     * Simdply render the div that will contain the Game Renderer.
+     * Simply render the div that will contain the Game Renderer.
      */
     render()
     {
         const component = this;
         return (
             <div ref={(thisDiv) => {
-                component.gameCanvas = thisDiv
+                component.gameCanvas = thisDiv;
             }}/>
         );
     }

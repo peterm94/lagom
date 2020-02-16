@@ -31,7 +31,7 @@ export class Scene extends LifecycleObject implements Updatable
     readonly entities: Entity[] = [];
 
     // TODO can these be sets? need unique, but update order needs to be defined :/ i need a comparator for each
-    // type that can define it's order.
+    //  type that can define it's order.
     readonly systems: System[] = [];
     readonly globalSystems: GlobalSystem[] = [];
 

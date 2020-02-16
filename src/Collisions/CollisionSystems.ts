@@ -4,6 +4,8 @@ import {Collisions, Result} from "detect-collisions";
 import {BodyType, Collider, LagomBody} from "./Colliders";
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Rigidbody} from "./Rigidbody";
+import {LagomType} from "../ECS/LifecycleObject";
+import {Component} from "../ECS/Component";
 
 export abstract class CollisionSystem extends GlobalSystem
 {
@@ -109,7 +111,7 @@ export abstract class CollisionSystem extends GlobalSystem
  */
 export class DiscreteCollisionSystem extends CollisionSystem
 {
-    types = () => [Collider];
+    types = (): LagomType<Component>[] => [Collider];
 
     update(delta: number): void
     {
@@ -151,7 +153,7 @@ export class ContinuousCollisionSystem extends CollisionSystem
         super(collisionMatrix);
     }
 
-    types = () => [Rigidbody];
+    types = (): LagomType<Component>[] => [Rigidbody];
 
     update(delta: number): void
     {
@@ -246,7 +248,7 @@ export class DebugCollisionSystem extends GlobalSystem
         super();
     }
 
-    types = () => [];
+    types = (): LagomType<Component>[] => [];
 
     update(delta: number): void
     {

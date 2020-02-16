@@ -17,9 +17,7 @@ export abstract class System extends LifecycleObject implements Updatable
     private onComponentAdded(entity: Entity, component: Component): void
     {
         // Check if we care about this type at all
-        if (this.types().find((val) => {
-            return component instanceof val;
-        }) === undefined)
+        if (this.types().find((val) => component instanceof val) === undefined)
         {
             return;
         }
@@ -56,9 +54,7 @@ export abstract class System extends LifecycleObject implements Updatable
     private onComponentRemoved(entity: Entity, component: Component): void
     {
         // Check if we care about this type at all
-        if (this.types().find((val) => {
-            return component instanceof val;
-        }) === undefined)
+        if (this.types().find((val) => component instanceof val) === undefined)
         {
             return;
         }
@@ -110,7 +106,7 @@ export abstract class System extends LifecycleObject implements Updatable
 
             // Check it, add if ready.
             const ret = this.findComponents(entity);
-            if (ret != null)
+            if (ret !== null)
             {
                 this.runOn.set(entity, ret);
             }

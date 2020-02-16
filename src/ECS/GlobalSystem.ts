@@ -9,7 +9,7 @@ import {Scene} from "./Scene";
  */
 export abstract class GlobalSystem extends LifecycleObject implements Updatable
 {
-    // TODO the key type is technically wrong, but it works because types aren't real
+    // The key type is technically wrong, but it works because types aren't real
     private readonly runOn: Map<{ new(): Component }, Component[]> = new Map();
 
     scene !: Scene;

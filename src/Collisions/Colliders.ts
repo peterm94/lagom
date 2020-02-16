@@ -1,7 +1,6 @@
 import {Body, Circle, Point, Polygon, Result} from "detect-collisions";
 import {Component, PIXIComponent} from "../ECS/Component";
 import {Observable} from "../Common/Observer";
-import {Log} from "../Common/Util";
 import {CollisionSystem} from "./CollisionSystems";
 
 import * as PIXI from "pixi.js";
@@ -71,12 +70,6 @@ export abstract class Collider extends PIXIComponent<PIXI.Container>
     {
         super.onAdded();
 
-        if (this.engine == null)
-        {
-            Log.warn("A DetectCollisionsSystem must be added to the Scene before a Collider is added.");
-            return;
-        }
-
         this.updatePosition();
         this.engine.addBody(this);
     }
@@ -85,18 +78,11 @@ export abstract class Collider extends PIXIComponent<PIXI.Container>
     {
         super.onRemoved();
 
+        this.engine.removeBody(this);
+
         this.onTriggerEnter.releaseAll();
         this.onTriggerExit.releaseAll();
         this.onTrigger.releaseAll();
-
-        if (this.engine !== null)
-        {
-            this.engine.removeBody(this);
-        }
-        else
-        {
-            Log.warn("Engine is null for Collider.", this);
-        }
     }
 
     placeFree(dx: number, dy: number): boolean
@@ -213,7 +199,6 @@ export class PolyCollider extends Collider
 
         return area / 2;
     }
-
 
     updatePosition(): void
     {

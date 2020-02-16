@@ -1,5 +1,5 @@
 import {Component} from "../ECS/Component";
-import {Collider, BodyType} from "./Colliders";
+import {BodyType, Collider} from "./Colliders";
 import {Entity} from "../ECS/Entity";
 import {MathUtil, Util} from "../Common/Util";
 
@@ -7,10 +7,10 @@ export class Rigidbody extends Component
 {
     affectedColliders: Collider[] = [];
 
-    pendingX = 0;
-    pendingY = 0;
     // Radians
     pendingRotation = 0;
+    pendingX = 0;
+    pendingY = 0;
 
     constructor(readonly bodyType: BodyType = BodyType.Discrete)
     {

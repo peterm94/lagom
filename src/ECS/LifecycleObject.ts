@@ -10,7 +10,7 @@ export abstract class LifecycleObject
      */
     onAdded(): void
     {
-        // Default impl
+        // Default empty implementation.
     }
 
     /**

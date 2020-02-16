@@ -9,13 +9,13 @@ export class AudioAtlas
 
     /**
      * Load an audio file for use.
-     *
      * If using typescript, use something like: AudioAtlas.load("jump", require("./resources/jump.wav"));
+     *
      * @param key The name of the audio resource.
      * @param audioResource The resource to load.
      * @returns A Howl instance for the resource.
      */
-    load(key: string, audioResource: any): Howl
+    load(key: string, audioResource: string | string[]): Howl
     {
         const resource = new Howl({src: audioResource});
         this.sounds.set(key, resource);

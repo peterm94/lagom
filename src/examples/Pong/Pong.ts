@@ -174,18 +174,18 @@ class Ball extends Entity
         super("ball", x, y);
     }
 
-    onAdded()
+    onAdded(): void
     {
         super.onAdded();
 
-        var rect = new RenderRect(0, 0, 10, 10, 0xffffff, 0xffffff);
+        const rect = new RenderRect(0, 0, 10, 10, 0xffffff, 0xffffff);
         this.addComponent(rect);
         this.addComponent(new BallMovement());
 
         this.addComponent(new RectCollider(0, 0, 10, 10, Layers.ball))
             .onCollisionEnter.register(() => {
             const movement = this.getComponent<BallMovement>(BallMovement)
-            if (movement != null)
+            if (movement !== null)
             {
                 movement.xSpeed *= -1;
             }
@@ -209,7 +209,7 @@ class Scoreboard extends Entity
     {
         super.onAdded();
 
-        let style = new PIXI.TextStyle({fill: 0x777777});
+        const style = new PIXI.TextStyle({fill: 0x777777});
 
         const p1Label = new TextDisp(-30, 0, this.score.player1Score.toString(), style);
         this.addComponent(p1Label);

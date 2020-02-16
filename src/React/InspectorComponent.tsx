@@ -3,7 +3,7 @@ import {Box, Button, Collapsible, Text} from "grommet";
 import {FormDown, FormNext} from "grommet-icons";
 import {Game} from "../ECS/Game";
 import {observer, useLocalStore} from "mobx-react";
-import {InspectorSystem, InspectorEntity} from "../Inspector/Inspector";
+import {InspectorEntity, InspectorSystem} from "../Inspector/Inspector";
 import {observable, runInAction} from "mobx";
 import {useObserver} from 'mobx-react-lite';
 import {Component} from "../ECS/Component";

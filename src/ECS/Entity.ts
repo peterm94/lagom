@@ -144,18 +144,18 @@ export class Entity extends LifecycleObject
 
         Log.trace("Destroying ", this.components);
 
-        // Destroy any observers looking at us
-        this.componentAddedEvent.releaseAll();
-        this.componentRemovedEvent.releaseAll();
-        this.childAdded.releaseAll();
-        this.childRemoved.releaseAll();
-
         // Take any components with us
         while (this.components.length > 0)
         {
             const val = this.components.pop();
             if (val !== undefined) this.removeComponent(val, false);
         }
+
+        // Destroy any observers looking at us
+        this.componentAddedEvent.releaseAll();
+        this.componentRemovedEvent.releaseAll();
+        this.childAdded.releaseAll();
+        this.childRemoved.releaseAll();
     }
 
     destroy(): void
@@ -163,7 +163,7 @@ export class Entity extends LifecycleObject
         super.destroy();
 
         // Destroy the entity.
-        if (this.parent != null)
+        if (this.parent !== null)
         {
             this.parent.removeChild(this);
         }
@@ -207,12 +207,11 @@ export class Entity extends LifecycleObject
         child.scene = this.scene;
 
         this.scene.entities.push(child);
-
         this.children.push(child);
         this.childAdded.trigger(this, child);
         this.scene.entityAddedEvent.trigger(this.scene, child);
 
-        // Add the pixi container to my node.
+        // Add the PIXI container to my node.
         this.transform.addChild(child.transform);
 
         child.onAdded();

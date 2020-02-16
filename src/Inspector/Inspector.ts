@@ -13,7 +13,7 @@ export class InspectorSystem extends GlobalSystem
 
     @computed get entityEntries(): InspectorEntity[]
     {
-        return Array.from(this.entityNameMap.entries())
+        return Array.from(this.entityNameMap.entries());
     }
 
     onAdded(): void

@@ -22,7 +22,14 @@ class Diag
  */
 export class Game
 {
+    /**
+     * Use this to get mouse input events. Updated every update() frame.
+     */
     static mouse = Mouse;
+
+    /**
+     * Use this to get keyboard events. Updated every update() frame.
+     */
     static keyboard = Keyboard;
 
     // Set this to true to end the game
@@ -105,7 +112,7 @@ export class Game
         preserveDrawingBuffer?: boolean;
         backgroundColor?: number;
         powerPreference?: string;
-        context?: any;
+        context?: unknown;
     })
     {
         // Set it up in the page
@@ -139,9 +146,6 @@ export class Game
     {
         this.currentScene.update(delta);
 
-        // TODO this is fine here, but we should document it. If something in fixedUpdate() is looking for keyboard
-        //  events it is going to have a bad time.
-        // TODO put this in a system? in scene itself?
         Game.keyboard.update();
         Game.mouse.update();
     }

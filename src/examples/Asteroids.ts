@@ -75,7 +75,7 @@ class WrapSprite extends Sprite
     onRemoved(): void
     {
         super.onRemoved();
-        if (this.xChild != null && this.yChild != null)
+        if (this.xChild !== null && this.yChild !== null)
         {
             this.getEntity().getScene().sceneNode.transform.removeChild(this.xChild);
             this.getEntity().getScene().sceneNode.transform.removeChild(this.yChild);

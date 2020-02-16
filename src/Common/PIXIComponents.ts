@@ -22,7 +22,7 @@ export abstract class PIXIGraphicsComponent extends PIXIComponent<PIXI.Graphics>
         super(new PIXI.Graphics());
 
         this.pixiObj.lineStyle(1, lineColour, 1);
-        if (fillColour != null)
+        if (fillColour !== null)
         {
             this.pixiObj.beginFill(fillColour);
         }

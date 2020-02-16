@@ -48,7 +48,7 @@ export class FrameTriggerSystem extends GlobalSystem
     {
         this.elapsed += delta;
 
-        this.runOnComponentsWithSystem((system: FrameTriggerSystem, triggers: FrameTrigger<any>[]) => {
+        this.runOnComponentsWithSystem((system: FrameTriggerSystem, triggers: FrameTrigger<unknown>[]) => {
             for (const trigger of triggers)
             {
                 if (trigger.nextTriggerTime === -1)
