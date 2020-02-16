@@ -92,6 +92,7 @@ export class Vector
     }
 }
 
+// TODO remove and replace with the normal one and SimplePhysics
 export class Rigidbody extends Component
 {
     readonly type: BodyType;

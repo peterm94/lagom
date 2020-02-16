@@ -1,7 +1,6 @@
 import {System} from "../ECS/System";
 import {Entity} from "../ECS/Entity";
-import {Vector} from "./Physics";
-import {Log, MathUtil} from "../Common/Util";
+import {MathUtil} from "../Common/Util";
 import {Rigidbody} from "../Collisions/Rigidbody";
 import {Component} from "../ECS/Component";
 import {LagomType} from "../ECS/LifecycleObject";

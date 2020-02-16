@@ -1,5 +1,5 @@
-import {Body, Circle, Collisions, Point, Polygon, Result} from "detect-collisions";
-import {PIXIComponent} from "../ECS/Component";
+import {Body, Circle, Point, Polygon, Result} from "detect-collisions";
+import {Component, PIXIComponent} from "../ECS/Component";
 import {Observable} from "../Common/Observer";
 import {Log} from "../Common/Util";
 import {CollisionSystem} from "./CollisionSystems";
@@ -28,6 +28,11 @@ export interface ColliderOptions
     layer: number;
     xOff?: number;
     yOff?: number;
+}
+
+export interface LagomBody
+{
+    lagomComponent: Component;
 }
 
 /**
@@ -59,7 +64,7 @@ export abstract class Collider extends PIXIComponent<PIXI.Container>
         // TODO rotation, as usual. Needs to be used everywhere too
 
         // Add a backref
-        (this.body as any).lagomComponent = this;
+        (this.body as unknown as LagomBody).lagomComponent = this;
     }
 
     onAdded(): void

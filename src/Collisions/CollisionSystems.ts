@@ -1,7 +1,7 @@
 import {Log, Util} from "../Common/Util";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
-import {BodyType, Collider} from "./Colliders";
+import {BodyType, Collider, LagomBody} from "./Colliders";
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Rigidbody} from "./Rigidbody";
 import {System} from "../ECS/System";
@@ -42,7 +42,7 @@ export abstract class CollisionSystem extends GlobalSystem
         const potentials = collider.body.potentials();
         for (const potential of potentials)
         {
-            const otherComp = (potential as any).lagomComponent as Collider;
+            const otherComp = (potential as unknown as LagomBody).lagomComponent as Collider;
 
             if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
                 && collider.body.collides(potential))
@@ -70,7 +70,7 @@ export abstract class CollisionSystem extends GlobalSystem
             const potentials = collider.body.potentials();
             for (const potential of potentials)
             {
-                const otherComp = (potential as any).lagomComponent as Collider;
+                const otherComp = (potential as unknown as LagomBody).lagomComponent as Collider;
                 const result = new Result();
 
                 if (this.collisionMatrix.canCollide(collider.layer, otherComp.layer)
@@ -167,7 +167,7 @@ export class ContinuousCollisionSystem extends CollisionSystem
 
             for (const body of bodies)
             {
-                if (!body.active || body.bodyType == BodyType.Static)
+                if (!body.active || body.bodyType === BodyType.Static)
                 {
                     // Skip. Can't hit other statics. If something moves into me, it will trigger an event.
                 }
@@ -251,9 +251,15 @@ export class DebugCollisionSystem extends GlobalSystem
 
     update(delta: number): void
     {
-        const canvas = document.getElementById("detect-render") as any;
-        const context = canvas.getContext("2d");
-        this.system.detectSystem.draw(context);
-        context.stroke();
+        const canvas = document.getElementById("detect-render");
+        if (canvas !== null)
+        {
+            const context = (canvas as HTMLCanvasElement).getContext("2d");
+            if (context !== null)
+            {
+                this.system.detectSystem.draw(context);
+                context.stroke();
+            }
+        }
     }
 }

@@ -106,7 +106,7 @@ export class Game
         backgroundColor?: number;
         powerPreference?: string;
         context?: any;
-    }, private readonly loader?: PIXI.Loader)
+    })
     {
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
@@ -122,18 +122,8 @@ export class Game
         {
             throw new Error("Ensure a scene is set before starting the game.");
         }
-        // TODO remove this whole concept and do it like the platformer does.
-        // If we need to load additional resources, do that.
-        if (this.loader)
-        {
-            this.loader.load(() => {
-                this.startInternal();
-            });
-        }
-        else
-        {
-            this.startInternal();
-        }
+
+        this.startInternal();
     }
 
     private startInternal(): void
