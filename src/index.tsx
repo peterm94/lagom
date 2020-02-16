@@ -3,13 +3,11 @@ import * as serviceWorker from './serviceWorker';
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import {LagomGameComponent} from "./React/LagomGameComponent";
-import {HexGame} from "./examples/LD45/HexGame";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import {Box, Grommet} from "grommet";
 import {configure} from "mobx";
-import {InspectorComponent} from "./React/InspectorComponent";
-import {Composition} from "./examples/Composition/Composition";
+import {Asteroids} from "./examples/Asteroids";
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
@@ -17,7 +15,7 @@ import {Composition} from "./examples/Composition/Composition";
 serviceWorker.unregister();
 configure({enforceActions: "observed"});
 
-const game = new Composition();
+const game = new Asteroids();
 
 const grommetTheme = {
     global: {
@@ -42,7 +40,6 @@ const App = () => (
         </Box>
     </Grommet>
 );
-
 
 ReactDOM.render(
     <App/>,

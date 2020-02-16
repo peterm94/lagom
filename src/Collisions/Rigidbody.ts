@@ -1,7 +1,7 @@
 import {Component} from "../ECS/Component";
-import {Collider, CollisionType} from "./Colliders";
+import {Collider, BodyType} from "./Colliders";
 import {Entity} from "../ECS/Entity";
-import {Util} from "../Common/Util";
+import {MathUtil, Util} from "../Common/Util";
 
 export class Rigidbody extends Component
 {
@@ -9,10 +9,10 @@ export class Rigidbody extends Component
 
     pendingX = 0;
     pendingY = 0;
-    // Degrees
-    pendingAngRotation = 0;
+    // Radians
+    pendingRotation = 0;
 
-    constructor(readonly collType: CollisionType = CollisionType.Discrete)
+    constructor(readonly bodyType: BodyType = BodyType.Discrete)
     {
         super();
     }
@@ -29,9 +29,14 @@ export class Rigidbody extends Component
         this.pendingY += y;
     }
 
-    rotate(degrees: number): void
+    rotateDeg(degrees: number): void
     {
-        this.pendingAngRotation += degrees;
+        this.pendingRotation += MathUtil.degToRad(degrees);
+    }
+
+    rotateRad(radians: number): void
+    {
+        this.pendingRotation += radians;
     }
 
     onAdded(): void

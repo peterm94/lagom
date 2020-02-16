@@ -1,5 +1,6 @@
 import {Entity} from "../ECS/Entity";
 import * as PIXI from "pixi.js";
+import {Vector} from "../LagomPhysics/Physics";
 
 
 export class MathUtil
@@ -75,6 +76,11 @@ export class MathUtil
     static lengthDirY(length: number, dir: number): number
     {
         return length * Math.sin(dir);
+    }
+
+    static lengthDirXY(length: number, dir: number): Vector
+    {
+        return new Vector(this.lengthDirX(length, dir), this.lengthDirY(length, dir));
     }
 
     /**
@@ -197,7 +203,7 @@ enum LogLevel
 
 export class Log
 {
-    static logLevel: LogLevel = LogLevel.WARN;
+    static logLevel: LogLevel = LogLevel.DEBUG;
 
     static error(...msg: any[]): void
     {

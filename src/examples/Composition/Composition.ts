@@ -8,7 +8,7 @@ import {Key} from "../../Input/Key";
 import {RenderCircle} from "../../Common/PIXIComponents";
 import {ContinuousCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
-import {CircleCollider, CollisionType} from "../../Collisions/Colliders";
+import {CircleCollider, BodyType} from "../../Collisions/Colliders";
 import {Log} from "../../Common/Util";
 import {Rigidbody} from "../../Collisions/Rigidbody";
 
@@ -90,7 +90,7 @@ class Mover extends System
             if (Keyboard.isKeyPressed(Key.Space))
             {
                 const e = this.scene.addEntity(new Entity("bulletttttt", entity.transform.x, entity.transform.y));
-                e.addComponent(new Rigidbody(CollisionType.Continuous));
+                e.addComponent(new Rigidbody(BodyType.Continuous));
                 e.addComponent(
                     new CircleCollider(
                         this.scene.getGlobalSystem(ContinuousCollisionSystem) as ContinuousCollisionSystem,
@@ -126,7 +126,7 @@ class CompositionScene extends Scene
 
         e.addComponent(new RenderCircle(0, 0, 10));
         e.addComponent(new MoveMe());
-        e.addComponent(new Rigidbody(CollisionType.Discrete));
+        e.addComponent(new Rigidbody(BodyType.Discrete));
 
         this.addSystem(new Mover());
 
@@ -138,7 +138,7 @@ class CompositionScene extends Scene
         const e2col = e2.addComponent(new CircleCollider(collSystem, {radius: 20, layer: 0}));
 
         e2.addComponent(new RenderCircle(0, 0, 20, null, 0x00FF00));
-        e2.addComponent(new Rigidbody(CollisionType.Discrete));
+        e2.addComponent(new Rigidbody(BodyType.Discrete));
 
         e2col.onTriggerEnter.register((caller) => {
             caller.getEntity().getComponent<RenderCircle>(RenderCircle)?.destroy();

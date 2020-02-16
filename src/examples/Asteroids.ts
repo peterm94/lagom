@@ -1,14 +1,8 @@
 import * as PIXI from "pixi.js";
 import {Game} from "../ECS/Game";
 import {Diagnostics} from "../Common/Debug";
-import spr_asteroid from './resources/asteroid.png';
-import spr_asteroid2 from './resources/asteroid2.png';
-import spr_asteroid3 from './resources/asteroid3.png';
-import spr_ship from './resources/ship.png';
-import spr_bullet from './resources/bullet.png';
+import asteroidSheet from './resources/asteroid_sheet.png';
 import {Log, MathUtil, Util} from "../Common/Util";
-import {CircleCollider, Collider, CollisionSystem} from "../LagomCollisions/Collision";
-import {BodyType, PhysicsSystem, Rigidbody, Vector} from "../LagomPhysics/Physics";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
 import {Component} from "../ECS/Component";
@@ -16,10 +10,17 @@ import {Scene} from "../ECS/Scene";
 import {LagomType} from "../ECS/LifecycleObject";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Sprite} from "../Common/Sprite/Sprite";
+import {SpriteSheet} from "../Common/Sprite/SpriteSheet";
+import {CollisionSystem, ContinuousCollisionSystem, DebugCollisionSystem} from "../Collisions/CollisionSystems";
+import {Rigidbody} from "../Collisions/Rigidbody";
+import {BodyType, CircleCollider, Collider, RectCollider} from "../Collisions/Colliders";
+import {SimplePhysics, SimplePhysicsBody} from "../LagomPhysics/SimplePhysics";
+import {Result} from "detect-collisions";
+import {Key} from "../Input/Key";
 
 const Keyboard = require('pixi.js-keyboard');
 
-const loader = new PIXI.Loader();
+const sprites = new SpriteSheet(asteroidSheet, 16, 16);
 
 enum Layers
 {
@@ -29,151 +30,21 @@ enum Layers
     Asteroid
 }
 
-export class Asteroids extends Game
-{
-    constructor()
-    {
-        super({
-                  width: 512,
-                  height: 512,
-                  resolution: 1,
-                  backgroundColor: 0x200140
-              }, loader);
-        loader.add([spr_asteroid,
-                    spr_asteroid2,
-                    spr_asteroid3,
-                    spr_ship,
-                    spr_bullet]).load(() => {
-            // TODO this is probably broken.
-        });
 
-        this.setScene(new AsteroidsScene(this));
-    }
+class Split extends Component
+{
 }
 
-class AsteroidsScene extends Scene
+class ScreenWrap extends Component
 {
-    onAdded(): void
-    {
-        super.onAdded();
-
-        const game = this.getGame();
-
-        this.addSystem(new ShipMover());
-        this.addSystem(new ConstantMover());
-        this.addSystem(new ScreenWrapper());
-        this.addSystem(new SpriteWrapper());
-        this.addSystem(new AsteroidSplitter());
-        this.addSystem(new DestroyOffScreen());
-        this.addSystem(new PhysicsSystem(Vector.zero()));
-
-        const collisions = new CollisionMatrix();
-        collisions.addCollision(Layers.Bullet, Layers.Asteroid);
-
-        Log.debug(collisions);
-
-        this.addGlobalSystem(new CollisionSystem(collisions));
-
-        this.addEntity(new Ship(game.renderer.screen.width / 2,
-                                game.renderer.screen.height / 2));
-
-        for (let i = 0; i < 10; i++)
-        {
-            this.addEntity(new Asteroid(Math.random() * game.renderer.screen.width,
-                                        Math.random() * game.renderer.screen.height,
-                                        3));
-        }
-
-        this.addGUIEntity(new Diagnostics("white"));
-    }
 }
 
-class Ship extends Entity
+class ScreenContained extends Component
 {
-    constructor(x: number, y: number)
-    {
-        super("ship", x, y);
-        this.layer = Layers.Ship;
-    }
-
-    onAdded(): void
-    {
-        super.onAdded();
-        this.addComponent(new WrapSprite(loader.resources[spr_ship].texture));
-        this.addComponent(new PlayerControlled());
-        this.addComponent(new ScreenWrap());
-        const body = this.addComponent(new Rigidbody(BodyType.Dynamic));
-
-        // We are in space, but still want to slow a little
-        body.xDrag = 0.010;
-        body.yDrag = 0.010;
-    }
 }
 
-class Asteroid extends Entity
+class PlayerControlled extends Component
 {
-    readonly size: number;
-
-    constructor(x: number, y: number, size: number)
-    {
-        super(`asteroid_${size}`, x, y);
-        this.transform.rotation = Math.random() * 2 * Math.PI;
-        this.layer = Layers.Asteroid;
-        this.size = size;
-    }
-
-    onAdded(): void
-    {
-        super.onAdded();
-
-        switch (this.size)
-        {
-            case 3:
-                this.addComponent(new WrapSprite(loader.resources[spr_asteroid].texture));
-                this.addComponent(new CircleCollider(32));
-                break;
-            case 2:
-                this.addComponent(new WrapSprite(loader.resources[spr_asteroid2].texture));
-                this.addComponent(new CircleCollider(16));
-                break;
-            default:
-                this.addComponent(new WrapSprite(loader.resources[spr_asteroid3].texture));
-                this.addComponent(new CircleCollider(8));
-                break;
-        }
-
-        this.addComponent(new ConstantMotion(Math.random() * 0.04 + 0.1));
-        this.addComponent(new ScreenWrap());
-    }
-}
-
-class Bullet extends Entity
-{
-    constructor(x: number, y: number, dir: number)
-    {
-        super("bullet", x, y);
-        this.transform.rotation = dir;
-        this.layer = Layers.Bullet;
-    }
-
-    onAdded(): void
-    {
-        super.onAdded();
-        this.addComponent(new Sprite(loader.resources[spr_bullet].texture));
-        this.addComponent(new ConstantMotion(0.5));
-        this.addComponent(new CircleCollider(2)).collisionEvent.register(Bullet.onHit);
-        this.addComponent(new ScreenContained());
-    }
-
-    private static onHit(caller: Collider, other: Collider): void
-    {
-        const otherEntity = other.getEntity();
-        if (otherEntity instanceof Asteroid)
-        {
-            caller.getEntity().destroy();
-            otherEntity.addComponent(new Split());
-        }
-    }
 }
 
 class WrapSprite extends Sprite
@@ -212,17 +83,133 @@ class WrapSprite extends Sprite
     }
 }
 
-class Split extends Component
+class Ship extends Entity
 {
+    constructor(x: number, y: number)
+    {
+        super("ship", x, y);
+        this.layer = Layers.Ship;
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+        this.addComponent(new WrapSprite(sprites.texture(5, 2, 16, 16),
+                                         {xOffset: -8, yOffset: -8}));
+        this.addComponent(new PlayerControlled());
+        this.addComponent(new ScreenWrap());
+        this.addComponent(new Rigidbody(BodyType.Discrete));
+
+        // We are in space, but still want to slow a little
+        this.addComponent(new SimplePhysicsBody({angCap: 0.05, angDrag: 0.005, linDrag: 0.0008}));
+        this.addComponent(new RectCollider(this.scene.getGlobalSystem(CollisionSystem) as CollisionSystem,
+                                           {
+                                               layer: Layers.Ship, width: 16, height: 16,
+                                               rotation: 0, xOff: -8, yOff: -8
+                                           }));
+    }
 }
 
-class ScreenWrap extends Component
+
+class ConstantMotion extends Component
 {
+    constructor(readonly speed: number, readonly  dir: number)
+    {
+        super();
+    }
 }
 
-class ScreenContained extends Component
+class Asteroid extends Entity
 {
+    readonly size: number;
+
+    constructor(x: number, y: number, size: number)
+    {
+        super(`asteroid_${size}`, x, y);
+        this.layer = Layers.Asteroid;
+        this.size = size;
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        const system = this.scene.getGlobalSystem<CollisionSystem>(CollisionSystem);
+
+        if (system === null)
+        {
+            Log.error("Could not load CollisionSystem");
+            return;
+        }
+
+        this.addComponent(new Rigidbody(BodyType.Discrete));
+        this.transform.rotation = Math.random() * 2 * Math.PI;
+
+        switch (this.size)
+        {
+            case 3:
+                this.addComponent(new WrapSprite(sprites.texture(0, 0, 64, 64), {xOffset: -32, yOffset: -32}));
+                this.addComponent(new CircleCollider(system,
+                                                     {radius: 32, layer: Layers.Asteroid}));
+                break;
+            case 2:
+                this.addComponent(new WrapSprite(sprites.texture(4, 0, 32, 32), {xOffset: -16, yOffset: -16}));
+                this.addComponent(new CircleCollider(system,
+                                                     {radius: 16, layer: Layers.Asteroid}));
+                break;
+            default:
+                this.addComponent(new WrapSprite(sprites.texture(4, 2, 16, 16), {xOffset: -8, yOffset: -8}));
+                this.addComponent(new CircleCollider(system,
+                                                     {radius: 8, layer: Layers.Asteroid}));
+                break;
+        }
+
+        this.addComponent(new ConstantMotion(Math.random() * 0.03 + 0.01, this.transform.rotation));
+        this.addComponent(new ScreenWrap());
+    }
 }
+
+class Bullet extends Entity
+{
+    constructor(x: number, y: number, dir: number)
+    {
+        super("bullet", x, y);
+        this.transform.rotation = dir;
+        this.layer = Layers.Bullet;
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        const system = this.scene.getGlobalSystem<CollisionSystem>(CollisionSystem);
+
+        this.addComponent(new Rigidbody(BodyType.Continuous));
+
+        if (system === null)
+        {
+            Log.error("Could not load CollisionSystem");
+            return;
+        }
+
+        this.addComponent(new Sprite(sprites.texture(4, 3, 4, 4), {xOffset: -2, yOffset: -2}));
+        this.addComponent(new ConstantMotion(0.4, this.transform.rotation));
+        this.addComponent(new CircleCollider(system, {radius: 2, layer: Layers.Bullet}))
+            .onTriggerEnter.register(Bullet.onHit);
+        this.addComponent(new ScreenContained());
+    }
+
+    private static onHit(caller: Collider, other: { other: Collider; result: Result }): void
+    {
+        const otherEntity = other.other.getEntity();
+        if (otherEntity instanceof Asteroid)
+        {
+            caller.getEntity().destroy();
+            otherEntity.addComponent(new Split());
+        }
+    }
+}
+
 
 class DestroyOffScreen extends System
 {
@@ -244,9 +231,8 @@ class DestroyOffScreen extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
-            // TODO this function apparently takes null as a first parameter, but the typedef
-            //  doesn't allow it. Submit an issue?
-            const pos = entity.transform.getGlobalPosition(undefined as any, false);
+            const pos = new PIXI.Point();
+            entity.transform.getGlobalPosition(pos, false);
             if (pos.x < -this.tolerance
                 || pos.y < -this.tolerance
                 || pos.x > this.renderer.screen.width + this.tolerance
@@ -360,70 +346,106 @@ class SpriteWrapper extends System
     }
 }
 
-class ConstantMotion extends Component
-{
-    speed: number;
-
-    constructor(speed: number)
-    {
-        super();
-        this.speed = speed;
-    }
-}
 
 class ConstantMover extends System
 {
     types(): LagomType<Component>[]
     {
-        return [ConstantMotion];
+        return [Rigidbody, ConstantMotion];
     }
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, motion: ConstantMotion) => {
-            Util.move(entity, motion.speed * delta);
+        this.runOnEntities((entity: Entity, body: Rigidbody, motion: ConstantMotion) => {
+            const vector = MathUtil.lengthDirXY(motion.speed * delta, motion.dir);
+            body.move(vector.x, vector.y);
         });
     }
 }
 
-class PlayerControlled extends Component
-{
-}
 
 class ShipMover extends System
 {
 
-    private readonly accSpeed = 0.325;
-    private readonly rotSpeed = MathUtil.degToRad(0.2);
+    private readonly accSpeed = 0.0001;
+    private readonly rotSpeed = MathUtil.degToRad(2);
 
     types(): LagomType<Component>[]
     {
-        return [Rigidbody, PlayerControlled];
+        return [SimplePhysicsBody, PlayerControlled];
     }
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: Rigidbody) => {
+        this.runOnEntities((entity: Entity, props: SimplePhysicsBody) => {
+            if (Keyboard.isKeyDown(Key.ArrowLeft, Key.KeyA))
+            {
+                props.rotate(-this.rotSpeed * delta);
+            }
+            if (Keyboard.isKeyDown(Key.ArrowRight, Key.KeyD))
+            {
+                props.rotate(this.rotSpeed * delta);
+            }
+            if (Keyboard.isKeyDown(Key.ArrowUp, Key.KeyW))
+            {
+                const vector = MathUtil.lengthDirXY(this.accSpeed * delta, entity.transform.rotation);
+                props.move(vector.x, vector.y);
+            }
 
-            if (Keyboard.isKeyDown('ArrowLeft', 'KeyA'))
-            {
-                entity.transform.rotation -= this.rotSpeed * delta;
-            }
-            if (Keyboard.isKeyDown('ArrowRight', 'KeyD'))
-            {
-                entity.transform.rotation += this.rotSpeed * delta;
-            }
-            if (Keyboard.isKeyDown('ArrowUp', 'KeyW'))
-            {
-                // Util.move(entity, this.accSpeed * delta);
-                body.addForceLocal(new Vector(this.accSpeed, 0));
-            }
-
-            if (Keyboard.isKeyPressed('Space'))
+            if (Keyboard.isKeyPressed(Key.Space))
             {
                 this.getScene().addEntity(
                     new Bullet(entity.transform.x, entity.transform.y, entity.transform.rotation));
             }
         });
+    }
+}
+
+class AsteroidsScene extends Scene
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        const game = this.getGame();
+
+        this.addSystem(new ShipMover());
+        this.addSystem(new ConstantMover());
+        this.addSystem(new ScreenWrapper());
+        this.addSystem(new SpriteWrapper());
+        this.addSystem(new AsteroidSplitter());
+        this.addSystem(new DestroyOffScreen());
+        this.addSystem(new SimplePhysics());
+
+        const collisions = new CollisionMatrix();
+        collisions.addCollision(Layers.Bullet, Layers.Asteroid);
+
+        this.addGlobalSystem(new ContinuousCollisionSystem(collisions, 10));
+
+        this.addEntity(new Ship(game.renderer.screen.width / 2,
+                                game.renderer.screen.height / 2));
+
+        for (let i = 0; i < 10; i++)
+        {
+            this.addEntity(new Asteroid(Math.random() * game.renderer.screen.width,
+                                        Math.random() * game.renderer.screen.height, 3));
+        }
+
+        this.addGUIEntity(new Diagnostics("white"));
+    }
+}
+
+export class Asteroids extends Game
+{
+    constructor()
+    {
+        super({
+                  width: 512,
+                  height: 512,
+                  resolution: 1,
+                  backgroundColor: 0x200140
+              });
+
+        this.setScene(new AsteroidsScene(this));
     }
 }

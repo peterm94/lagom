@@ -1,9 +1,10 @@
-import {Util} from "../Common/Util";
+import {Log, Util} from "../Common/Util";
 import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
-import {Collider, CollisionType} from "./Colliders";
+import {BodyType, Collider} from "./Colliders";
 import {GlobalSystem} from "../ECS/GlobalSystem";
 import {Rigidbody} from "./Rigidbody";
+import {System} from "../ECS/System";
 
 export abstract class CollisionSystem extends GlobalSystem
 {
@@ -166,17 +167,21 @@ export class ContinuousCollisionSystem extends CollisionSystem
 
             for (const body of bodies)
             {
-                // Discrete or not moving, just move to final position and do the checks.
-                if (body.collType === CollisionType.Discrete ||
-                    (body.pendingY === 0 && body.pendingX === 0 && body.pendingAngRotation === 0))
+                if (!body.active || body.bodyType == BodyType.Static)
                 {
+                    // Skip. Can't hit other statics. If something moves into me, it will trigger an event.
+                }
+                else if (body.bodyType === BodyType.Discrete ||
+                    (body.pendingY === 0 && body.pendingX === 0 && body.pendingRotation === 0))
+                {
+                    // Discrete or not moving, just move to final position and do the checks.
                     // Move to final positions.
                     body.parent.transform.x += body.pendingX;
                     body.parent.transform.y += body.pendingY;
-                    body.parent.transform.angle += body.pendingAngRotation;
+                    body.parent.transform.rotation += body.pendingRotation;
                     body.pendingX = 0;
                     body.pendingY = 0;
-                    body.pendingAngRotation = 0;
+                    body.pendingRotation = 0;
 
                     // This forces the move. Otherwise, not applied until the next render frame.
                     body.parent.transform.updateTransform();
@@ -191,28 +196,27 @@ export class ContinuousCollisionSystem extends CollisionSystem
                 else
                 {
                     // TODO could do this with trig instead of doing x/y independently, not sure if worth. Will slow it
-                    //  down, but be more accurate for things moving diagonally.
-                    while (body.active && (body.pendingX !== 0 || body.pendingY !== 0 || body.pendingAngRotation !== 0))
+                    //  down, but be more accurate for things moving off axis.
+                    while (body.active && (body.pendingX !== 0 || body.pendingY !== 0 || body.pendingRotation !== 0))
                     {
                         // There is no delta usage here, we operate on a fixed timestep.
                         // Figure out the next movement. We do this in the loop so we can adapt to changes.
                         const xDir = Math.sign(body.pendingX);
                         const yDir = Math.sign(body.pendingY);
-                        const rotDir = Math.sign(body.pendingAngRotation);
+                        const rotDir = Math.sign(body.pendingRotation);
 
                         const dx = Math.min(Math.abs(body.pendingX), system.step) * xDir;
                         const dy = Math.min(Math.abs(body.pendingY), system.step) * yDir;
-                        const dRot = Math.min(Math.abs(body.pendingAngRotation), system.step) * rotDir;
+                        const dRot = Math.min(Math.abs(body.pendingRotation), system.step) * rotDir;
 
                         body.pendingX -= dx;
                         body.pendingY -= dy;
-                        body.pendingAngRotation -= dRot;
-
+                        body.pendingRotation -= dRot;
 
                         // Move by the increment.
                         body.parent.transform.x += dx;
                         body.parent.transform.y += dy;
-                        body.parent.transform.angle += dRot;
+                        body.parent.transform.rotation += dRot;
 
                         // This forces the move. Otherwise, not applied until the next render frame.
                         body.parent.transform.updateTransform();
@@ -227,5 +231,29 @@ export class ContinuousCollisionSystem extends CollisionSystem
                 }
             }
         });
+    }
+}
+
+/**
+ * Debug draw for collision systems. Will render the detect-collisions state to a test canvas. A canvas needs to be
+ * created with the id 'detect-render'. Ensure the sizing is correct. This is *really* slow.
+ *
+ * ```<canvas id={"detect-render"} width={"512"} height={"512"} style={{border:"black", borderStyle:"solid"}}/>```
+ */
+export class DebugCollisionSystem extends GlobalSystem
+{
+    constructor(readonly system: CollisionSystem)
+    {
+        super();
+    }
+
+    types = () => [];
+
+    update(delta: number): void
+    {
+        const canvas = document.getElementById("detect-render") as any;
+        const context = canvas.getContext("2d");
+        this.system.detectSystem.draw(context);
+        context.stroke();
     }
 }

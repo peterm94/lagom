@@ -53,7 +53,12 @@ class FpsUpdater extends System
     {
         this.frameCount++;
 
-        this.avgUpdateDt = this.rollAverage(this.avgUpdateDt, 1000 / delta);
+        // Delta of exactly 0 will break the average.
+        if (delta !== 0)
+        {
+            this.avgUpdateDt = this.rollAverage(this.avgUpdateDt, 1000 / delta);
+        }
+
         this.avgUpdate = this.rollAverage(this.avgUpdate, this.game.diag.updateTime);
         this.avgFixedUpdate = this.rollAverage(this.avgFixedUpdate, this.game.diag.fixedUpdateTime);
         this.avgRender = this.rollAverage(this.avgRender, this.game.diag.renderTime);

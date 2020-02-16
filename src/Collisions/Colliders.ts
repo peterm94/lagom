@@ -1,4 +1,4 @@
-import {Body, Circle, Point, Polygon, Result} from "detect-collisions";
+import {Body, Circle, Collisions, Point, Polygon, Result} from "detect-collisions";
 import {PIXIComponent} from "../ECS/Component";
 import {Observable} from "../Common/Observer";
 import {Log} from "../Common/Util";
@@ -6,10 +6,21 @@ import {CollisionSystem} from "./CollisionSystems";
 
 import * as PIXI from "pixi.js";
 
-export enum CollisionType
+export enum BodyType
 {
+    /**
+     * Discrete bodies will jump to their destination position each frame.
+     */
     Discrete,
-    Continuous
+    /**
+     * Continuous bodies will slide to their destination, triggering events along the way. Multiple collisions
+     * may be triggered per frame.
+     */
+    Continuous,
+    /**
+     * Static bodies should not move. If they do, will cause undefined behaviour.
+     */
+    Static
 }
 
 export interface ColliderOptions
@@ -96,6 +107,7 @@ export abstract class Collider extends PIXIComponent<PIXI.Container>
     {
         const pt = new PIXI.Point();
         // TODO check if we need to perform this update. I suspect we do.
+        //  Maybe not with the forced body.parent.transform.updateTransform() in the system?
         this.pixiObj.getGlobalPosition(pt, true);
         this.body.x = pt.x;
         this.body.y = pt.y;
@@ -195,6 +207,16 @@ export class PolyCollider extends Collider
         }
 
         return area / 2;
+    }
+
+
+    updatePosition(): void
+    {
+        super.updatePosition();
+        const poly = this.body as Polygon;
+
+        // Polygon 'angle' is in radians.
+        poly.angle = this.parent.transform.rotation;
     }
 }
 
