@@ -5,32 +5,57 @@ import {CollisionSystem} from "./CollisionSystems";
 
 import * as PIXI from "pixi.js";
 
+/**
+ * Collision body type. Determines the way the body interacts with the collision simulation.
+ */
 export enum BodyType
 {
     /**
      * Discrete bodies will jump to their destination position each frame.
      */
     Discrete,
+
     /**
      * Continuous bodies will slide to their destination, triggering events along the way. Multiple collisions
      * may be triggered per frame.
      */
     Continuous,
+
     /**
      * Static bodies should not move. If they do, will cause undefined behaviour.
      */
     Static
 }
 
+/**
+ * Properties for colliders.
+ */
 export interface ColliderOptions
 {
+    /**
+     * Layer that the collider is on. Required.
+     */
     layer: number;
+
+    /**
+     * Origin point X offset.
+     */
     xOff?: number;
+
+    /**
+     * Origin point Y offset.
+     */
     yOff?: number;
 }
 
+/**
+ * Interface type for Lagom controlled Collider bodies.
+ */
 export interface LagomBody
 {
+    /**
+     * Reference to the owning Component.
+     */
     lagomComponent: Component;
 }
 
@@ -39,15 +64,34 @@ export interface LagomBody
  */
 export abstract class Collider extends PIXIComponent<PIXI.Container>
 {
+    /**
+     * Observable event for continuous collision trigger. Will be fired every frame a trigger occurs. If Continuous
+     * collision checking is enabled, may trigger multiple times in the same frame.
+     */
     readonly onTrigger: Observable<Collider, { other: Collider; result: Result }> = new Observable();
+
+    /**
+     * Event for entry collisions. Will only be fired once until the two bodies are no longer colliding.
+     */
     readonly onTriggerEnter: Observable<Collider, { other: Collider; result: Result }> = new Observable();
+
+    /**
+     * Event triggered on a collision exit. Will only trigger once.
+     */
     readonly onTriggerExit: Observable<Collider, Collider> = new Observable();
 
     triggersLastFrame: Collider[] = [];
+
     readonly layer: number;
     private readonly xOff: number;
     private readonly yOff: number;
 
+    /**
+     * Construct a new collider.
+     * @param engine The Collision engine the body is to be added to.
+     * @param body The inner body type.
+     * @param options Any additional body options.
+     */
     protected constructor(private readonly engine: CollisionSystem, readonly body: Body, options: ColliderOptions)
     {
         super(new PIXI.Container());
@@ -85,6 +129,12 @@ export abstract class Collider extends PIXIComponent<PIXI.Container>
         this.onTrigger.releaseAll();
     }
 
+    /**
+     * Check if a place is free in the world, relative to this object.
+     * @param dx X delta from current position.
+     * @param dy Y delta from current position.
+     * @returns True if no collisions occur at the target location.
+     */
     placeFree(dx: number, dy: number): boolean
     {
         if (this.engine) return this.engine.placeFree(this, dx, dy);
@@ -92,7 +142,7 @@ export abstract class Collider extends PIXIComponent<PIXI.Container>
     }
 
     /**
-     * Sync the collider position with it's anchor object in the scene.
+     * Sync the collider position with its anchor object in the scene.
      */
     updatePosition(): void
     {
@@ -105,16 +155,27 @@ export abstract class Collider extends PIXIComponent<PIXI.Container>
     }
 }
 
+/**
+ * Collider options specifically for Circle types.
+ */
 export interface CircleColliderOptions extends ColliderOptions
 {
+    /**
+     * Radius of the collision circle.
+     */
     radius: number;
 }
 
 /**
- * Circle collider type.
+ * Circle collider type. The centre point is (0, 0).
  */
 export class CircleCollider extends Collider
 {
+    /**
+     * Constructor.
+     * @param system System to add the collider to.
+     * @param options Options for this collider.
+     */
     constructor(system: CollisionSystem, options: CircleColliderOptions)
     {
         super(system, new Circle(0, 0, options.radius), options);
@@ -126,15 +187,30 @@ export class CircleCollider extends Collider
  */
 export class PointCollider extends Collider
 {
+    /**
+     * Constructor.
+     * @param system System to add the collider to.
+     * @param options Options for this collider.
+     */
     constructor(system: CollisionSystem, options: ColliderOptions)
     {
         super(system, new Point(0, 0), options);
     }
 }
 
+/**
+ * Collider options specifically for Polygons.
+ */
 export interface PolyColliderInterface extends ColliderOptions
 {
+    /**
+     * Points that make up the polygon. Pass in an array of pair arrays. e.g. [[x1, y2], [x2, y2], [x3, y3]].
+     */
     points: number[][];
+
+    /**
+     * Rotation of the polygon. Rotation origin will be the first point in the points array.
+     */
     rotation: number;
 }
 
@@ -143,6 +219,11 @@ export interface PolyColliderInterface extends ColliderOptions
  */
 export class PolyCollider extends Collider
 {
+    /**
+     * Constructor.
+     * @param system System to add the collider to.
+     * @param options Options for this collider.
+     */
     constructor(system: CollisionSystem, options: PolyColliderInterface)
     {
         // NOTE: The order of the points matters, the library is bugged, this function ensures they are anticlockwise.
@@ -200,6 +281,9 @@ export class PolyCollider extends Collider
         return area / 2;
     }
 
+    /**
+     * Update the position of the collider in the engine.
+     */
     updatePosition(): void
     {
         super.updatePosition();
@@ -210,10 +294,24 @@ export class PolyCollider extends Collider
     }
 }
 
+/**
+ * Points that make up the polygon. Pass in an array of pair arrays. e.g. [[x1, y2], [x2, y2], [x3, y3]].
+ */
 export interface RectColliderOptions extends ColliderOptions
 {
+    /**
+     * Rectangle width.
+     */
     width: number;
+
+    /**
+     * Rectangle height.
+     */
     height: number;
+
+    /**
+     * Rectangle rotation. Origin is the top left point unless offset.
+     */
     rotation: number;
 }
 
@@ -222,6 +320,11 @@ export interface RectColliderOptions extends ColliderOptions
  */
 export class RectCollider extends PolyCollider
 {
+    /**
+     * Constructor.
+     * @param system System to add the collider to.
+     * @param options Options for this collider.
+     */
     constructor(system: CollisionSystem, options: RectColliderOptions)
     {
         super(system, {

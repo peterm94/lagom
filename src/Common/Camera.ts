@@ -32,6 +32,7 @@ export class Camera
      * Translate a view position to a world position.
      * @param x The x position on the view.
      * @param y The y position on the view.
+     * @returns The world position.
      */
     viewToWorld(x: number, y: number): PIXI.Point
     {
@@ -104,6 +105,10 @@ export class Camera
         this.angle = angle;
     }
 
+    /**
+     * TODO Remove this if it doesn't work. I think i was trying to rotate around the centre point instead of top left.
+     * @param angle
+     */
     rotate2(angle: number): void
     {
         const rads = MathUtil.degToRad(angle);

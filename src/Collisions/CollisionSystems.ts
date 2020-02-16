@@ -7,21 +7,37 @@ import {Rigidbody} from "./Rigidbody";
 import {LagomType} from "../ECS/LifecycleObject";
 import {Component} from "../ECS/Component";
 
+/**
+ * Base class for collision systems.
+ */
 export abstract class CollisionSystem extends GlobalSystem
 {
+    // The inner detect system that will perform the collision checks.
     readonly detectSystem: Collisions = new Collisions();
 
+    /**
+     * Creates a new Collision System.
+     * @param collisionMatrix The collision matrix used for layer checking.
+     */
     constructor(readonly collisionMatrix: CollisionMatrix)
     {
         super();
     }
 
+    /**
+     * Add a body to the system.
+     * @param body The body to add.
+     */
     addBody(body: Collider): void
     {
         this.detectSystem.insert(body.body);
         this.detectSystem.update();
     }
 
+    /**
+     * Remove a body from the system.
+     * @param body The body to remove.
+     */
     removeBody(body: Collider): void
     {
         this.detectSystem.remove(body.body);
@@ -61,6 +77,10 @@ export abstract class CollisionSystem extends GlobalSystem
         return true;
     }
 
+    /**
+     * Do collision checks for the given colliders. Will fire off events if triggers occur.
+     * @param colliders The colliders to do the checks for.
+     */
     protected doCollisionCheck(colliders: Collider[]): void
     {
         for (const collider of colliders)
@@ -148,7 +168,14 @@ export class DiscreteCollisionSystem extends CollisionSystem
  */
 export class ContinuousCollisionSystem extends CollisionSystem
 {
-    constructor(collisionMatrix: CollisionMatrix, readonly step: number)
+    /**
+     * Construct the collision system.
+     *
+     * @param collisionMatrix Matrix used for layer calculations.
+     * @param step The step size used for moving objects. Make this low, but not super low or performance will be
+     * greatly impacted.
+     */
+    constructor(collisionMatrix: CollisionMatrix, readonly step: number = 10)
     {
         super(collisionMatrix);
     }
@@ -237,12 +264,17 @@ export class ContinuousCollisionSystem extends CollisionSystem
 
 /**
  * Debug draw for collision systems. Will render the detect-collisions state to a test canvas. A canvas needs to be
- * created with the id 'detect-render'. Ensure the sizing is correct. This is *really* slow.
+ * created with the id 'detect-render'. Ensure the canvas sizing is correct. This is *really* slow. Also, wont
+ * follow the real canvas view if you move the camera.
  *
  * ```<canvas id={"detect-render"} width={"512"} height={"512"} style={{border:"black", borderStyle:"solid"}}/>```
  */
 export class DebugCollisionSystem extends GlobalSystem
 {
+    /**
+     * Constructor.
+     * @param system The system to draw.
+     */
     constructor(readonly system: CollisionSystem)
     {
         super();

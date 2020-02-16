@@ -44,6 +44,11 @@ export class AnimatedSpriteController extends AnimatedSprite
     private currentEventMap: Map<number, () => void> | null = null;
     private _currentState: number;
 
+    /**
+     * Create a new AnimatedSpriteController.
+     * @param initialState The initial animation state.
+     * @param animations An array of all animations that this controller will manage.
+     */
     constructor(private initialState: number, animations: SpriteAnimation[])
     {
         super(animations[0].textures);

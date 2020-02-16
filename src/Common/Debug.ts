@@ -6,7 +6,9 @@ import {Component} from "../ECS/Component";
 import {Game} from "../ECS/Game";
 import {LagomType} from "../ECS/LifecycleObject";
 
-
+/**
+ * FPS tracking component.
+ */
 class FpsTracker extends Component
 {
     constructor(readonly verbose: boolean)
@@ -15,6 +17,9 @@ class FpsTracker extends Component
     }
 }
 
+/**
+ * System that updates with diagnostic information.
+ */
 class FpsUpdater extends System
 {
     printFrame = 10;
@@ -116,6 +121,12 @@ export class Diagnostics extends Entity
         scene.addSystem(new FpsUpdater());
     }
 
+    /**
+     * Constructor.
+     * @param textCol Colour of the debug text.
+     * @param textSize Size of the debug text.
+     * @param verbose Set to true for more information. False will just display simple FPS.
+     */
     constructor(private readonly textCol: string,
                 private readonly textSize: number = 10,
                 private verbose: boolean = false)

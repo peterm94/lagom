@@ -8,7 +8,7 @@ export class SpriteSheet
     private readonly sheetTexture: PIXI.BaseTexture;
 
     /**
-     * Create a new SpriteSheet
+     * Create a new SpriteSheet.
      * @param resource The base sprite sheet resource.
      * @param tileWidth The width of the tiles on the sheet.
      * @param tileHeight The height of the tiles on the sheet.
@@ -40,10 +40,15 @@ export class SpriteSheet
                                                                       w, h));
     }
 
-    textureFromId(id: number): PIXI.Texture
+    /**
+     * Create a texture by index.
+     * @param index Tile index of the texture to load.
+     * @returns The loaded texture.
+     */
+    textureFromIndex(index: number): PIXI.Texture
     {
-        const col = id % (this.sheetTexture.realWidth / this.tileWidth);
-        const row = Math.floor(id / (this.sheetTexture.realHeight / this.tileHeight));
+        const col = index % (this.sheetTexture.realWidth / this.tileWidth);
+        const row = Math.floor(index / (this.sheetTexture.realHeight / this.tileHeight));
 
         return new PIXI.Texture(this.sheetTexture, new PIXI.Rectangle(col * this.tileWidth,
                                                                       row * this.tileHeight,
@@ -55,6 +60,7 @@ export class SpriteSheet
      * @param frames Desired texture indexes from the SpriteSheet. Supplied as pairs of [column, row].
      * @param width Optional override for the texture width.
      * @param height Optional override for the texture height.
+     * @returns The loaded textures.
      */
     textures(frames: [number, number][], width?: number, height?: number): PIXI.Texture[]
     {
@@ -73,6 +79,7 @@ export class SpriteSheet
      * @param end The end index of the slice. Inclusive.
      * @param width Optional override for the texture width.
      * @param height Optional override for the texture height.
+     * @returns The loaded texture.
      */
     textureSliceFromRow(row: number, start: number, end: number, width?: number, height?: number): PIXI.Texture[]
     {

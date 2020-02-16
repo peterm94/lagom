@@ -3,6 +3,9 @@ import * as PIXI from "pixi.js";
 import {Vector} from "./Vector";
 
 
+/**
+ * A collection of maths related utility functions.
+ */
 export class MathUtil
 {
     // Conversion constant for degrees to radians.
@@ -36,6 +39,7 @@ export class MathUtil
      * @param start The angle to start from.
      * @param end The target angle.
      * @param amount The percentage to interpolate by.
+     * @returns The new angle.
      */
     static angleLerp(start: number, end: number, amount: number): number
     {
@@ -78,6 +82,12 @@ export class MathUtil
         return length * Math.sin(dir);
     }
 
+    /**
+     * Get the X and Y components of a vector determined by the given length and direction.
+     * @param length Vector length.
+     * @param dir Vector direction in radians.
+     * @returns The resulting vector.
+     */
     static lengthDirXY(length: number, dir: number): Vector
     {
         return new Vector(this.lengthDirX(length, dir), this.lengthDirY(length, dir));
@@ -123,6 +133,13 @@ export class MathUtil
         return -Math.atan2((y2 - y1), (x2 - x1));
     }
 
+    /**
+     * Equality checker for floats that has built in tolerance for floating point errors.
+     * @param f1 First float to compare.
+     * @param f2 Second float to compare.
+     * @param tolerance Equality tolerance.
+     * @returns True if equal, false otherwise.
+     */
     static floatEquals(f1: number, f2: number, tolerance = 0.001): boolean
     {
         return Math.abs(f1 - f2) < tolerance;
@@ -132,12 +149,20 @@ export class MathUtil
      * Return a random integer within the given range.
      * @param min The minimum value, inclusive.
      * @param max The maximum value, exclusive.
+     * @returns The generated number.
      */
     static randomRange(min: number, max: number): number
     {
         return Math.floor(Math.random() * (max - min)) + min;
     }
 
+    /**
+     * Clamp a number by two given bounds.
+     * @param value The value to clamp.
+     * @param min The lower bound.
+     * @param max The upper bound.
+     * @returns The clamped value.
+     */
     static clamp(value: number, min: number, max: number): number
     {
         if (value < min) return min;
@@ -146,7 +171,9 @@ export class MathUtil
     }
 }
 
-
+/**
+ * Collection of generic utility functions and helper methods.
+ */
 export class Util
 {
     /**
@@ -168,15 +195,11 @@ export class Util
         return false;
     }
 
-    static move(e: Entity, dist: number): void
-    {
-        const mx = MathUtil.lengthDirX(dist, e.transform.rotation);
-        const my = MathUtil.lengthDirY(dist, e.transform.rotation);
-
-        e.transform.x += mx;
-        e.transform.y += my;
-    }
-
+    /**
+     * Creates a sorted PIXI container. Can maintain order.
+     *
+     * @returns The container.
+     */
     static sortedContainer(): PIXI.Container
     {
         const container = new PIXI.Container();
@@ -185,12 +208,20 @@ export class Util
         return container;
     }
 
+    /**
+     * Make a random selection from the given options.
+     * @param options The options to choose from.
+     * @returns A randomly selected option.
+     */
     static choose<T>(...options: T[]): T
     {
         return options[MathUtil.randomRange(0, options.length)];
     }
 }
 
+/**
+ * Logging level of the system.
+ */
 enum LogLevel
 {
     NONE,
@@ -201,10 +232,20 @@ enum LogLevel
     ALL
 }
 
+/**
+ * Logger class. Output will go the the console.
+ */
 export class Log
 {
-    static logLevel: LogLevel = LogLevel.DEBUG;
+    /**
+     * The current system logging level.
+     */
+    static logLevel: LogLevel = LogLevel.ALL;
 
+    /**
+     * Print an error message.
+     * @param msg The message components.
+     */
     static error(...msg: unknown[]): void
     {
         if (this.logLevel >= LogLevel.ERROR)
@@ -213,6 +254,10 @@ export class Log
         }
     }
 
+    /**
+     * Print a warning.
+     * @param msg The message components.
+     */
     static warn(...msg: unknown[]): void
     {
         if (this.logLevel >= LogLevel.WARN)
@@ -221,6 +266,10 @@ export class Log
         }
     }
 
+    /**
+     * Print an informational message.
+     * @param msg The message components.
+     */
     static info(...msg: unknown[]): void
     {
         if (this.logLevel >= LogLevel.INFO)
@@ -229,6 +278,10 @@ export class Log
         }
     }
 
+    /**
+     * Print a debug message.
+     * @param msg The message components.
+     */
     static debug(...msg: unknown[]): void
     {
         if (this.logLevel >= LogLevel.DEBUG)
@@ -237,6 +290,10 @@ export class Log
         }
     }
 
+    /**
+     * Print a trace message.
+     * @param msg The message components.
+     */
     static trace(...msg: unknown[]): void
     {
         if (this.logLevel >= LogLevel.ALL)
@@ -246,42 +303,82 @@ export class Log
     }
 }
 
+/**
+ * Map single entry type.
+ */
 class MapEntry<K, V>
 {
+    /**
+     * Create a new entry.
+     * @param key Entry key.
+     * @param value Entry value.
+     */
     constructor(readonly key: K, readonly value: V)
     {
     }
 }
 
+/**
+ * Multi value map. Very basic implementation.
+ */
 export class MultiMap<K, V>
 {
     private entries: MapEntry<K, V>[] = [];
 
+    /**
+     * Empty the map.
+     */
     public clear(): void
     {
         this.entries = [];
     }
 
+    /**
+     * Check if the given key exists.
+     * @param key The key to check.
+     * @returns True if the key is present.
+     */
     public containsKey(key: K): boolean
     {
         return this.entries.find(entry => entry.key === key) !== undefined;
     }
 
+    /**
+     * Check if the given value exists, across all entries.
+     * @param value The value to check.
+     * @returns True if the value is present.
+     */
     public containsValue(value: V): boolean
     {
         return this.entries.find(entry => entry.value === value) !== undefined;
     }
 
+    /**
+     * Check if a given key value pair exists.
+     * @param key The key to check.
+     * @param value The value to check.
+     * @returns True if the entry is found.
+     */
     public containsEntry(key: K, value: V): boolean
     {
         return this.entries.find(entry => entry.key === key && entry.value === value) !== undefined;
     }
 
+    /**
+     * Remove a value from the map.
+     * @param key The key to look under.
+     * @param value The value to remove.
+     */
     public remove(key: K, value: V): void
     {
         Util.remove(this.entries, new MapEntry<K, V>(key, value));
     }
 
+    /**
+     * Put a value in the map.
+     * @param key The key to put the value under.
+     * @param value The value to insert.
+     */
     public put(key: K, value: V): void
     {
         this.entries.push(new MapEntry<K, V>(key, value));

@@ -52,7 +52,7 @@ export class EnemyMarkerE extends Entity
     onAdded()
     {
         super.onAdded();
-        this.addComponent(new Sprite(enemyMarkerSheet.textureFromId(0)));
+        this.addComponent(new Sprite(enemyMarkerSheet.textureFromIndex(0)));
     }
 }
 

@@ -8,19 +8,35 @@ import {Observable} from "./Observer";
  */
 export abstract class FrameTrigger<T> extends Component
 {
+    /**
+     * Observable event. Will be fired when the trigger occurs.
+     */
     onTrigger: Observable<FrameTrigger<T>, T> = new Observable();
 
     nextTriggerTime = -1;
     triggerInterval = 0;
 
+    /**
+     * Will be put in the payload of the Observable event.
+     *
+     * @returns The payload of the trigger.
+     */
     abstract payload(): T;
 
+    /**
+     * Create a new FrameTrigger.
+     *
+     * @param triggerInterval The interval at which the trigger event is fired.
+     */
     protected constructor(triggerInterval: number)
     {
         super();
         this.triggerInterval = triggerInterval;
     }
 
+    /**
+     * Reset the internal trigger timer.
+     */
     reset(): void
     {
         this.nextTriggerTime = -1;
@@ -35,6 +51,9 @@ export abstract class FrameTrigger<T> extends Component
 }
 
 
+/**
+ * System used in conjunction with an implemented FrameTrigger. This system is required for them to actually function.
+ */
 export class FrameTriggerSystem extends GlobalSystem
 {
     private elapsed = 0;
@@ -49,6 +68,7 @@ export class FrameTriggerSystem extends GlobalSystem
         this.elapsed += delta;
 
         this.runOnComponentsWithSystem((system: FrameTriggerSystem, triggers: FrameTrigger<unknown>[]) => {
+
             for (const trigger of triggers)
             {
                 if (trigger.nextTriggerTime === -1)
