@@ -47,7 +47,7 @@ export class TiledMapLoader
     }
 
     /**
-     * Load a given loayer from the map.
+     * Load a given layer from the map.
      * @param layerId The ID of the layer to load.
      * @param fn The function called for every tile loaded. Can be used as an alternative to the function map.
      */

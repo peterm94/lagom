@@ -267,7 +267,9 @@ export class ContinuousCollisionSystem extends CollisionSystem
  * created with the id 'detect-render'. Ensure the canvas sizing is correct. This is *really* slow. Also, wont
  * follow the real canvas view if you move the camera.
  *
- * ```<canvas id={"detect-render"} width={"512"} height={"512"} style={{border:"black", borderStyle:"solid"}}/>```
+ * ```
+ * <canvas id={"detect-render"} width={"512"} height={"512"} style={{border:"black", borderStyle:"solid"}}/>
+ * ```
  */
 export class DebugCollisionSystem extends GlobalSystem
 {
