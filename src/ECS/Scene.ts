@@ -10,12 +10,18 @@ import {Camera} from "../Common/Camera";
 import {Log, Util} from "../Common/Util";
 
 /**
- * Scene object type. Should be the main interface used for games using the framework.
+ * Scene object type. Contains the root nodes for the entity trees, and runs all Systems and GlobalSystems..
  */
 export class Scene extends LifecycleObject implements Updatable
 {
-    // Some fancy entity events for anything that cares.
+    /**
+     * Event for an entity being added to the scene.
+     */
     readonly entityAddedEvent: Observable<Scene, Entity> = new Observable();
+
+    /**
+     * Event for an entity being removed from the scene.
+     */
     readonly entityRemovedEvent: Observable<Scene, Entity> = new Observable();
 
     // Top level scene node.
@@ -38,8 +44,15 @@ export class Scene extends LifecycleObject implements Updatable
     // Milliseconds
     readonly updateWarnThreshold = 5;
 
+    /**
+     * The main camera for this scene. Can be interacted with to move the viewport.
+     */
     readonly camera: Camera;
 
+    /**
+     * Construct a new scene.
+     * @param game The game to add the scene to.
+     */
     constructor(readonly game: Game)
     {
         super();
@@ -90,10 +103,26 @@ export class Scene extends LifecycleObject implements Updatable
     fixedUpdate(delta: number): void
     {
         // Update global systems
-        this.globalSystems.forEach(system => system.fixedUpdate(delta));
+        this.globalSystems.forEach(system => {
+            const now = Date.now();
+            system.fixedUpdate(delta);
+            const time = Date.now() - now;
+            if (time > this.updateWarnThreshold)
+            {
+                Log.warn(`System fixedUpdate took ${time}ms`, system);
+            }
+        });
 
         // Update normal systems
-        this.systems.forEach(system => system.fixedUpdate(delta));
+        this.systems.forEach(system => {
+            const now = Date.now();
+            system.fixedUpdate(delta);
+            const time = Date.now() - now;
+            if (time > this.updateWarnThreshold)
+            {
+                Log.warn(`System fixedUpdate took ${time}ms`, system);
+            }
+        });
     }
 
     /**
@@ -152,21 +181,40 @@ export class Scene extends LifecycleObject implements Updatable
         return found !== undefined ? found as T : null;
     }
 
+    /**
+     * Add a new entity to the scene.
+     * @param entity The entity to add to the scene.
+     * @returns The added entity.
+     */
     addEntity<T extends Entity>(entity: T): T
     {
         return this.sceneNode.addChild(entity);
     }
 
+    /**
+     * Remove an entity from the scene.
+     * @param entity The entity to remove.
+     */
     removeEntity(entity: Entity): void
     {
         this.sceneNode.removeChild(entity);
     }
 
+    /**
+     * Add a entity to the scene. This will keep the entity anchored to the top left of the camera view. Good for
+     * GUI elements.
+     * @param entity The entity to add.
+     * @returns The added entity.
+     */
     addGUIEntity<T extends Entity>(entity: T): T
     {
         return this.guiNode.addChild(entity);
     }
 
+    /**
+     * Remove an entity from the scene that was added with addGUIEntity.
+     * @param entity The entity to remove.
+     */
     removeGUIEntity(entity: Entity): void
     {
         this.guiNode.removeChild(entity);

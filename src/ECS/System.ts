@@ -145,8 +145,8 @@ export abstract class System extends LifecycleObject implements Updatable
      * Call this from update() to run on the requested component instances.
      * @param f A function that will be called with the requested components passed through as parameters. The
      * owning entity will always be the first parameter, followed by each component in the order defined by types().
-     * For example, if types() is [Sprite, MCollider], the function arguments would look as follows: (entity:
-     * Entity, sprite: Sprite, collider: MCollider).
+     * For example, if types() is [Sprite, Collider], the function arguments would look as follows: (entity:
+     * Entity, sprite: Sprite, collider: Collider).
      */
     protected runOnEntities(f: Function): void
     {
@@ -155,6 +155,14 @@ export abstract class System extends LifecycleObject implements Updatable
         });
     }
 
+    /**
+     * Call this from update() to run on the requested component instances. The system will be passed through as the
+     * first parameter to f.
+     * @param f A function that will be called with the system instance, and the requested components passed through as
+     * parameters. The system will always be the first parameter, followed by the owning entity, then by each component
+     * in the order defined by types(). For example, if types() is [Sprite, Collider], the function arguments would
+     * look as follows: (system: System, entity: Entity, sprite: Sprite, collider: Collider).
+     */
     protected runOnEntitiesWithSystem(f: Function): void
     {
         this.runOn.forEach((value: Component[], key: Entity) => {

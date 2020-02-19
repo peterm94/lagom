@@ -158,6 +158,7 @@ export class Game
     /**
      * Set a scene to load. Will be started instantly.
      * @param scene The Scene to load.
+     * @returns The scene.
      */
     setScene<T extends Scene>(scene: T): T
     {

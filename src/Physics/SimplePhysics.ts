@@ -5,15 +5,35 @@ import {Rigidbody} from "../Collisions/Rigidbody";
 import {Component} from "../ECS/Component";
 import {LagomType} from "../ECS/LifecycleObject";
 
-
+/**
+ * Properties interface for SimplePhysics module.
+ */
 export interface SimplePhysicsProps
 {
+    /**
+     * Angular velocity cap.
+     */
     angCap?: number;
+
+    /**
+     * Linear velocity cap.
+     */
     linCap?: number;
+
+    /**
+     * Angular drag.
+     */
     angDrag?: number;
+
+    /**
+     * Linear drag.
+     */
     linDrag?: number;
 }
 
+/**
+ * Component type for the SimplePhysics system to run on.
+ */
 export class SimplePhysicsBody extends Component
 {
     // Requested movement. This will be cleared on frame end.
@@ -32,6 +52,11 @@ export class SimplePhysicsBody extends Component
     angDrag: number;
     linDrag: number;
 
+    /**
+     * Move the body by the requested amount.
+     * @param x Amount to move on the x axis.
+     * @param y Amount to move on the y axis.
+     */
     move(x = 0, y = 0): void
     {
         this.x += x;
@@ -47,6 +72,9 @@ export class SimplePhysicsBody extends Component
         this.rotation += rotation;
     }
 
+    /**
+     * Clear the input state. Should only be called by the SimplePhysics system.
+     */
     clearInput(): void
     {
         this.x = 0;
@@ -54,6 +82,10 @@ export class SimplePhysicsBody extends Component
         this.rotation = 0;
     }
 
+    /**
+     * Create a new SimplePhysicsBody.
+     * @param props Optional physics property overrides.
+     */
     constructor(readonly props: SimplePhysicsProps = {})
     {
         super();
@@ -65,7 +97,10 @@ export class SimplePhysicsBody extends Component
     }
 }
 
-
+/**
+ * Basic physics implementation. Has the concept of drag and velocity caps. No weight or momentum calculations are
+ * taken into account, this can be simulated by tweaking drag and managing acceleration externally.
+ */
 export class SimplePhysics extends System
 {
     types = (): LagomType<Component>[] => [Rigidbody, SimplePhysicsBody];

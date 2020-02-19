@@ -5,7 +5,7 @@ import {LagomType, LifecycleObject, Updatable} from "./LifecycleObject";
 import {Scene} from "./Scene";
 
 /**
- * Global system base class. Designed to run on batches of Components.
+ * Global system base class. Designed to run on batches of Components. Will be run every update frame.
  */
 export abstract class GlobalSystem extends LifecycleObject implements Updatable
 {
@@ -34,7 +34,7 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
 
     /**
      * Call this in update() to retrieve the collection of components to run on.
-     * @param f A function which accepts the a parameter for each type returned by in types(). For example, if
+     * @param f A function which accepts a parameter for each type returned by types(). For example, if
      * types() returns [Sprite, Collider], the function will be passed two arrays, (sprites: Sprite[], colliders:
      * Collider[]).
      */
@@ -43,6 +43,13 @@ export abstract class GlobalSystem extends LifecycleObject implements Updatable
         f(...Array.from(this.runOn.values()));
     }
 
+    /**
+     * Call this in update() to retrieve the collection of components to run on. Will pass the system itself as the
+     * first parameter to the passed in function.
+     * @param f A function which first provides a parameter for this system, and then a parameter for each type
+     * returned by types(). For example, if types() returns [Sprite, Collider], the function will be passed the
+     * system and t hen two arrays, (system: GlobalSystem, sprites: Sprite[], colliders: Collider[]).
+     */
     protected runOnComponentsWithSystem(f: Function): void
     {
         f(this, ...Array.from(this.runOn.values()));

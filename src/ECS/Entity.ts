@@ -10,32 +10,74 @@ import * as PIXI from "pixi.js";
  */
 export class Entity extends LifecycleObject
 {
+    /**
+     * Set the depth of the entity. Used for update and draw order.
+     * @param value The depth to set.
+     */
     set depth(value: number)
     {
         this._depth = value;
         this.transform.zIndex = value;
     }
 
+    /**
+     * Event that is fired when a component is added to this entity.
+     */
     readonly componentAddedEvent: Observable<Entity, Component> = new Observable();
+
+    /**
+     * Event for a component being removed from this entity.
+     */
     readonly componentRemovedEvent: Observable<Entity, Component> = new Observable();
+
+    /**
+     * Event for a child entity being added.
+     */
     readonly childAdded: Observable<Entity, Entity> = new Observable();
+
+    /**
+     * Event for a child entity being removed.
+     */
     readonly childRemoved: Observable<Entity, Entity> = new Observable();
 
+    /**
+     * Entity name. Not unique, can be searched on.
+     */
     readonly name: string;
+
+    /**
+     * Unique entity ID.
+     */
     readonly id: string;
+
+    /**
+     * Components that this entity manages.
+     */
     readonly components: Component[] = [];
 
     layer = 0;
-    private _depth = 0;
 
+    private _depth = 0;
     private static _next_id = 0;
 
+    /**
+     * Scene object that this entity belongs to.
+     */
     scene!: Scene;
 
-    // This should only be null for a tree root (i.e. the scene root nodes)
+    /**
+     * Parent entity. This should only be null for a tree root (i.e. the scene root nodes).
+     */
     parent: Entity | null = null;
+
+    /**
+     * Child entities.
+     */
     children: Entity[] = [];
 
+    /**
+     * The transform for this entity. All children transforms will be relative to this one.
+     */
     transform: PIXI.Container = Util.sortedContainer();
 
     /**
@@ -74,6 +116,11 @@ export class Entity extends LifecycleObject
         return component;
     }
 
+    /**
+     * Remove a component from this entity.
+     * @param component The component to remove.
+     * @param doRemove TODO investigate why this is a thing.
+     */
     removeComponent(component: Component, doRemove: boolean): void
     {
         Log.trace("Removing component from entity.", component);
@@ -174,6 +221,10 @@ export class Entity extends LifecycleObject
         return this.scene;
     }
 
+    /**
+     * Remove a child entity from this entity.
+     * @param child The child entity to remove.
+     */
     removeChild(child: Entity): void
     {
         Log.trace("Removing child object.", child);
@@ -219,6 +270,11 @@ export class Entity extends LifecycleObject
         return child;
     }
 
+    /**
+     * Find a child entity with the given name. This will traverse down the entity tree.
+     * @param name The name of the entity to search for.
+     * @returns The first matching entity if found, or null otherwise.
+     */
     findChildWithName<T extends Entity>(name: string): T | null
     {
         const found = this.children.find(value => value.name === name);

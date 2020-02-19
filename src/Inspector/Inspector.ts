@@ -4,7 +4,7 @@ import {Component} from "../ECS/Component";
 import {computed, observable, runInAction} from "mobx";
 import {Entity} from "../ECS/Entity";
 
-export type InspectorEntity = [string, string]
+export type InspectorEntity = [string, string];
 
 export class InspectorSystem extends GlobalSystem
 {
