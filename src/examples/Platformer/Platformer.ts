@@ -5,7 +5,6 @@ import spriteSheet from './resources/spritesheet.png';
 import {RenderRect} from "../../Common/PIXIComponents";
 import {Entity} from "../../ECS/Entity";
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
-import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import {Component} from "../../ECS/Component";
 import {LagomType} from "../../ECS/LifecycleObject";
@@ -14,14 +13,17 @@ import {TiledMapLoader} from "../../Common/TiledMapLoader";
 import world2 from "./resources/World2.json";
 import {Diagnostics} from "../../Common/Debug";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
-import {DetectCollider, RectCollider} from "../../DetectCollisions/DetectColliders";
-import {DetectRigidbody} from "../../DetectCollisions/DetectRigidbody";
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
 import {FollowCamera, FollowMe} from "../../Common/CameraUtil";
 import {Key} from "../../Input/Key";
 import {Button} from "../../Input/Button";
 import {AudioAtlas} from "../../Audio/AudioAtlas";
+import {BodyType, Collider, RectCollider} from "../../Collisions/Colliders";
+import {CollisionSystem, ContinuousCollisionSystem} from "../../Collisions/CollisionSystems";
+import {Log} from "../../Common/Util";
+import {Rigidbody} from "../../Collisions/Rigidbody";
+import {SimplePhysics, SimplePhysicsBody} from "../../Physics/SimplePhysics";
 
 
 const sprites = new SpriteSheet(spriteSheet, 16, 16);
@@ -36,72 +38,6 @@ enum Layers
     SOLIDS
 }
 
-export class Platformer extends Game
-{
-    constructor()
-    {
-        super( {
-            width: 256,
-            height: 128,
-            resolution: 4,
-            backgroundColor: 0xad58ac,
-            antialias: false
-        });
-
-        this.setScene(new MainScene(this));
-
-        collisionMatrix.addCollision(Layers.PLAYER, Layers.SOLIDS);
-        collisionMatrix.addCollision(Layers.ENEMY, Layers.SOLIDS);
-        collisionMatrix.addCollision(Layers.PLAYER, Layers.ENEMY);
-    }
-}
-
-class MainScene extends Scene
-{
-    onAdded(): void
-    {
-        super.onAdded();
-
-        this.addGUIEntity(new Diagnostics("white", 8));
-
-        this.addSystem(new PlayerMover());
-        this.addSystem(new GravitySystem());
-        this.addSystem(new DetectCollisionSystem(collisionMatrix));
-        this.addSystem(new PlayerAnimationSystem());
-        this.addSystem(new FollowCamera({centre: true, lerpSpeed: 5, yOffset: 10}));
-
-        this.addGlobalSystem(new FrameTriggerSystem());
-
-        const tileEntity = this.addEntity(new Entity("backgroundTiles"));
-        tileEntity.depth = -100;
-
-        const world1Map = new TiledMapLoader(world2);
-        const mapLoader: Map<number, (x: number, y: number) => void> = new Map();
-        mapLoader.set(12, (x, y) => {
-            this.addEntity(new Block(x, y, 12));
-        });
-        mapLoader.set(13, (x, y) => {
-            this.addEntity(new Block(x, y, 13));
-        });
-
-        mapLoader.set(14, (x, y) => {
-            this.addEntity(new Block(x, y, 14));
-        });
-
-        mapLoader.set(15, (x, y) => {
-            this.addEntity(new Block(x, y, 15));
-        });
-        mapLoader.set(512, (x, y) => {
-            this.addEntity(new Player(x, y));
-        });
-
-        world1Map.load(0, mapLoader);
-        // world1Map.loadFn(this, 1, (tileId, x, y) => {
-        //     tileEntity.addComponent(new Sprite(sprites.textureFromIndex(tileId), {xOffset: x, yOffset: y}));
-        // });
-    }
-}
-
 class Block extends Entity
 {
     constructor(x: number, y: number, private readonly tileId: number)
@@ -113,9 +49,17 @@ class Block extends Entity
     onAdded(): void
     {
         super.onAdded();
+
+        const system = this.scene.getGlobalSystem<CollisionSystem>(CollisionSystem);
+        if (system === null)
+        {
+            Log.error("Collision system not added to scene.");
+            return;
+        }
+
         this.addComponent(new Sprite(sprites.texture(this.tileId, 0)));
-        this.addComponent(new RectCollider(0, 0, 16, 16, Layers.SOLIDS));
-        // this.addComponent(new RenderRect(16, 16));
+        this.addComponent(new Rigidbody(BodyType.Static));
+        this.addComponent(new RectCollider(system, {width: 16, height: 16, layer: Layers.SOLIDS}));
     }
 }
 
@@ -140,12 +84,39 @@ class Rotator extends System
     {
         if (Game.keyboard.isKeyDown(Key.KeyQ))
         {
-            this.getScene().camera.rotate2(this.getScene().camera.angle - delta * this.amt)
+            this.getScene().camera.rotate2(this.getScene().camera.angle - delta * this.amt);
         }
         if (Game.keyboard.isKeyDown(Key.KeyE))
         {
-            this.getScene().camera.rotate2(this.getScene().camera.angle + delta * this.amt)
+            this.getScene().camera.rotate2(this.getScene().camera.angle + delta * this.amt);
         }
+    }
+}
+
+class PlayerControlled extends Component
+{
+}
+
+class GravityAware extends Component
+{
+}
+
+class Gravity extends System
+{
+    spd = 0.002;
+
+    types = (): LagomType<Component>[] => [SimplePhysicsBody, GravityAware];
+
+    fixedUpdate(delta: number): void
+    {
+        this.runOnEntitiesWithSystem((system: Gravity, entity: Entity, body: SimplePhysicsBody) => {
+            body.move(0, system.spd);
+        });
+    }
+
+    update(delta: number): void
+    {
+        // fixed update only.
     }
 }
 
@@ -162,7 +133,8 @@ class Player extends Entity
         super.onAdded();
         this.addComponent(new GravityAware());
         this.addComponent(new PlayerControlled());
-        this.addComponent(new DetectRigidbody());
+        this.addComponent(new Rigidbody(BodyType.Discrete));
+        this.addComponent(new SimplePhysicsBody());
         this.addComponent(new FollowMe());
 
         // Static sprite
@@ -196,77 +168,69 @@ class Player extends Entity
             }
         ]));
 
-        this.addComponent(new RectCollider(-4, -8, 8, 16, Layers.PLAYER));
+        const system = this.scene.getGlobalSystem<CollisionSystem>(CollisionSystem);
+        if (system === null)
+        {
+            Log.error("Collision system not added to scene.");
+            return;
+        }
+
         this.addComponent(new RenderRect(-4, -8, 8, 16));
+        const collider = this.addComponent(new RectCollider(system, {
+            xOff: -4, yOff: -8, width: 8, height: 16,
+            layer: Layers.PLAYER
+        }));
+
+        collider.onTrigger.register((caller, data) => {
+            caller.getEntity().getComponent<Rigidbody>(Rigidbody)?.stopMotion();
+            caller.getEntity().getComponent<SimplePhysicsBody>(SimplePhysicsBody)?.stopMotion();
+
+            caller.getEntity().transform.x -= data.result.overlap_x * data.result.overlap;
+            caller.getEntity().transform.y -= data.result.overlap_y * data.result.overlap;
+        });
+
     }
 }
 
-class PlayerControlled extends Component
-{
-}
 
 class PlayerAnimationSystem extends System
 {
     types(): LagomType<Component>[]
     {
-        return [DetectRigidbody, AnimatedSpriteController];
+        return [Rigidbody, AnimatedSpriteController];
     }
 
     fixedUpdate(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody, sprite: AnimatedSpriteController) => {
+        this.runOnEntities((entity: Entity, body: Rigidbody, sprite: AnimatedSpriteController) => {
 
-            // We are on the ground.
-            if (body.dxLastFrame > 0.001)
-            {
-                // Moving right
-                sprite.setAnimation(PlayerAnimationStates.WALK);
-                sprite.applyConfig({xScale: 1});
-            }
-            else if (body.dxLastFrame < -0.001)
-            {
-                // Moving left
-                sprite.setAnimation(PlayerAnimationStates.WALK);
-                sprite.applyConfig({xScale: -1});
-            }
-            else if (body.dxLastFrame === 0)
-            {
-                // Idle
-                sprite.setAnimation(PlayerAnimationStates.IDLE);
-            }
-            // We are in the air.
-            if (body.dyLastFrame > 0.001)
-            {
-                sprite.setAnimation(PlayerAnimationStates.FALLING);
-            }
-            else if (body.dyLastFrame < -0.001)
-            {
-                sprite.setAnimation(PlayerAnimationStates.JUMP);
-            }
-        });
-    }
-
-    update(delta: number): void
-    {
-        // Not required
-    }
-}
-
-class GravityAware extends Component
-{
-}
-
-class GravitySystem extends System
-{
-    types(): LagomType<Component>[]
-    {
-        return [DetectRigidbody, GravityAware];
-    }
-
-    fixedUpdate(delta: number): void
-    {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody) => {
-            body.addForce(0, 0.0005);
+            // // We are on the ground.
+            // if (body.dxLastFrame > 0.001)
+            // {
+            //     // Moving right
+            //     sprite.setAnimation(PlayerAnimationStates.WALK);
+            //     sprite.applyConfig({xScale: 1});
+            // }
+            // else if (body.dxLastFrame < -0.001)
+            // {
+            //     // Moving left
+            //     sprite.setAnimation(PlayerAnimationStates.WALK);
+            //     sprite.applyConfig({xScale: -1});
+            // }
+            // else if (body.dxLastFrame === 0)
+            // {
+            //     // Idle
+            //     sprite.setAnimation(PlayerAnimationStates.IDLE);
+            // }
+            // // We are in the air.
+            // if (body.dyLastFrame > 0.001)
+            // {
+            //     sprite.setAnimation(PlayerAnimationStates.FALLING);
+            // }
+            // else if (body.dyLastFrame < -0.001)
+            // {
+            //     sprite.setAnimation(PlayerAnimationStates.JUMP);
+            // }
         });
     }
 
@@ -279,21 +243,24 @@ class GravitySystem extends System
 class PlayerMover extends System
 {
     readonly mSpeed = 0.07;
-    readonly jumpPower = -0.012;
+    readonly jumpPower = -0.12;
 
     types(): LagomType<Component>[]
     {
-        return [DetectRigidbody, DetectCollider, PlayerControlled];
+        return [Collider, Rigidbody, SimplePhysicsBody, PlayerControlled];
     }
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody, collider: DetectCollider) => {
+        this.runOnEntities((entity: Entity, collider: Collider, body: Rigidbody, body2: SimplePhysicsBody) => {
             if (Game.keyboard.isKeyPressed(Key.ArrowUp, Key.KeyW))
             {
                 if (!collider.placeFree(0, 2))
                 {
-                    body.addForce(0, this.jumpPower);
+                    body2.yVel = 0;
+                    body2.move(0, this.jumpPower);
+                    // body.addForce(0, this.jumpPower);
+                    jumpSound.volume(0.05);
                     jumpSound.play();
                 }
             }
@@ -312,5 +279,72 @@ class PlayerMover extends System
                 this.getScene().getGame().renderer.backgroundColor += 0x00FFFF;
             }
         });
+    }
+}
+
+class MainScene extends Scene
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addGUIEntity(new Diagnostics("white", 8));
+
+        this.addSystem(new PlayerMover());
+        this.addSystem(new PlayerAnimationSystem());
+        this.addSystem(new FollowCamera({centre: true, lerpSpeed: 5, yOffset: 10}));
+        this.addSystem(new SimplePhysics());
+        this.addSystem(new Gravity());
+
+        this.addGlobalSystem(new ContinuousCollisionSystem(collisionMatrix));
+        this.addGlobalSystem(new FrameTriggerSystem());
+
+        const tileEntity = this.addEntity(new Entity("backgroundTiles"));
+        tileEntity.depth = -100;
+
+        const world1Map = new TiledMapLoader(world2);
+        const mapLoader: Map<number, (x: number, y: number) => void> = new Map();
+        mapLoader.set(12, (x, y) => {
+            this.addEntity(new Block(x, y, 12));
+        });
+        mapLoader.set(13, (x, y) => {
+            this.addEntity(new Block(x, y, 13));
+        });
+
+        mapLoader.set(14, (x, y) => {
+            this.addEntity(new Block(x, y, 14));
+        });
+
+        mapLoader.set(15, (x, y) => {
+            this.addEntity(new Block(x, y, 15));
+        });
+        mapLoader.set(512, (x, y) => {
+            this.addEntity(new Player(x, y));
+        });
+
+        world1Map.load(0, mapLoader);
+        // world1Map.loadFn(this, 1, (tileId, x, y) => {
+        //     tileEntity.addComponent(new Sprite(sprites.textureFromIndex(tileId), {xOffset: x, yOffset: y}));
+        // });
+    }
+}
+
+export class Platformer extends Game
+{
+    constructor()
+    {
+        super({
+                  width: 256,
+                  height: 128,
+                  resolution: 4,
+                  backgroundColor: 0xad58ac,
+                  antialias: false
+              });
+
+        this.setScene(new MainScene(this));
+
+        collisionMatrix.addCollision(Layers.PLAYER, Layers.SOLIDS);
+        collisionMatrix.addCollision(Layers.ENEMY, Layers.SOLIDS);
+        collisionMatrix.addCollision(Layers.PLAYER, Layers.ENEMY);
     }
 }

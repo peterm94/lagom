@@ -83,6 +83,16 @@ export class SimplePhysicsBody extends Component
     }
 
     /**
+     * Clear all internal movement state.
+     */
+    stopMotion(): void
+    {
+        this.yVel = 0;
+        this.xVel = 0;
+        this.angVel = 0;
+    }
+
+    /**
      * Create a new SimplePhysicsBody.
      * @param props Optional physics property overrides.
      */

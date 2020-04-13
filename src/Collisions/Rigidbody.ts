@@ -27,7 +27,7 @@ export class Rigidbody extends Component
     /**
      * Stop the movement of the Rigidbody.
      */
-    stop(): void
+    stopMotion(): void
     {
         this.pendingX = 0;
         this.pendingY = 0;

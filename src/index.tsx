@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 import {Box, Grommet} from "grommet";
 import {configure} from "mobx";
-import {Asteroids} from "./examples/Asteroids";
+import {Platformer} from "./examples/Platformer/Platformer";
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
@@ -15,7 +15,7 @@ import {Asteroids} from "./examples/Asteroids";
 serviceWorker.unregister();
 configure({enforceActions: "observed"});
 
-const game = new Asteroids();
+const game = new Platformer();
 
 const grommetTheme = {
     global: {
