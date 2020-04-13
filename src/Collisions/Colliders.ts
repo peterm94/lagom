@@ -146,10 +146,7 @@ export abstract class Collider extends PIXIComponent<PIXI.Container>
      */
     updatePosition(): void
     {
-        const pt = new PIXI.Point();
-        // TODO check if we need to perform this update. I suspect we do.
-        //  Maybe not with the forced body.parent.transform.updateTransform() in the system?
-        this.pixiObj.getGlobalPosition(pt, true);
+        const pt = this.globalPos();
         this.body.x = pt.x;
         this.body.y = pt.y;
     }
@@ -211,7 +208,7 @@ export interface PolyColliderInterface extends ColliderOptions
     /**
      * Rotation of the polygon. Rotation origin will be the first point in the points array.
      */
-    rotation: number;
+    rotation?: number;
 }
 
 /**
@@ -312,7 +309,7 @@ export interface RectColliderOptions extends ColliderOptions
     /**
      * Rectangle rotation. Origin is the top left point unless offset.
      */
-    rotation: number;
+    rotation?: number;
 }
 
 /**

@@ -58,5 +58,17 @@ export abstract class PIXIComponent<T extends PIXI.DisplayObject> extends Compon
         super.onRemoved();
         this.getEntity().transform.removeChild(this.pixiObj);
     }
+
+    /**
+     * Get the global (world) position of this component. This will not take the view positioning into account.
+     * @param skipUpdate True to skip the PIXI positional update.
+     * @returns The calculated point.
+     */
+    globalPos(skipUpdate = false): PIXI.Point
+    {
+        // This function is scary, it takes into account view changes, as does getGlobalPosition().
+        // We need to offset the camera position, because it actually shifts everything in the scene.
+        return this.pixiObj.toGlobal(this.getScene().camera.position(), undefined, skipUpdate);
+    }
 }
 

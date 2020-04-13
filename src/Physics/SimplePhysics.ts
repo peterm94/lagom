@@ -98,8 +98,8 @@ export class SimplePhysicsBody extends Component
 }
 
 /**
- * Basic physics implementation. Has the concept of drag and velocity caps. No weight or momentum calculations are
- * taken into account, this can be simulated by tweaking drag and managing acceleration externally.
+ * Basic physics implementation. Has the concept of drag and velocity caps. No mass or momentum calculations are
+ * taken into account yet, this can be simulated by tweaking drag and managing acceleration externally.
  */
 export class SimplePhysics extends System
 {
