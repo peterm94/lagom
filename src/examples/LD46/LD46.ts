@@ -17,7 +17,9 @@ const collisionMatrix = new CollisionMatrix();
 export enum Layers
 {
     OBSTACLE,
-    PLAYER
+    PLAYER,
+    CONV_PLAYER,
+    CONV_LETTERS
 }
 
 export enum DrawLayers
@@ -37,13 +39,15 @@ class MainScene extends Scene
 
         // Collisions
         collisionMatrix.addCollision(Layers.OBSTACLE, Layers.PLAYER);
+        collisionMatrix.addCollision(Layers.CONV_PLAYER, Layers.CONV_LETTERS);
+
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
 
         this.addGUIEntity(new Diagnostics("black", 8));
         this.addEntity(new Background())
 
         // Put any init stuff here
-        this.addEntity(new RunningMinigame("runninggame", 160, 0, DrawLayers.LOBSTER));
+        this.addEntity(new RunningMinigame("runninggame", 220, 0, DrawLayers.LOBSTER));
         // this.addEntity(new Divider());
 
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64, DrawLayers.LOBSTER))

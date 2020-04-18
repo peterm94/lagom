@@ -13,6 +13,10 @@ import {Game} from "../../../ECS/Game";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteController";
 import {Timer} from "../../../Common/Timer";
+import {RectCollider} from "../../../Collisions/Colliders";
+import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
+import {Layers} from "../LD46";
+import {Log} from "../../../Common/Util";
 
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
 // 108 actual height
@@ -23,6 +27,37 @@ const GREEN = "#30cc30";
 const ORANGE = "orange";
 const RED = "#ff2626";
 const WHITE = "white";
+
+
+class LetterEntity extends Entity
+{
+    constructor(x: number, y: number, readonly letter: string)
+    {
+        super("letter", x, y);
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white"});
+        const text = new TextDisp(0, 0, this.letter, style);
+        this.addComponent(text);
+        this.addComponent(new OnConveyor());
+
+        // Collision
+        const system = this.scene.getGlobalSystem<DiscreteCollisionSystem>(CollisionSystem);
+
+        if (system == null)
+        {
+            Log.error("No collision system detected!");
+        }
+        else
+        {
+            this.addComponent(new RectCollider(system, {width: 18, height: 24, layer: Layers.CONV_LETTERS}));
+        }
+    }
+}
 
 class BeltLetterDirector extends System
 {
@@ -67,7 +102,6 @@ class BeltLetterDirector extends System
         // based off the difficulty ramp and time elapsed
         const expectedLetters = (this.timeElapsed / ramper) + 1;
 
-        //console.log(ramper, this.timeElapsed, this.letters.length, expectedLetters);
         if (this.letters.length < Math.floor(expectedLetters))
         {
             let nextLetter = this.takeLetter();
@@ -83,66 +117,62 @@ class BeltLetterDirector extends System
             this.letters.push(nextLetter);
         }
 
-        this.runOnEntities((entity: Entity) =>
-                           {
-                               let letters = entity.getComponentsOfType(TextDisp) as TextDisp[];
+        this.runOnEntities((entity: Entity) => {
+            let letters = entity.getComponentsOfType<TextDisp>(TextDisp, true);
 
-                               // Check if there is a letter for the user to press
-                               if (this.pressedLetters.length != this.letters.length)
-                               {
-                                   const nextKey = "Key" + this.letters[this.pressedLetters.length].toUpperCase();
-                                   if (Game.keyboard.isKeyPressed(nextKey as Key))
-                                   {
-                                       this.pressedLetters.push(this.letters[this.pressedLetters.length]);
+            // Check if there is a letter for the user to press
+            if (this.pressedLetters.length != this.letters.length)
+            {
+                const nextKey = "Key" + this.letters[this.pressedLetters.length].toUpperCase();
+                if (Game.keyboard.isKeyPressed(nextKey as Key))
+                {
+                    this.pressedLetters.push(this.letters[this.pressedLetters.length]);
 
-                                       const selectedLetter = letters[this.pressedLetters.length - 1 - this.trimmed];
-                                       if (selectedLetter.pixiObj.style.fill == RED)
-                                       {
-                                           selectedLetter.pixiObj.style.fill = ORANGE;
-                                       }
-                                       else
-                                       {
-                                           selectedLetter.pixiObj.style.fill = GREEN;
-                                       }
-                                   }
-                               }
+                    const selectedLetter = letters[this.pressedLetters.length - 1 - this.trimmed];
+                    if (selectedLetter.pixiObj.style.fill == RED)
+                    {
+                        selectedLetter.pixiObj.style.fill = ORANGE;
+                    }
+                    else
+                    {
+                        selectedLetter.pixiObj.style.fill = GREEN;
+                    }
+                }
+            }
 
-                               if (this.spawned < this.letters.length)
-                               {
-                                   // If we have gotten new letters, push them onto the canvas
-                                   for (let i = this.spawned; i < this.letters.length; i++)
-                                   {
-                                       const style = new PIXI.TextStyle(
-                                           {fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white"});
-                                       const text = new TextDisp(-40, 5, this.letters[i].toUpperCase(), style);
-                                       entity.addComponent(text);
-                                       this.spawned += 1;
-                                   }
+            if (this.spawned < this.letters.length)
+            {
+                // If we have gotten new letters, push them onto the canvas
+                for (let i = this.spawned; i < this.letters.length; i++)
+                {
+                    entity.addChild(new LetterEntity(-40, 5, this.letters[i].toUpperCase()));
+                    this.spawned += 1;
+                }
 
-                                   // Update the letters after we add them
-                                   letters = entity.getComponentsOfType(TextDisp);
-                               }
+                // Update the letters after we add them
+                letters = entity.getComponentsOfType<TextDisp>(TextDisp, true);
+            }
 
-                               for (const letter of letters)
-                               {
-                                   const text = letter as TextDisp;
-                                   text.pixiObj.position.x =
-                                       (text.pixiObj.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed);
-
-                                   if (text.pixiObj.position.x > 320)
-                                   {
-                                       // They didn't press the letter even though it went off screen so we add it to
-                                       // the array
-                                       if (text.pixiObj.style.fill == RED)
-                                       {
-                                           this.pressedLetters.push(text.pixiObj.text);
-                                       }
-                                       text.destroy();
-                                       this.trimmed += 1;
-                                   }
-                               }
-                           });
+            for (const letter of letters)
+            {
+                if (letter.pixiObj.position.x > 320)
+                {
+                    // They didn't press the letter even though it went off screen so we add it to
+                    // the array
+                    if (letter.pixiObj.style.fill === RED)
+                    {
+                        this.pressedLetters.push(letter.pixiObj.text);
+                    }
+                    letter.parent.destroy();
+                    this.trimmed += 1;
+                }
+            }
+        });
     }
+}
+
+class OnConveyor extends Component
+{
 }
 
 class LobstaDirector extends System
@@ -152,38 +182,8 @@ class LobstaDirector extends System
     public update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
-            entity.transform.position.x = (entity.transform.position.x - (delta / 1000) * 3) % 480;
 
-            const parent = entity.parent as Entity;
-            let letters = parent.getComponentsOfType(TextDisp) as TextDisp[];
-            const lobsterPos = entity.transform.position;
-
-            for (const letter of letters)
-            {
-                const letterPos = letter.pixiObj.position;
-
-                // im sorry peter
-                if (lobsterPos.x < letterPos.x + letter.pixiObj.width &&
-                    lobsterPos.x + entity.transform.width > letterPos.x &&
-                    lobsterPos.y < letterPos.y + letter.pixiObj.height &&
-                    lobsterPos.y + entity.transform.height > letterPos.y)
-                {
-                    if (letter.pixiObj.style.fill == GREEN)
-                    {
-                        break;
-                    }
-
-                    if (letter.pixiObj.style.fill == WHITE || letter.pixiObj.style.fill == RED)
-                    {
-                        letter.pixiObj.style.fill = RED;
-                        entity.transform.position.x =
-                            (entity.transform.position.x + (delta / 1000) * (BumpMoveSystem.conveyorSpeed - 1)) % 480;
-                        break;
-                    }
-
-                    break;
-                }
-            }
+            entity.transform.position.x = (entity.transform.position.x - (delta / 1000) * 3);
 
             if (entity.transform.position.x < 50)
             {
@@ -247,19 +247,32 @@ class Chef extends Entity
     }
 }
 
-class BumpMoveSystem extends System
+class ConveyorMoveSystem extends System
 {
     static conveyorSpeed = 20;
 
-    types = () => [BumpMove]
+    types = () => [OnConveyor]
 
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
             entity.transform.position.x =
-                (entity.transform.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed) % 480;
+                (entity.transform.position.x + (delta / 1000) * ConveyorMoveSystem.conveyorSpeed);
         });
     }
+}
+
+class BumpResetSystem extends System
+{
+    types = () => [BumpMove]
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity) => {
+            entity.transform.position.x %= 480;
+        });
+    }
+
 }
 
 class BumpMove extends Component
@@ -273,6 +286,7 @@ class ConveyorBump extends Entity
         super.onAdded();
 
         this.addComponent(new BumpMove());
+        this.addComponent(new OnConveyor());
         this.addComponent(new Sprite(cookingSheet.texture(0, 128, 2, 32)));
     }
 }
@@ -312,6 +326,43 @@ class ConveyorLobsta extends Entity
         }))
 
         this.addComponent(new ConveyorLobstaComponent());
+
+        // Collision
+        const system = this.scene.getGlobalSystem<DiscreteCollisionSystem>(CollisionSystem);
+
+        if (system == null)
+        {
+            Log.error("No collision system detected!");
+        }
+        else
+        {
+            const coll = this.addComponent(new RectCollider(system, {
+                xOff: 10, width: 24, height: 24, layer: Layers.CONV_PLAYER
+            }));
+
+            coll.onTrigger.register((caller, data) => {
+
+                if (data.other.parent.name !== "letter") return;
+
+                const txt = data.other.parent.getComponent<TextDisp>(TextDisp);
+
+                if (txt === null) return;
+
+                const fill = txt.pixiObj.style.fill;
+
+                if (fill === GREEN)
+                {
+                    return;
+                }
+                if (fill === WHITE || fill === RED)
+                {
+                    txt.pixiObj.style.fill = RED;
+
+                    caller.parent.transform.position.x += (60 / 1000) * (ConveyorMoveSystem.conveyorSpeed - 1)
+                }
+
+            })
+        }
     }
 }
 
@@ -340,8 +391,9 @@ export class LobsterMinigame extends Entity
         this.addChild(new Conveyor("conveyor", 0, 84));
         this.addChild(new Chef("chef", 320 - 100));
 
-        this.scene.addSystem(new BumpMoveSystem());
+        this.scene.addSystem(new ConveyorMoveSystem());
         this.scene.addSystem(new BeltLetterDirector());
         this.scene.addSystem(new LobstaDirector());
+        this.scene.addSystem(new BumpResetSystem());
     }
 }

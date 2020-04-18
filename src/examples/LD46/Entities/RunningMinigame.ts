@@ -11,18 +11,22 @@ import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/Coll
 import {RectCollider} from "../../../Collisions/Colliders";
 import {Layers} from "../LD46";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
+import {RenderRect} from "../../../Common/PIXIComponents";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 24, 32);
 
 export class RunningMinigame extends Entity
 {
+    readonly gameWidth = 100;
+
     onAdded()
     {
         super.onAdded();
 
         // Child entities
-        this.addChild(new ObstacleSpawner());
-        this.addChild(new PlayerController());
+        this.addChild(new ObstacleSpawner(this.gameWidth));
+        this.addChild(new PlayerController(this.gameWidth / 2, 55));
+        this.addComponent(new RenderRect(0, 0, this.gameWidth, 100));
 
         // System
         this.scene.addSystem(new ObstacleSystem());
@@ -31,9 +35,9 @@ export class RunningMinigame extends Entity
 
 class ObstacleSpawner extends Entity
 {
-    constructor()
+    constructor(readonly gameWidth: number)
     {
-        super("ObstacleSpawner", 100, 0);
+        super("ObstacleSpawner", 0, 0);
     }
 
     onAdded()
@@ -46,7 +50,7 @@ class ObstacleSpawner extends Entity
         this.addComponent(new ObstacleSpawn());
 
         timer.onTrigger.register((caller) => {
-            this.addChild(new ObstacleController());
+            this.addChild(new ObstacleController(MathUtil.randomRange(0, this.gameWidth - 12)));
 
             // Reset.
             caller.remainingMS = MathUtil.randomRange(3000, 5000);
@@ -62,9 +66,9 @@ class ObstacleController extends Entity
 {
     readonly moveSpeed = 10;
 
-    constructor()
+    constructor(x: number)
     {
-        super("ObstacleController", 0, 0);
+        super("ObstacleController", x, 0);
     }
 
     onAdded()
@@ -100,11 +104,9 @@ class Obstacle extends Component
 
 class PlayerController extends Entity
 {
-    cantBeKilled: boolean = false;
-
-    constructor()
+    constructor(x: number, y: number)
     {
-        super("PlayerController", 100, 50);
+        super("PlayerController", x, y);
     }
 
     onAdded()
