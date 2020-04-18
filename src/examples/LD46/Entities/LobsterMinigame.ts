@@ -10,6 +10,10 @@ import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
+const GREEN = "#30cc30";
+const ORANGE = "orange";
+const RED = "#ff2626";
+const WHITE = "white";
 
 class BeltLetterDirector extends System
 {
@@ -20,7 +24,7 @@ class BeltLetterDirector extends System
     private letters: string[] = [];
     private trimmed = 0;
     private spawned = 0;
-    private timeElapsed = 0; //240000; // Breaks around 240000 for some reason
+    private timeElapsed = 0;//240000;
 
     private fillBag()
     {
@@ -71,63 +75,62 @@ class BeltLetterDirector extends System
         }
 
         this.runOnEntities((entity: Entity) =>
-                           {
-                               let letters = entity.getComponentsOfType(TextDisp) as TextDisp[];
+        {
+            let letters = entity.getComponentsOfType(TextDisp) as TextDisp[];
 
-                               // Check if there is a letter for the user to press
-                               if (this.pressedLetters.length != this.letters.length)
-                               {
-                                   const nextKey = "Key" + this.letters[this.pressedLetters.length].toUpperCase();
-                                   if (Game.keyboard.isKeyPressed(nextKey as Key))
-                                   {
-                                       this.pressedLetters.push(this.letters[this.pressedLetters.length]);
+            // Check if there is a letter for the user to press
+            if (this.pressedLetters.length != this.letters.length)
+            {
+                const nextKey = "Key" + this.letters[this.pressedLetters.length].toUpperCase();
+                if (Game.keyboard.isKeyPressed(nextKey as Key))
+                {
+                    this.pressedLetters.push(this.letters[this.pressedLetters.length]);
 
-                                       const selectedLetter = letters[this.pressedLetters.length - 1 - this.trimmed];
-                                       if (selectedLetter.pixiObj.style.fill == "red")
-                                       {
-                                           selectedLetter.pixiObj.style.fill = "orange";
-                                       }
-                                       else
-                                       {
-                                           selectedLetter.pixiObj.style.fill = "green";
-                                       }
-                                   }
-                               }
+                    const selectedLetter = letters[this.pressedLetters.length - 1 - this.trimmed];
+                    if (selectedLetter.pixiObj.style.fill == RED)
+                    {
+                        selectedLetter.pixiObj.style.fill = ORANGE;
+                    }
+                    else {
+                        selectedLetter.pixiObj.style.fill = GREEN;
+                    }
+                }
+            }
 
-                               if (this.spawned < this.letters.length)
-                               {
-                                   // If we have gotten new letters, push them onto the canvas
-                                   for (let i = this.spawned; i < this.letters.length; i++)
-                                   {
-                                       const style = new PIXI.TextStyle({fontSize: "14px", fill: "white"});
-                                       const text = new TextDisp(-40, 8, this.letters[i].toUpperCase(), style);
-                                       entity.addComponent(text);
-                                       this.spawned += 1;
-                                   }
+            if (this.spawned < this.letters.length)
+            {
+                // If we have gotten new letters, push them onto the canvas
+                for (let i = this.spawned; i < this.letters.length; i++)
+                {
+                    const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white"});
+                    const text = new TextDisp(-40, 0, this.letters[i].toUpperCase(), style);
+                    entity.addComponent(text);
+                    this.spawned += 1;
+                }
 
-                                   // Update the letters after we add them
-                                   letters = entity.getComponentsOfType(TextDisp);
-                               }
+                // Update the letters after we add them
+                letters = entity.getComponentsOfType(TextDisp);
+            }
 
-                               for (const letter of letters)
-                               {
-                                   const text = letter as TextDisp;
-                                   text.pixiObj.position.x =
-                                       (text.pixiObj.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed);
+            for (const letter of letters)
+            {
+                const text = letter as TextDisp;
+                text.pixiObj.position.x =
+                    (text.pixiObj.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed);
 
-                                   if (text.pixiObj.position.x > 320)
-                                   {
-                                       // They didn't press the letter even though it went off screen so we add it to
-                                       // the array
-                                       if (text.pixiObj.style.fill == "red")
-                                       {
-                                           this.pressedLetters.push(text.pixiObj.text);
-                                       }
-                                       text.destroy();
-                                       this.trimmed += 1;
-                                   }
-                               }
-                           });
+                if (text.pixiObj.position.x > 320)
+                {
+                    // They didn't press the letter even though it went off screen so we add it to
+                    // the array
+                    if (text.pixiObj.style.fill == RED)
+                    {
+                        this.pressedLetters.push(text.pixiObj.text);
+                    }
+                    text.destroy();
+                    this.trimmed += 1;
+                }
+            }
+        });
     }
 }
 
@@ -154,14 +157,14 @@ class LobstaDirector extends System
                     lobsterPos.y < letterPos.y + letter.pixiObj.height &&
                     lobsterPos.y + entity.transform.height > letterPos.y)
                 {
-                    if (letter.pixiObj.style.fill == "green")
+                    if (letter.pixiObj.style.fill == GREEN)
                     {
                         break;
                     }
 
-                    if (letter.pixiObj.style.fill == "white" || letter.pixiObj.style.fill == "red")
+                    if (letter.pixiObj.style.fill == WHITE || letter.pixiObj.style.fill == RED)
                     {
-                        letter.pixiObj.style.fill = "red";
+                        letter.pixiObj.style.fill = RED;
                         entity.transform.position.x =
                             (entity.transform.position.x + (delta / 1000) * (BumpMoveSystem.conveyorSpeed - 1)) % 480;
                         break;
