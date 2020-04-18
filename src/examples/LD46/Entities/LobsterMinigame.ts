@@ -17,6 +17,7 @@ import {RectCollider} from "../../../Collisions/Colliders";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
 import {Layers} from "../LD46";
 import {Log} from "../../../Common/Util";
+import {ScreenShake} from "../../../Common/Screenshake";
 
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
 // 108 actual height
@@ -225,6 +226,7 @@ class Chef extends Entity
                         [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]),
                     config: {animationSpeed: 100, animationEndAction: AnimationEnd.STOP},
                     events: new Map([[4, () => {
+                        this.addComponent(new ScreenShake(0.5, 20));
                         const timer = this.addComponent(new Timer(500, spr, false));
                         timer.onTrigger.register((caller, data) => {
                             data.setAnimation(ChefAnimations.Reset)

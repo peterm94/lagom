@@ -11,6 +11,7 @@ import {Background} from "./Entities/Background";
 import {DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {Log, LogLevel} from "../../Common/Util";
+import {ScreenShaker} from "../../Common/Screenshake";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -37,6 +38,7 @@ class MainScene extends Scene
 
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new FrameTriggerSystem());
+        this.addGlobalSystem(new ScreenShaker());
 
         // Collisions
         collisionMatrix.addCollision(Layers.OBSTACLE, Layers.PLAYER);
