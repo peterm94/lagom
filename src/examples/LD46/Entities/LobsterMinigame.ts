@@ -6,6 +6,8 @@ import {Sprite} from "../../../Common/Sprite/Sprite";
 import {Component} from "../../../ECS/Component";
 import {System} from "../../../ECS/System";
 import {TextDisp} from "../../../Common/PIXIComponents";
+import {Key} from "../../../Input/Key";
+import {Game} from "../../../ECS/Game";
 
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
 
@@ -14,7 +16,9 @@ class BeltLetterDirector extends System
     public types = () => [ConveyorTextComponent];
 
     private letterBag = this.fillBag();
+    private pressedLetters: string[] = [];
     private letters: string[] = [];
+    private trimmed = 0;
     private spawned = 0;
     private timeElapsed = 0;
 
@@ -37,7 +41,7 @@ class BeltLetterDirector extends System
         // Increase difficulty every 15 seconds (todo)
         const difficulty = (this.timeElapsed / 15000) + 1;
 
-        // Base difficulty is send a letter out every 6 seconds.
+        // Base difficulty is send a letter out every 10 seconds.
         const trigger = 10000;
 
         let ramper = (trigger / difficulty);
@@ -65,6 +69,18 @@ class BeltLetterDirector extends System
         {
             let letters = entity.getComponentsOfType(TextDisp);
 
+            // Check if there is a letter for the user to press
+            if (this.pressedLetters.length != this.letters.length)
+            {
+                const nextKey = "Key" + this.letters[this.pressedLetters.length].toUpperCase();
+                if (Game.keyboard.isKeyPressed(nextKey as Key))
+                {
+                    this.pressedLetters.push(this.letters[this.pressedLetters.length]);
+
+                    (letters[this.pressedLetters.length - 1 - this.trimmed] as TextDisp).pixiObj.style.fill = "green";
+                }
+            }
+
             if (this.spawned < this.letters.length)
             {
                 // If we have gotten new letters, push them onto the canvas
@@ -88,6 +104,7 @@ class BeltLetterDirector extends System
                 if (text.pixiObj.position.x > 400)
                 {
                     text.destroy();
+                    this.trimmed += 1;
                 }
             }
         });
