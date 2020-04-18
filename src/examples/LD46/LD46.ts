@@ -18,6 +18,12 @@ export enum Layers
     LAYER2
 }
 
+export enum DrawLayers
+{
+    BACKGROUND = 100,
+    LOBSTER = 150
+}
+
 class MainScene extends Scene
 {
     onAdded(): void
@@ -36,7 +42,7 @@ class MainScene extends Scene
         this.addEntity(new Divider());
         // timer
         this.addGlobalSystem(new TimerSystem());
-        this.addEntity(new LobsterMinigame("lobstergame", 0, 64))
+        this.addEntity(new LobsterMinigame("lobstergame", 0, 64, DrawLayers.LOBSTER))
 
     }
 }
