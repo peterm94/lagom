@@ -1,6 +1,6 @@
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 
-import cookingSpr from '../art/cooking_sheet.png'
+import cookingSpr from '../Art/cooking_sheet.png'
 import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {Component} from "../../../ECS/Component";
