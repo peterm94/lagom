@@ -123,6 +123,8 @@ class Obstacle extends Component
 
 class PlayerController extends Entity 
 {
+    cantBeKilled: boolean = false;
+
     constructor() 
     {
         super("PlayerController", 80, 90);
@@ -195,15 +197,36 @@ class ObstacleSystem extends System
 
 class JumpSystem extends System 
 {   
+    timeElapsed: number = 0;
     public types = () => [Player];
 
     public update(delta: number): void
     {
+        if (this.timeElapsed > 0) 
+        {
+            this.timeElapsed -= delta;
+        }
+        
         this.runOnEntities((entity: Entity, runningPlayer: Player) => 
         {
+            if (this.timeElapsed <= 0) 
+            {
+                console.log("COLLIDER BACK ON!");
+                entity.getComponent(RectCollider)!.active = true;
+            }
             if (Game.keyboard.isKeyReleased(Key.Space)) 
             {
-                    // do animation  
+                if (!entity.getComponent(RectCollider))
+                {
+                    console.log("No collider on player!");
+                    return;
+                } 
+                else 
+                {
+                    this.timeElapsed = 1000;
+                    // Do animation  
+                    entity.getComponent(RectCollider)!.active = false;
+                }
             }
         });
     }
