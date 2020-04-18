@@ -6,6 +6,7 @@ import { RunningMinigame } from "./Entities/RunningMinigame";
 import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
+import {TimerSystem} from "../../Common/Timer";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -26,6 +27,8 @@ class MainScene extends Scene
         // Put any init stuff here
         this.addEntity(new RunningMinigame());
         this.addEntity(new Divider());
+        // timer
+        this.addGlobalSystem(new TimerSystem());
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64))
     }
 }
@@ -61,5 +64,7 @@ export class LD46 extends Game
 
         // Do collisions here
         collisionMatrix.addCollision(Layers.LAYER1, Layers.LAYER2);
+
+
     }
 }
