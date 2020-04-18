@@ -106,12 +106,14 @@ class Chef extends Entity
 
 class BumpMoveSystem extends System
 {
+    readonly convSpeed = 10;
+
     types = () => [BumpMove]
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity) => {
-            entity.transform.position.x = (entity.transform.position.x + delta / 40) % 480;
+        this.runOnEntitiesWithSystem((system: BumpMoveSystem, entity: Entity) => {
+            entity.transform.position.x = (entity.transform.position.x + (delta / 1000) * system.convSpeed) % 480;
         });
     }
 }
