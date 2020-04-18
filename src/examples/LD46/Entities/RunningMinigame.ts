@@ -44,17 +44,17 @@ export class RunningMinigame extends Entity
 
 class ObstacleSpawner extends Entity 
 {
-    timer: Timer<null>; 
 
     constructor() 
     {
         super("ObstacleSpawner", 10 , 10);
-        this.timer = new Timer(MathUtil.randomRange(300, 1000), null);
     }
 
     onAdded() 
     {
         super.onAdded();
+
+        const timer = this.addComponent(new Timer(MathUtil.randomRange(300, 1000), null, true))
 
         // do timer..
         // increases over time * delta * current time?
@@ -73,11 +73,11 @@ class ObstacleSpawner extends Entity
 
         // Systems
         // this.scene.addSystem(new ObstacleSpawnSystem());
-        this.timer.onTrigger.register((caller, data) => 
+        timer.onTrigger.register((caller, data) =>
         {
             console.log("trigger");
             this.addChild(new ObstacleController());
-            this.timer.remainingMS = MathUtil.randomRange(300, 1000);
+            caller.remainingMS = MathUtil.randomRange(300, 1000);
         });
     }
 }
