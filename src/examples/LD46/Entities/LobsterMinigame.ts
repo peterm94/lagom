@@ -83,7 +83,7 @@ class BeltLetterDirector extends System
             for (const letter of letters)
             {
                 const text = letter as TextDisp;
-                text.pixiObj.position.x = (text.pixiObj.position.x + delta / 40);
+                text.pixiObj.position.x = (text.pixiObj.position.x + (delta / 1000) * BumpMoveSystem.convSpeed);
 
                 if (text.pixiObj.position.x > 400)
                 {
@@ -106,14 +106,14 @@ class Chef extends Entity
 
 class BumpMoveSystem extends System
 {
-    readonly convSpeed = 10;
+    static readonly convSpeed = 10;
 
     types = () => [BumpMove]
 
     update(delta: number): void
     {
         this.runOnEntitiesWithSystem((system: BumpMoveSystem, entity: Entity) => {
-            entity.transform.position.x = (entity.transform.position.x + (delta / 1000) * system.convSpeed) % 480;
+            entity.transform.position.x = (entity.transform.position.x + (delta / 1000) * BumpMoveSystem.convSpeed) % 480;
         });
     }
 }
