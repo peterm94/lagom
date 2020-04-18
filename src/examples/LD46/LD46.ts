@@ -7,6 +7,7 @@ import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
 import {TimerSystem} from "../../Common/Timer";
+import {Background} from "./Entities/Background";
 import { DiscreteCollisionSystem } from "../../Collisions/CollisionSystems";
 
 const collisionMatrix = new CollisionMatrix();
@@ -15,6 +16,12 @@ export enum Layers
 {
     LAYER1,
     LAYER2
+}
+
+export enum DrawLayers
+{
+    BACKGROUND = 100,
+    LOBSTER = 150
 }
 
 class MainScene extends Scene
@@ -28,13 +35,14 @@ class MainScene extends Scene
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
 
         this.addGUIEntity(new Diagnostics("black", 8));
+        this.addEntity(new Background())
 
         // Put any init stuff here
         this.addEntity(new RunningMinigame());
         this.addEntity(new Divider());
         // timer
         this.addGlobalSystem(new TimerSystem());
-        this.addEntity(new LobsterMinigame("lobstergame", 0, 64))
+        this.addEntity(new LobsterMinigame("lobstergame", 0, 64, DrawLayers.LOBSTER))
 
     }
 }
