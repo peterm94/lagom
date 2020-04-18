@@ -12,6 +12,7 @@ import {Game} from "../../../ECS/Game";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
+// 108 actual height
 const chefSheet = new SpriteSheet(chefSpr, 94, 108);
 
 const GREEN = "#30cc30";
@@ -290,9 +291,8 @@ export class LobsterMinigame extends Entity
     {
         super.onAdded();
 
-        this.addChild(new Chef("chef", 320 - 100));
-
         this.addChild(new Conveyor("conveyor", 0, 84));
+        this.addChild(new Chef("chef", 320 - 100));
 
         this.scene.addSystem(new BumpMoveSystem());
         this.scene.addSystem(new BeltLetterDirector());
