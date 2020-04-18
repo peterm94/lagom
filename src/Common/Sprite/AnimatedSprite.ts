@@ -1,6 +1,7 @@
 import {FrameTrigger} from "../FrameTrigger";
 import {Sprite, SpriteConfig} from "./Sprite";
 import * as PIXI from "pixi.js";
+import {Observable} from "../Observer";
 
 /**
  * Animation end action.
@@ -49,6 +50,8 @@ export class AnimatedSprite extends FrameTrigger<number>
     private frameIndex = -1;
     private frameAdvancer = 1;
     public sprite: Sprite | null = null;
+
+    readonly onFrameChange: Observable<AnimatedSprite, number> = new Observable();
 
     /**
      * Apply configuration to this AnimatedSprite.
@@ -111,7 +114,15 @@ export class AnimatedSprite extends FrameTrigger<number>
                 }
             }
 
+            // Only trigger the frame change event if the next frame isn't the same as the previous one.
+            const doFrameTrigger = this.frameIndex !== nextFrame;
+
             this.frameIndex = nextFrame;
+
+            if (doFrameTrigger)
+            {
+                this.onFrameChange.trigger(this, nextFrame);
+            }
 
             if (this.sprite) this.sprite.pixiObj.texture = this.textures[this.frameIndex];
         });
@@ -134,6 +145,7 @@ export class AnimatedSprite extends FrameTrigger<number>
     onRemoved(): void
     {
         super.onRemoved();
+        this.onFrameChange.releaseAll();
         if (this.sprite) this.sprite.destroy();
     }
 }

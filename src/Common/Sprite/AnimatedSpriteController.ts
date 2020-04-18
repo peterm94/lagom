@@ -21,7 +21,9 @@ export interface SpriteAnimation
     /**
      * Optional configuration for this animation.
      */
-    config?: AnimatedSpriteConfig;
+    config?: AnimatedSpriteConfig,
+
+    events?: Map<number, () => void>
 }
 
 /**
@@ -39,9 +41,8 @@ export class AnimatedSpriteController extends AnimatedSprite
     }
 
     private readonly animationStates: Map<number, SpriteAnimation> = new Map();
-    private readonly events: Map<number, Map<number, () => void>> = new Map();
 
-    private currentEventMap: Map<number, () => void> | null = null;
+    private currentEventMap: Map<number, () => void> | undefined = undefined;
     private _currentState: number;
 
     /**
@@ -64,7 +65,7 @@ export class AnimatedSpriteController extends AnimatedSprite
         const config = this.animationStates.get(this._currentState);
         if (config !== undefined)
         {
-            this.onTrigger.register(this.spriteChangeFrame.bind(this));
+            this.onFrameChange.register(this.spriteChangeFrame.bind(this));
             this.setAnimation(this._currentState, true);
         }
         else
@@ -77,7 +78,7 @@ export class AnimatedSpriteController extends AnimatedSprite
     {
         if (this.currentEventMap !== null)
         {
-            const event = this.currentEventMap.get(animationFrame);
+            const event = this.currentEventMap?.get(animationFrame);
             if (event !== undefined)
             {
                 event();
@@ -104,29 +105,13 @@ export class AnimatedSpriteController extends AnimatedSprite
             // Apply the configuration to the sprite and set the texture
             this.textures = loadedConfig.textures;
             if (loadedConfig.config) this.applyConfig(loadedConfig.config);
-            this.currentEventMap = this.events.get(stateId) || null;
+            this.currentEventMap = loadedConfig.events;
             this._currentState = stateId;
             this.reset();
         }
-    }
-
-    /**
-     * Add an event to an animation fame. This will be fired whenever the specified frame triggers.
-     * @param animationId The animation ID for the desired frame.
-     * @param frame The desired frame number.
-     * @param event The event to fire.
-     */
-    // TODO this needs to come in with the SpriteAnimation object.
-    addEvent(animationId: number, frame: number, event: () => void): void
-    {
-        const animation = this.events.get(animationId);
-        if (animation === undefined)
-        {
-            Log.warn("Expected animation does not exist on AnimatedSpriteController.", this, animationId);
-        }
         else
         {
-            animation.set(frame, event);
+            Log.error("State transition invalid.");
         }
     }
 }

@@ -146,8 +146,9 @@ export class Explosion extends Entity
                 },
                 textures: explosionSheet.textureSliceFromRow(0, 0, 7),
                 id: 0,
+                events: new Map([[8, () => this.destroy()]])
             }
-        ])).addEvent(0, 8, () => this.destroy());
+        ]))
     }
 }
 

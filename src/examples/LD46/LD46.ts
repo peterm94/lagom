@@ -2,13 +2,13 @@ import {Game} from "../../ECS/Game";
 import {Scene} from "../../ECS/Scene";
 import {Diagnostics} from "../../Common/Debug";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
-import { RunningMinigame } from "./Entities/RunningMinigame";
+import {RunningMinigame} from "./Entities/RunningMinigame";
 import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
 import {TimerSystem} from "../../Common/Timer";
 import {Background} from "./Entities/Background";
-import { DiscreteCollisionSystem } from "../../Collisions/CollisionSystems";
+import {DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 
 const collisionMatrix = new CollisionMatrix();
@@ -31,6 +31,9 @@ class MainScene extends Scene
     {
         super.onAdded();
 
+        this.addGlobalSystem(new TimerSystem());
+        this.addGlobalSystem(new FrameTriggerSystem());
+
         // Collisions
         collisionMatrix.addCollision(Layers.LAYER1, Layers.LAYER1);
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
@@ -41,9 +44,7 @@ class MainScene extends Scene
         // Put any init stuff here
         this.addEntity(new RunningMinigame("runninggame", 160, 0, DrawLayers.LOBSTER));
         this.addEntity(new Divider());
-        // timer
-        this.addGlobalSystem(new TimerSystem());
-        this.addGlobalSystem(new FrameTriggerSystem());
+
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64, DrawLayers.LOBSTER))
 
     }

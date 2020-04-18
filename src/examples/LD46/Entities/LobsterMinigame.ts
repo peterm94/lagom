@@ -9,7 +9,10 @@ import {System} from "../../../ECS/System";
 import {TextDisp} from "../../../Common/PIXIComponents";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
-import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
+import {AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
+import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteController";
+import {Timer} from "../../../Common/Timer";
+import {Log} from "../../../Common/Util";
 
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
 // 108 actual height
@@ -80,62 +83,64 @@ class BeltLetterDirector extends System
         }
 
         this.runOnEntities((entity: Entity) =>
-        {
-            let letters = entity.getComponentsOfType(TextDisp) as TextDisp[];
+                           {
+                               let letters = entity.getComponentsOfType(TextDisp) as TextDisp[];
 
-            // Check if there is a letter for the user to press
-            if (this.pressedLetters.length != this.letters.length)
-            {
-                const nextKey = "Key" + this.letters[this.pressedLetters.length].toUpperCase();
-                if (Game.keyboard.isKeyPressed(nextKey as Key))
-                {
-                    this.pressedLetters.push(this.letters[this.pressedLetters.length]);
+                               // Check if there is a letter for the user to press
+                               if (this.pressedLetters.length != this.letters.length)
+                               {
+                                   const nextKey = "Key" + this.letters[this.pressedLetters.length].toUpperCase();
+                                   if (Game.keyboard.isKeyPressed(nextKey as Key))
+                                   {
+                                       this.pressedLetters.push(this.letters[this.pressedLetters.length]);
 
-                    const selectedLetter = letters[this.pressedLetters.length - 1 - this.trimmed];
-                    if (selectedLetter.pixiObj.style.fill == RED)
-                    {
-                        selectedLetter.pixiObj.style.fill = ORANGE;
-                    }
-                    else {
-                        selectedLetter.pixiObj.style.fill = GREEN;
-                    }
-                }
-            }
+                                       const selectedLetter = letters[this.pressedLetters.length - 1 - this.trimmed];
+                                       if (selectedLetter.pixiObj.style.fill == RED)
+                                       {
+                                           selectedLetter.pixiObj.style.fill = ORANGE;
+                                       }
+                                       else
+                                       {
+                                           selectedLetter.pixiObj.style.fill = GREEN;
+                                       }
+                                   }
+                               }
 
-            if (this.spawned < this.letters.length)
-            {
-                // If we have gotten new letters, push them onto the canvas
-                for (let i = this.spawned; i < this.letters.length; i++)
-                {
-                    const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white"});
-                    const text = new TextDisp(-40, 5, this.letters[i].toUpperCase(), style);
-                    entity.addComponent(text);
-                    this.spawned += 1;
-                }
+                               if (this.spawned < this.letters.length)
+                               {
+                                   // If we have gotten new letters, push them onto the canvas
+                                   for (let i = this.spawned; i < this.letters.length; i++)
+                                   {
+                                       const style = new PIXI.TextStyle(
+                                           {fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white"});
+                                       const text = new TextDisp(-40, 5, this.letters[i].toUpperCase(), style);
+                                       entity.addComponent(text);
+                                       this.spawned += 1;
+                                   }
 
-                // Update the letters after we add them
-                letters = entity.getComponentsOfType(TextDisp);
-            }
+                                   // Update the letters after we add them
+                                   letters = entity.getComponentsOfType(TextDisp);
+                               }
 
-            for (const letter of letters)
-            {
-                const text = letter as TextDisp;
-                text.pixiObj.position.x =
-                    (text.pixiObj.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed);
+                               for (const letter of letters)
+                               {
+                                   const text = letter as TextDisp;
+                                   text.pixiObj.position.x =
+                                       (text.pixiObj.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed);
 
-                if (text.pixiObj.position.x > 320)
-                {
-                    // They didn't press the letter even though it went off screen so we add it to
-                    // the array
-                    if (text.pixiObj.style.fill == RED)
-                    {
-                        this.pressedLetters.push(text.pixiObj.text);
-                    }
-                    text.destroy();
-                    this.trimmed += 1;
-                }
-            }
-        });
+                                   if (text.pixiObj.position.x > 320)
+                                   {
+                                       // They didn't press the letter even though it went off screen so we add it to
+                                       // the array
+                                       if (text.pixiObj.style.fill == RED)
+                                       {
+                                           this.pressedLetters.push(text.pixiObj.text);
+                                       }
+                                       text.destroy();
+                                       this.trimmed += 1;
+                                   }
+                               }
+                           });
     }
 }
 
@@ -193,16 +198,51 @@ class LobstaDirector extends System
     }
 }
 
+enum ChefAnimations
+{
+    Idle,
+    Swinging,
+    Reset
+}
+
 class Chef extends Entity
 {
     onAdded(): void
     {
         super.onAdded();
 
-        this.addComponent(new AnimatedSprite(chefSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]]), {
-            animationEndAction: AnimationEnd.LOOP,
-            animationSpeed: 100
-        }))
+        const spr = this.addComponent(new AnimatedSpriteController(
+            ChefAnimations.Swinging,
+            [
+                {
+                    id: ChefAnimations.Idle,
+                    textures: chefSheet.textures([[0, 0]]),
+                },
+                {
+                    id: ChefAnimations.Swinging,
+                    textures: chefSheet.textures(
+                        [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]),
+                    config: {animationSpeed: 100, animationEndAction: AnimationEnd.STOP},
+                    events: new Map([[4, () => {
+                        const timer = this.addComponent(new Timer(500, spr, false));
+                        timer.onTrigger.register((caller, data) => {
+                            data.setAnimation(ChefAnimations.Reset)
+                        });
+                    }]])
+                },
+                {
+                    id: ChefAnimations.Reset,
+                    textures: chefSheet.textures([[5, 0], [0, 0]]),
+                    config: {animationSpeed: 100, animationEndAction: AnimationEnd.STOP},
+                    events: new Map([[1, () => {
+                        const timer = this.addComponent(new Timer(200, spr, false));
+                        timer.onTrigger.register((caller, data) => {
+                            data.setAnimation(ChefAnimations.Idle)
+                        });
+                    }]])
+                }
+            ]
+        ));
     }
 }
 
