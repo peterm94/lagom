@@ -4,6 +4,7 @@ import {Diagnostics} from "../../Common/Debug";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import {TypingMinigame} from "./Entities/TypingMinigame";
 import {TypingDirector} from "./Systems/TypingMinigame/TypingDirector";
+import {LobsterMinigame} from "./Entities/LobsterMinigame";
 
 
 const collisionMatrix = new CollisionMatrix();
@@ -20,11 +21,13 @@ class MainScene extends Scene
     {
         super.onAdded();
 
-        this.addGUIEntity(new Diagnostics("white", 8));
+        this.addGUIEntity(new Diagnostics("black", 8));
 
         // Put any init stuff here
         this.addEntity(new TypingMinigame());
         this.addSystem(new TypingDirector());
+
+        this.addEntity(new LobsterMinigame("lobstergame", 85, 64))
     }
 }
 
