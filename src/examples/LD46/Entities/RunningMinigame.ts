@@ -22,10 +22,10 @@ export class RunningMinigame extends Entity
 {
 
     backgroundConfig = {xScale: 5, yScale: 5};
-    constructor() 
-    {
-        super("RunningMinigame", 160, 0);
-    }
+    // constructor() 
+    // {
+    //     super("RunningMinigame", 160, 0);
+    // }
 
     onAdded() 
     {

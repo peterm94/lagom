@@ -38,7 +38,7 @@ class MainScene extends Scene
         this.addEntity(new Background())
 
         // Put any init stuff here
-        this.addEntity(new RunningMinigame());
+        this.addEntity(new RunningMinigame("runninggame", 160, 0, DrawLayers.LOBSTER));
         this.addEntity(new Divider());
         // timer
         this.addGlobalSystem(new TimerSystem());
