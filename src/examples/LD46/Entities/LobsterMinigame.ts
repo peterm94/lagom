@@ -20,7 +20,7 @@ class BeltLetterDirector extends System
     private letters: string[] = [];
     private trimmed = 0;
     private spawned = 0;
-    private timeElapsed = 0;
+    private timeElapsed = 0; //240000; // Breaks around 240000 for some reason
 
     private fillBag()
     {
@@ -40,18 +40,21 @@ class BeltLetterDirector extends System
     {
         this.timeElapsed += delta;
 
-        // Increase difficulty every 15 seconds (todo)
-        const difficulty = (this.timeElapsed / 15000) + 1;
+        // Increase difficulty every 30 seconds, to a max of 10 difficulty
+        let difficulty = (this.timeElapsed / 30000) + 1;
+        if (difficulty > 10) difficulty = 10;
 
         // Base difficulty is send a letter out every 10 seconds.
         const trigger = 10000;
 
-        let ramper = (trigger / difficulty);
-        if (ramper < 0.1) ramper = 0.1;
+        // Ramp up to 1 letter a second
+        const ramper = (trigger / difficulty);
 
         // Always spawn one letter at the start, then calculate the amount of letters
         // based off the difficulty ramp and time elapsed
-        const expectedLetters = (this.timeElapsed / (ramper)) + 1;
+        const expectedLetters = (this.timeElapsed / ramper) + 1;
+
+        //console.log(ramper, this.timeElapsed, this.letters.length, expectedLetters);
         if (this.letters.length < Math.floor(expectedLetters))
         {
             let nextLetter = this.takeLetter();
