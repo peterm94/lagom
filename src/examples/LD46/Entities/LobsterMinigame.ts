@@ -227,7 +227,7 @@ class Chef extends Entity
                     config: {animationSpeed: 100, animationEndAction: AnimationEnd.STOP},
                     events: new Map([[4, () => {
                         this.addComponent(new ScreenShake(0.5, 20));
-                        const timer = this.addComponent(new Timer(500, spr, false));
+                        const timer = this.addComponent(new Timer(200, spr, false));
                         timer.onTrigger.register((caller, data) => {
                             data.setAnimation(ChefAnimations.Reset)
                         });
@@ -238,7 +238,7 @@ class Chef extends Entity
                     textures: chefSheet.textures([[5, 0], [0, 0]]),
                     config: {animationSpeed: 100, animationEndAction: AnimationEnd.STOP},
                     events: new Map([[1, () => {
-                        const timer = this.addComponent(new Timer(200, spr, false));
+                        const timer = this.addComponent(new Timer(100, spr, false));
                         timer.onTrigger.register((caller, data) => {
                             data.setAnimation(ChefAnimations.Idle)
                         });
@@ -343,7 +343,7 @@ class ConveyorLobsta extends Entity
 
         this.addComponent(new AnimatedSprite(lobstaSheet.textureSliceFromRow(0, 0, 9), {
             animationEndAction: AnimationEnd.LOOP,
-            animationSpeed: 100,
+            animationSpeed: 80,
             yOffset: -30
         }))
 
