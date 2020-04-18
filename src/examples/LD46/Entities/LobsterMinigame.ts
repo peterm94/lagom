@@ -156,7 +156,7 @@ class BeltLetterDirector extends System
 
             for (const letter of letters)
             {
-                if (letter.pixiObj.position.x > 320)
+                if (letter.parent.transform.x > 320)
                 {
                     // They didn't press the letter even though it went off screen so we add it to
                     // the array
@@ -380,8 +380,8 @@ class ConveyorLobsta extends Entity
                 {
                     txt.pixiObj.style.fill = RED;
 
-                    caller.parent.transform.position.x += (Game.fixedDeltaMS / 1000)
-                        * (ConveyorMoveSystem.conveyorSpeed - 1)
+                    caller.parent.transform.position.x +=
+                        (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed - 1)
                 }
 
             })
