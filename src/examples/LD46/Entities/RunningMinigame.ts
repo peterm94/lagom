@@ -47,26 +47,23 @@ class ObstacleSpawner extends Entity
 
     constructor() 
     {
-        super("ObstacleSpawner", 10 , 10);
+        super("ObstacleSpawner", 10, 10);
     }
 
     onAdded() 
     {
         super.onAdded();
 
-        const timer = this.addComponent(new Timer(MathUtil.randomRange(300, 1000), null, true))
+        const timer = this.addComponent(new Timer(MathUtil.randomRange(3000, 5000), null, true))
 
         // Entities
         this.addComponent(new ObstacleSpawn());
-        // this.addChild(new ObstacleController());
 
-        // Systems
-        // this.scene.addSystem(new ObstacleSpawnSystem());
         timer.onTrigger.register((caller, data) =>
         {
             console.log("trigger");
             this.addChild(new ObstacleController());
-            caller.remainingMS = MathUtil.randomRange(300, 1000);
+            caller.remainingMS = MathUtil.randomRange(3000, 5000);
         });
     }
 }
@@ -75,19 +72,20 @@ class ObstacleSpawn extends Component {}
 
 class ObstacleController extends Entity 
 {
+    moveSpeed: number;
+
     constructor() 
     {
-        super("ObstacleController", 60, 0);
+        super("ObstacleController", 57, 0);
+        this.moveSpeed = 10;
     }
 
     onAdded() 
     {
         super.onAdded();
 
-        // this.timer = new Timer(MathUtil.randomRange(300, 1000), null);
-
         // Components
-        this.addComponent(new Obstacle(1));
+        this.addComponent(new Obstacle(this.moveSpeed));
         this.addComponent(new Sprite(obstacleSpriteSheet.textureFromIndex(0)));
         
 
@@ -157,10 +155,10 @@ class ObstacleSystem extends System
     {
         this.runOnEntities((entity: Entity, obstacle: Obstacle) => 
         {
-            if (entity.transform.position.y > 100) {
+            if (entity.transform.position.y > 150) {
                 entity.destroy();
             } else {
-                entity.transform.position.y += (obstacle.speed / delta);
+                entity.transform.position.y += obstacle.speed * (delta / 1000);
             }
         });
     }
