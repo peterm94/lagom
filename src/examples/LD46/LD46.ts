@@ -9,6 +9,7 @@ import {LobsterMinigame} from "./Entities/LobsterMinigame";
 import {TimerSystem} from "../../Common/Timer";
 import {Background} from "./Entities/Background";
 import { DiscreteCollisionSystem } from "../../Collisions/CollisionSystems";
+import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -42,6 +43,7 @@ class MainScene extends Scene
         this.addEntity(new Divider());
         // timer
         this.addGlobalSystem(new TimerSystem());
+        this.addGlobalSystem(new FrameTriggerSystem());
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64, DrawLayers.LOBSTER))
 
     }

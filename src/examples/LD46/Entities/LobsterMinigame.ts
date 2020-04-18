@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import cookingSpr from '../Art/cooking_sheet.png'
+import chefSpr from '../Art/swing.png'
 import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {Component} from "../../../ECS/Component";
@@ -8,8 +9,10 @@ import {System} from "../../../ECS/System";
 import {TextDisp} from "../../../Common/PIXIComponents";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
+import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
+const chefSheet = new SpriteSheet(chefSpr, 94, 108);
 
 class BeltLetterDirector extends System
 {
@@ -188,7 +191,10 @@ class Chef extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new Sprite(cookingSheet.texture(0, 0, 96, 90)));
+        this.addComponent(new AnimatedSprite(chefSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]]), {
+            animationEndAction: AnimationEnd.LOOP,
+            animationSpeed: 100
+        }))
     }
 }
 
