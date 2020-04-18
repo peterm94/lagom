@@ -56,17 +56,6 @@ class ObstacleSpawner extends Entity
 
         const timer = this.addComponent(new Timer(MathUtil.randomRange(300, 1000), null, true))
 
-        // do timer..
-        // increases over time * delta * current time?
-
-        // Spawn obstacle
-        // const timer = this.addComponent(new Timer(MathUtil.randomRange(300, 1000), null));
-        // timer.onTrigger.register((caller, data) => {
-        //         this.addComponent(new Obstacle(1));
-        //         this.addComponent(new Sprite(obstacleSpriteSheet.textureFromIndex(0)));
-        //     }
-        // );
-
         // Entities
         this.addComponent(new ObstacleSpawn());
         // this.addChild(new ObstacleController());
@@ -98,7 +87,7 @@ class ObstacleController extends Entity
         // this.timer = new Timer(MathUtil.randomRange(300, 1000), null);
 
         // Components
-        this.addComponent(new Obstacle(0.1));
+        this.addComponent(new Obstacle(1));
         this.addComponent(new Sprite(obstacleSpriteSheet.textureFromIndex(0)));
         
 
