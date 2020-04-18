@@ -8,10 +8,11 @@ import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
 import {TimerSystem} from "../../Common/Timer";
 import {Background} from "./Entities/Background";
+import { DiscreteCollisionSystem } from "../../Collisions/CollisionSystems";
 
 const collisionMatrix = new CollisionMatrix();
 
-enum Layers
+export enum Layers
 {
     LAYER1,
     LAYER2
@@ -23,6 +24,10 @@ class MainScene extends Scene
     {
         super.onAdded();
 
+        // Collisions
+        collisionMatrix.addCollision(Layers.LAYER1, Layers.LAYER1);
+        this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
+
         this.addGUIEntity(new Diagnostics("black", 8));
         this.addEntity(new Background())
 
@@ -32,6 +37,7 @@ class MainScene extends Scene
         // timer
         this.addGlobalSystem(new TimerSystem());
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64))
+
     }
 }
 
@@ -63,10 +69,5 @@ export class LD46 extends Game
               });
 
         this.setScene(new MainScene(this));
-
-        // Do collisions here
-        collisionMatrix.addCollision(Layers.LAYER1, Layers.LAYER2);
-
-
     }
 }
