@@ -4,7 +4,8 @@ import {Sprite} from "../../../Common/Sprite/Sprite";
 import basicSprite from "../Art/basicSpr.png";
 import backgroundSprite from "../Art/backgroundSpr.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
-import {InfiniteRunner} from "../Systems/RunningMinigame/RunningMinigameInfiniteRunner";
+import {RunningMinigameInfiniteRunner} from "../Systems/RunningMinigame/RunningMinigameInfiniteRunner";
+import {RunningMinigameJump} from "../Systems/RunningMinigame/RunningMinigameJump";
 
 const playerSpriteSheet = new SpriteSheet(basicSprite, 32, 32);
 const backgroundSpriteSheet = new SpriteSheet(backgroundSprite, 32, 32);
@@ -44,7 +45,7 @@ export class RunningMinigameBackgroundController extends Entity {
         this.addComponent(new RunningMinigameBackground());
 
         // System
-        this.scene.addSystem(new InfiniteRunner());
+        this.scene.addSystem(new RunningMinigameInfiniteRunner());
     }
 
     onRemoved()
@@ -79,7 +80,7 @@ export class RunningMinigamePlayerController extends Entity {
         this.addComponent(new RunningMinigamePlayer());
 
         // System
-        // this.scene.addSystem(new InfiniteRunner());
+        this.scene.addSystem(new RunningMinigameJump());
     }
 
     onRemoved()
