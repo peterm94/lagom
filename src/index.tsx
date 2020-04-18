@@ -8,6 +8,7 @@ import './App.css';
 import {Box, Grommet} from "grommet";
 import {configure} from "mobx";
 import {Platformer} from "./examples/Platformer/Platformer";
+import {LD46} from "./examples/LD46/LD46";
 
 // If you want your app to work offline and load faster, you can change
 // unregister() to register() below. Note this comes with some pitfalls.
@@ -15,7 +16,7 @@ import {Platformer} from "./examples/Platformer/Platformer";
 serviceWorker.unregister();
 configure({enforceActions: "observed"});
 
-const game = new Platformer();
+const game = new LD46();
 
 const grommetTheme = {
     global: {
