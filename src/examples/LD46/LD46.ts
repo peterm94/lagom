@@ -3,7 +3,8 @@ import {Scene} from "../../ECS/Scene";
 import {Diagnostics} from "../../Common/Debug";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import { RunningMinigame } from "./Entities/RunningMinigame";
-
+import {TypingMinigame} from "./Entities/TypingMinigame";
+import {TypingDirector} from "./Systems/TypingMinigame/TypingDirector";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -23,6 +24,8 @@ class MainScene extends Scene
 
         // Put any init stuff here
         this.addEntity(new RunningMinigame());
+        this.addEntity(new TypingMinigame());
+        this.addSystem(new TypingDirector());
     }
 }
 
