@@ -5,7 +5,7 @@ import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {Component} from "../../../ECS/Component";
 import {System} from "../../../ECS/System";
-import {RenderRect, TextDisp} from "../../../Common/PIXIComponents";
+import {TextDisp} from "../../../Common/PIXIComponents";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 
@@ -26,7 +26,9 @@ class BeltLetterDirector extends System
     {
         const letterBag = "abcdefghijklmnopqrstuvwxyz".split('');
         // Shuffle the letter bag.
-        return letterBag.sort(() => { return Math.floor(Math.random() * 3) - 1; });
+        return letterBag.sort(() => {
+            return Math.floor(Math.random() * 3) - 1;
+        });
     }
 
     private takeLetter = () =>
@@ -62,65 +64,67 @@ class BeltLetterDirector extends System
                 nextLetter = this.takeLetter() as string;
             }
 
-            this.letters.push( nextLetter );
+            this.letters.push(nextLetter);
         }
 
         this.runOnEntities((entity: Entity) =>
-        {
-            let letters = entity.getComponentsOfType(TextDisp) as TextDisp[];
+                           {
+                               let letters = entity.getComponentsOfType(TextDisp) as TextDisp[];
 
-            // Check if there is a letter for the user to press
-            if (this.pressedLetters.length != this.letters.length)
-            {
-                const nextKey = "Key" + this.letters[this.pressedLetters.length].toUpperCase();
-                if (Game.keyboard.isKeyPressed(nextKey as Key))
-                {
-                    this.pressedLetters.push(this.letters[this.pressedLetters.length]);
+                               // Check if there is a letter for the user to press
+                               if (this.pressedLetters.length != this.letters.length)
+                               {
+                                   const nextKey = "Key" + this.letters[this.pressedLetters.length].toUpperCase();
+                                   if (Game.keyboard.isKeyPressed(nextKey as Key))
+                                   {
+                                       this.pressedLetters.push(this.letters[this.pressedLetters.length]);
 
-                    const selectedLetter = letters[this.pressedLetters.length - 1 - this.trimmed];
-                    if (selectedLetter.pixiObj.style.fill == "red")
-                    {
-                        selectedLetter.pixiObj.style.fill = "orange";
-                    }
-                    else
-                    {
-                        selectedLetter.pixiObj.style.fill = "green";
-                    }
-                }
-            }
+                                       const selectedLetter = letters[this.pressedLetters.length - 1 - this.trimmed];
+                                       if (selectedLetter.pixiObj.style.fill == "red")
+                                       {
+                                           selectedLetter.pixiObj.style.fill = "orange";
+                                       }
+                                       else
+                                       {
+                                           selectedLetter.pixiObj.style.fill = "green";
+                                       }
+                                   }
+                               }
 
-            if (this.spawned < this.letters.length)
-            {
-                // If we have gotten new letters, push them onto the canvas
-                for (let i = this.spawned; i < this.letters.length; i++)
-                {
-                    const style = new PIXI.TextStyle({ fontSize: "14px", fill: "white" });
-                    const text = new TextDisp(-40, 8, this.letters[i].toUpperCase(), style);
-                    entity.addComponent(text);
-                    this.spawned += 1;
-                }
+                               if (this.spawned < this.letters.length)
+                               {
+                                   // If we have gotten new letters, push them onto the canvas
+                                   for (let i = this.spawned; i < this.letters.length; i++)
+                                   {
+                                       const style = new PIXI.TextStyle({fontSize: "14px", fill: "white"});
+                                       const text = new TextDisp(-40, 8, this.letters[i].toUpperCase(), style);
+                                       entity.addComponent(text);
+                                       this.spawned += 1;
+                                   }
 
-                // Update the letters after we add them
-                letters = entity.getComponentsOfType(TextDisp);
-            }
+                                   // Update the letters after we add them
+                                   letters = entity.getComponentsOfType(TextDisp);
+                               }
 
-            for (const letter of letters)
-            {
-                const text = letter as TextDisp;
-                text.pixiObj.position.x = (text.pixiObj.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed);
+                               for (const letter of letters)
+                               {
+                                   const text = letter as TextDisp;
+                                   text.pixiObj.position.x =
+                                       (text.pixiObj.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed);
 
-                if (text.pixiObj.position.x > 320)
-                {
-                    // They didn't press the letter even though it went off screen so we add it to the array
-                    if (text.pixiObj.style.fill == "red")
-                    {
-                        this.pressedLetters.push(text.pixiObj.text);
-                    }
-                    text.destroy();
-                    this.trimmed += 1;
-                }
-            }
-        });
+                                   if (text.pixiObj.position.x > 320)
+                                   {
+                                       // They didn't press the letter even though it went off screen so we add it to
+                                       // the array
+                                       if (text.pixiObj.style.fill == "red")
+                                       {
+                                           this.pressedLetters.push(text.pixiObj.text);
+                                       }
+                                       text.destroy();
+                                       this.trimmed += 1;
+                                   }
+                               }
+                           });
     }
 }
 
@@ -155,7 +159,8 @@ class LobstaDirector extends System
                     if (letter.pixiObj.style.fill == "white" || letter.pixiObj.style.fill == "red")
                     {
                         letter.pixiObj.style.fill = "red";
-                        entity.transform.position.x = (entity.transform.position.x + (delta / 1000) * (BumpMoveSystem.conveyorSpeed - 1)) % 480;
+                        entity.transform.position.x =
+                            (entity.transform.position.x + (delta / 1000) * (BumpMoveSystem.conveyorSpeed - 1)) % 480;
                         break;
                     }
 
@@ -196,7 +201,8 @@ class BumpMoveSystem extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
-            entity.transform.position.x = (entity.transform.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed) % 480;
+            entity.transform.position.x =
+                (entity.transform.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed) % 480;
         });
     }
 }
@@ -245,7 +251,7 @@ class ConveyorLobsta extends Entity
         this.transform.position.x = 120;
 
         this.addComponent(new ConveyorLobstaComponent());
-        this.addComponent(new RenderRect(0, 10, 10, 10, 0xFF00FF));
+        this.addComponent(new Sprite(cookingSheet.texture(32, 128, 48, 48), {yOffset: -25}))
     }
 }
 
