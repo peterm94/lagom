@@ -29,10 +29,10 @@ export class LD46 extends Game
     constructor()
     {
         super({
-                  width: 256,
-                  height: 128,
-                  resolution: 4,
-                  backgroundColor: 0xad58ac,
+                  width: 1280,
+                  height: 720,
+                  resolution: 1,
+                  backgroundColor: 0xfff9ba,
                   antialias: false
               });
 
