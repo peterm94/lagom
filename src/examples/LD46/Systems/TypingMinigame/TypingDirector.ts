@@ -1,7 +1,4 @@
 import {System} from "../../../../ECS/System";
-import {TextTyper} from "../../Entities/TypingMinigame";
-import {Entity} from "../../../../ECS/Entity";
-import {Game} from "../../../../ECS/Game";
 import {Key} from "../../../../Input/Key";
 import {TextDisp} from "../../../../Common/PIXIComponents";
 
@@ -14,11 +11,11 @@ export class TypingDirector extends System
 
     private count: number = 0;
 
-    public types = () => [TextDisp, TextTyper];
+    public types = () => [TextDisp];
 
     public update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, textDisp: TextDisp) => {
+        /*this.runOnEntities((entity: Entity, textDisp: TextDisp) => {
             // TODO: Holding down backspace?
 
             for (const key of this.keys) {
@@ -36,6 +33,6 @@ export class TypingDirector extends System
                                                 .replace("Period", ".");
                 }
             }
-        });
+        });*/
     }
 }

@@ -3,9 +3,6 @@ import {Scene} from "../../ECS/Scene";
 import {Diagnostics} from "../../Common/Debug";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import { RunningMinigame } from "./Entities/RunningMinigame";
-import {TypingMinigame} from "./Entities/TypingMinigame";
-import {TextTyper} from "./Entities/TypingMinigame";
-import {TypingDirector} from "./Systems/TypingMinigame/TypingDirector";
 import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
@@ -30,11 +27,9 @@ class MainScene extends Scene
         // Put any init stuff here
         this.addEntity(new RunningMinigame());
         this.addEntity(new Divider());
-        this.addEntity(new TypingMinigame());
-        this.addEntity(new LobsterMinigame("lobstergame", 85, 64))
-
         // timer
         this.addGlobalSystem(new TimerSystem());
+        this.addEntity(new LobsterMinigame("lobstergame", 0, 64))
     }
 }
 
@@ -61,7 +56,7 @@ export class LD46 extends Game
                   width: 320,
                   height: 180,
                   resolution: 4,
-                  backgroundColor: 0xfff9ba,
+                  backgroundColor: 0x88965d,
                   antialias: false
               });
 
