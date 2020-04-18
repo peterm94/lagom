@@ -2,6 +2,7 @@ import {Game} from "../../ECS/Game";
 import {Scene} from "../../ECS/Scene";
 import {Diagnostics} from "../../Common/Debug";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
+import { RunningMinigame } from "./Entities/RunningMinigame";
 
 
 const collisionMatrix = new CollisionMatrix();
@@ -21,6 +22,7 @@ class MainScene extends Scene
         this.addGUIEntity(new Diagnostics("white", 8));
 
         // Put any init stuff here
+        this.addEntity(new RunningMinigame());
     }
 }
 
