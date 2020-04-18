@@ -1,38 +1,24 @@
 import {Component} from "../../../ECS/Component";
 import {Entity} from "../../../ECS/Entity";
-import {Sprite} from "../../../Common/Sprite/Sprite";
 import {System} from "../../../ECS/System";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
-import basicSprite from "../Art/basicSpr.png";
-import backgroundSprite from "../Art/backgroundSpr.png";
-import obstacleSprite from "../Art/obstacleSpr.png";
+import runnerSprite from "../Art/runner.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {Timer} from "../../../Common/Timer";
 import {Log, MathUtil} from "../../../Common/Util";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
 import {RectCollider} from "../../../Collisions/Colliders";
 import {Layers} from "../LD46";
+import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 
-const playerSpriteSheet = new SpriteSheet(basicSprite, 32, 32);
-const backgroundSpriteSheet = new SpriteSheet(backgroundSprite, 32, 32);
-const obstacleSpriteSheet = new SpriteSheet(obstacleSprite, 32, 32);
+const runnerSpriteSheet = new SpriteSheet(runnerSprite, 24, 32);
 
 export class RunningMinigame extends Entity
 {
-
-    backgroundConfig = {xScale: 5, yScale: 5};
-    // constructor() 
-    // {
-    //     super("RunningMinigame", 160, 0);
-    // }
-
     onAdded()
     {
         super.onAdded();
-
-        // Sprites
-        // this.addComponent(new Sprite(backgroundSpriteSheet.textureFromIndex(0), this.backgroundConfig));
 
         // Child entities
         this.addChild(new ObstacleSpawner());
@@ -47,7 +33,7 @@ class ObstacleSpawner extends Entity
 {
     constructor()
     {
-        super("ObstacleSpawner", 10, 10);
+        super("ObstacleSpawner", 100, 0);
     }
 
     onAdded()
@@ -78,7 +64,7 @@ class ObstacleController extends Entity
 
     constructor()
     {
-        super("ObstacleController", 57, 0);
+        super("ObstacleController", 0, 0);
     }
 
     onAdded()
@@ -87,7 +73,8 @@ class ObstacleController extends Entity
 
         // Components
         this.addComponent(new Obstacle(this.moveSpeed));
-        this.addComponent(new Sprite(obstacleSpriteSheet.textureFromIndex(0)));
+        this.addComponent(new AnimatedSprite(runnerSpriteSheet.textures([[2, 0], [3, 0], [4, 0]]),
+                                             {animationEndAction: AnimationEnd.LOOP, animationSpeed: 200}));
 
         // Collision
         const system = this.scene.getGlobalSystem<DiscreteCollisionSystem>(CollisionSystem);
@@ -98,7 +85,7 @@ class ObstacleController extends Entity
         }
         else
         {
-            this.addComponent(new RectCollider(system, {width: 32, height: 32, layer: Layers.OBSTACLE}));
+            this.addComponent(new RectCollider(system, {width: 24, height: 32, layer: Layers.OBSTACLE}));
         }
     }
 }
@@ -117,7 +104,7 @@ class PlayerController extends Entity
 
     constructor()
     {
-        super("PlayerController", 80, 90);
+        super("PlayerController", 100, 50);
     }
 
     onAdded()
@@ -125,7 +112,8 @@ class PlayerController extends Entity
         super.onAdded();
 
         // Sprite
-        this.addComponent(new Sprite(playerSpriteSheet.textureFromIndex(0)));
+        this.addComponent(new AnimatedSprite(runnerSpriteSheet.textures([[0, 0], [1, 0]]),
+                                             {animationEndAction: AnimationEnd.LOOP, animationSpeed: 200}));
 
         // Component
         this.addComponent(new Player());
@@ -141,7 +129,7 @@ class PlayerController extends Entity
         else
         {
             this.addComponent(new RectCollider(system, {
-                width: 32, height: 32, layer: Layers.PLAYER
+                width: 24, height: 32, layer: Layers.PLAYER
             })).onTriggerEnter.register((caller, data) => {
                 if (caller.parent.getComponent(Jumping) === null)
                 {
