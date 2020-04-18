@@ -3,9 +3,6 @@ import {Scene} from "../../ECS/Scene";
 import {Diagnostics} from "../../Common/Debug";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import { RunningMinigame } from "./Entities/RunningMinigame";
-import {TypingMinigame} from "./Entities/TypingMinigame";
-import {TextTyper} from "./Entities/TypingMinigame";
-import {TypingDirector} from "./Systems/TypingMinigame/TypingDirector";
 import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
@@ -29,7 +26,6 @@ class MainScene extends Scene
         // Put any init stuff here
         this.addEntity(new RunningMinigame());
         this.addEntity(new Divider());
-        this.addEntity(new TypingMinigame());
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64))
     }
 }
