@@ -9,6 +9,7 @@ import {TypingDirector} from "./Systems/TypingMinigame/TypingDirector";
 import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
+import {TimerSystem} from "../../Common/Timer";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -31,6 +32,9 @@ class MainScene extends Scene
         this.addEntity(new Divider());
         this.addEntity(new TypingMinigame());
         this.addEntity(new LobsterMinigame("lobstergame", 85, 64))
+
+        // timer
+        this.addGlobalSystem(new TimerSystem());
     }
 }
 
@@ -65,5 +69,7 @@ export class LD46 extends Game
 
         // Do collisions here
         collisionMatrix.addCollision(Layers.LAYER1, Layers.LAYER2);
+
+
     }
 }

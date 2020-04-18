@@ -6,21 +6,33 @@ import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 import basicSprite from "../Art/basicSpr.png";
 import backgroundSprite from "../Art/backgroundSpr.png";
+import obstacleSprite from "../Art/obstacleSpr.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
+import {Timer} from "../../../Common/Timer";
+import {MathUtil} from "../../../Common/Util";
 
 const playerSpriteSheet = new SpriteSheet(basicSprite, 32, 32);
 const backgroundSpriteSheet = new SpriteSheet(backgroundSprite, 32, 32);
+const obstacleSpriteSheet = new SpriteSheet(obstacleSprite, 32, 32);
 
-export class RunningMinigame extends Entity {
+export class RunningMinigame extends Entity 
+{
 
-    constructor() {
+    backgroundConfig = {xScale: 5, yScale: 5};
+    constructor() 
+    {
         super("RunningMinigame", 160, 0);
     }
 
-    onAdded() {
+    onAdded() 
+    {
         super.onAdded();
         
-        this.addChild(new BackgroundController());
+        // Sprites
+        this.addComponent(new Sprite(backgroundSpriteSheet.textureFromIndex(0), this.backgroundConfig));
+
+        // Child entities
+        this.addChild(new ObstacleSpawner());
         this.addChild(new PlayerController());
     }
 
@@ -30,47 +42,93 @@ export class RunningMinigame extends Entity {
     }
 }
 
-class BackgroundController extends Entity {
-    constructor() {
-        super("BackgroundController")
+class ObstacleSpawner extends Entity 
+{
+    timer: Timer<null>; 
+
+    constructor() 
+    {
+        super("ObstacleSpawner", 10 , 10);
+        this.timer = new Timer(MathUtil.randomRange(300, 1000), null);
     }
 
-    onAdded() {
-        let backgroundConfig = {xScale: 2, yScale: 2};
+    onAdded() 
+    {
         super.onAdded();
 
-        // Sprite
-        this.addComponent(new Sprite(backgroundSpriteSheet.textureFromIndex(0), backgroundConfig));
+        // do timer..
+        // increases over time * delta * current time?
 
-        // Component
-        this.addComponent(new Background());
+        // Spawn obstacle
+        // const timer = this.addComponent(new Timer(MathUtil.randomRange(300, 1000), null));
+        // timer.onTrigger.register((caller, data) => {
+        //         this.addComponent(new Obstacle(1));
+        //         this.addComponent(new Sprite(obstacleSpriteSheet.textureFromIndex(0)));
+        //     }
+        // );
 
-        // System
-        this.scene.addSystem(new InfiniteRunnerSystem());
-    }
+        // Entities
+        this.addComponent(new ObstacleSpawn());
+        // this.addChild(new ObstacleController());
 
-    onRemoved()
-    {
-        super.onRemoved();
+        // Systems
+        // this.scene.addSystem(new ObstacleSpawnSystem());
+        this.timer.onTrigger.register((caller, data) => 
+        {
+            console.log("trigger");
+            this.addChild(new ObstacleController());
+            this.timer.remainingMS = MathUtil.randomRange(300, 1000);
+        });
     }
 }
 
-class Background extends Component {
-    constructor() {
+class ObstacleSpawn extends Component {}
+
+class ObstacleController extends Entity 
+{
+    constructor() 
+    {
+        super("ObstacleController", 60, 0);
+    }
+
+    onAdded() 
+    {
+        super.onAdded();
+
+        // this.timer = new Timer(MathUtil.randomRange(300, 1000), null);
+
+        // Components
+        this.addComponent(new Obstacle(0.1));
+        this.addComponent(new Sprite(obstacleSpriteSheet.textureFromIndex(0)));
+        
+
+        // System
+        this.scene.addSystem(new ObstacleSystem());
+    }
+}
+
+class Obstacle extends Component 
+{
+    constructor(readonly speed: number) 
+    {
         super();
     }
 
-    onAdded() {
+    onAdded() 
+    {
         super.onAdded();
     }
 }
 
-class PlayerController extends Entity {
-    constructor() {
+class PlayerController extends Entity 
+{
+    constructor() 
+    {
         super("PlayerController", 80, 90);
     }
 
-    onAdded() {
+    onAdded() 
+    {
         let spriteConfig = {xScale: 0.25, yScale: 0.25, xOffset: 0, yOffset: 0};
         super.onAdded();
         
@@ -90,8 +148,10 @@ class PlayerController extends Entity {
     }
 }
 
-export class Player extends Component {
-    constructor() {
+export class Player extends Component 
+{
+    constructor() 
+    {
         super();
     }
 
@@ -100,25 +160,35 @@ export class Player extends Component {
     }
 }
 
-class InfiniteRunnerSystem extends System {   
-    public types = () => [Background];
+class ObstacleSystem extends System 
+{   
+    public types = () => [Obstacle];
 
     public update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, runningPlayer: Background) => {
-            entity.transform.position.y += 0.2;
+        this.runOnEntities((entity: Entity, obstacle: Obstacle) => 
+        {
+            if (entity.transform.position.y > 100) {
+                entity.destroy();
+            } else {
+                entity.transform.position.y += (obstacle.speed / delta);
+            }
         });
     }
 }
 
-class JumpSystem extends System {   
+class JumpSystem extends System 
+{   
     public types = () => [Player];
 
     public update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, runningPlayer: Player) => {
-            if (Game.keyboard.isKeyReleased(Key.Space)) {
+        this.runOnEntities((entity: Entity, runningPlayer: Player) => 
+        {
+            if (Game.keyboard.isKeyReleased(Key.Space)) 
+            {
                     // do animation  
+                    // second of immunity
             }
         });
     }
