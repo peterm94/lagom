@@ -19,7 +19,8 @@ export enum Layers
     OBSTACLE,
     PLAYER,
     CONV_PLAYER,
-    CONV_LETTERS
+    CONV_LETTERS,
+    CHEF_CHOP_TRIGGER
 }
 
 export enum DrawLayers
@@ -40,6 +41,8 @@ class MainScene extends Scene
         // Collisions
         collisionMatrix.addCollision(Layers.OBSTACLE, Layers.PLAYER);
         collisionMatrix.addCollision(Layers.CONV_PLAYER, Layers.CONV_LETTERS);
+        collisionMatrix.addCollision(Layers.CONV_PLAYER, Layers.CHEF_CHOP_TRIGGER);
+        collisionMatrix.addCollision(Layers.CONV_LETTERS, Layers.CHEF_CHOP_TRIGGER);
 
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
 

@@ -7,7 +7,7 @@ import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {Component} from "../../../ECS/Component";
 import {System} from "../../../ECS/System";
-import {TextDisp} from "../../../Common/PIXIComponents";
+import {RenderRect, TextDisp} from "../../../Common/PIXIComponents";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
@@ -244,6 +244,26 @@ class Chef extends Entity
                 }
             ]
         ));
+
+        const system = this.scene.getGlobalSystem<DiscreteCollisionSystem>(CollisionSystem);
+
+        if (system == null)
+        {
+            Log.error("No collision system detected!");
+        }
+        else
+        {
+            const coll = this.addComponent(new RectCollider(system, {
+                xOff: 20, yOff: 86,
+                width: 24, height: 24,
+                layer: Layers.CHEF_CHOP_TRIGGER
+            }));
+
+            coll.onTriggerEnter.register((caller, data) => {
+                caller.parent.getComponent<AnimatedSpriteController>(AnimatedSpriteController)
+                      ?.setAnimation(ChefAnimations.Swinging);
+            })
+        }
     }
 }
 
@@ -358,7 +378,8 @@ class ConveyorLobsta extends Entity
                 {
                     txt.pixiObj.style.fill = RED;
 
-                    caller.parent.transform.position.x += (60 / 1000) * (ConveyorMoveSystem.conveyorSpeed - 1)
+                    caller.parent.transform.position.x += (Game.fixedDeltaMS / 1000)
+                        * (ConveyorMoveSystem.conveyorSpeed - 1)
                 }
 
             })

@@ -54,7 +54,7 @@ export class Game
     private elapsedSinceUpdate = 0;
 
     // Fixed timestep rate for logic updates (60hz)
-    private readonly fixedDeltaMS = 1000 / 60;
+    static readonly fixedDeltaMS = 1000 / 60;
 
     // Delta since the last frame update. This is *not* the delta of the ECS update, but the render loop.
     deltaTime = 0;
@@ -70,13 +70,13 @@ export class Game
 
             this.elapsedSinceUpdate += this.deltaTime;
 
-            while (this.elapsedSinceUpdate >= this.fixedDeltaMS)
+            while (this.elapsedSinceUpdate >= Game.fixedDeltaMS)
             {
                 // call FixedUpdate() for the ECS
-                this.fixedUpdateInternal(this.fixedDeltaMS);
+                this.fixedUpdateInternal(Game.fixedDeltaMS);
 
-                this.elapsedSinceUpdate -= this.fixedDeltaMS;
-                this.timeMs += this.fixedDeltaMS;
+                this.elapsedSinceUpdate -= Game.fixedDeltaMS;
+                this.timeMs += Game.fixedDeltaMS;
             }
             this.diag.fixedUpdateTime = Date.now() - now;
             // Call update() for the ECS
