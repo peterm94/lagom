@@ -5,7 +5,7 @@ import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {Component} from "../../../ECS/Component";
 import {System} from "../../../ECS/System";
-import {TextDisp} from "../../../Common/PIXIComponents";
+import {RenderRect, TextDisp} from "../../../Common/PIXIComponents";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 
@@ -13,7 +13,7 @@ const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
 
 class BeltLetterDirector extends System
 {
-    public types = () => [ConveyorTextComponent];
+    public types = () => [ConveyorRunnerComponent];
 
     private letterBag = this.fillBag();
     private pressedLetters: string[] = [];
@@ -67,7 +67,7 @@ class BeltLetterDirector extends System
 
         this.runOnEntities((entity: Entity) =>
         {
-            let letters = entity.getComponentsOfType(TextDisp);
+            let letters = entity.getComponentsOfType(TextDisp) as TextDisp[];
 
             // Check if there is a letter for the user to press
             if (this.pressedLetters.length != this.letters.length)
@@ -77,7 +77,15 @@ class BeltLetterDirector extends System
                 {
                     this.pressedLetters.push(this.letters[this.pressedLetters.length]);
 
-                    (letters[this.pressedLetters.length - 1 - this.trimmed] as TextDisp).pixiObj.style.fill = "green";
+                    const selectedLetter = letters[this.pressedLetters.length - 1 - this.trimmed];
+                    if (selectedLetter.pixiObj.style.fill == "red")
+                    {
+                        selectedLetter.pixiObj.style.fill = "orange";
+                    }
+                    else
+                    {
+                        selectedLetter.pixiObj.style.fill = "green";
+                    }
                 }
             }
 
@@ -99,13 +107,71 @@ class BeltLetterDirector extends System
             for (const letter of letters)
             {
                 const text = letter as TextDisp;
-                text.pixiObj.position.x = (text.pixiObj.position.x + (delta / 1000) * BumpMoveSystem.convSpeed);
+                text.pixiObj.position.x = (text.pixiObj.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed);
 
-                if (text.pixiObj.position.x > 400)
+                if (text.pixiObj.position.x > 320)
                 {
+                    // They didn't press the letter even though it went off screen so we add it to the array
+                    if (text.pixiObj.style.fill == "red")
+                    {
+                        this.pressedLetters.push(text.pixiObj.text);
+                    }
                     text.destroy();
                     this.trimmed += 1;
                 }
+            }
+        });
+    }
+}
+
+class LobstaDirector extends System
+{
+    public types = () => [ConveyorLobstaComponent];
+
+    public update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity) => {
+            entity.transform.position.x = (entity.transform.position.x - (delta / 1000) * 3) % 480;
+
+            const parent = entity.parent as Entity;
+            let letters = parent.getComponentsOfType(TextDisp) as TextDisp[];
+            const lobsterPos = entity.transform.position;
+
+            for (const letter of letters)
+            {
+                const letterPos = letter.pixiObj.position;
+
+                // im sorry peter
+                if (lobsterPos.x < letterPos.x + letter.pixiObj.width &&
+                    lobsterPos.x + entity.transform.width > letterPos.x &&
+                    lobsterPos.y < letterPos.y + letter.pixiObj.height &&
+                    lobsterPos.y + entity.transform.height > letterPos.y)
+                {
+                    if (letter.pixiObj.style.fill == "green")
+                    {
+                        break;
+                    }
+
+                    if (letter.pixiObj.style.fill == "white" || letter.pixiObj.style.fill == "red")
+                    {
+                        letter.pixiObj.style.fill = "red";
+                        entity.transform.position.x = (entity.transform.position.x + (delta / 1000) * (BumpMoveSystem.conveyorSpeed - 1)) % 480;
+                        break;
+                    }
+
+                    break;
+                }
+            }
+
+            if (entity.transform.position.x < 50)
+            {
+                entity.transform.position.x = 50;
+            }
+
+            if (entity.transform.position.x > 285)
+            {
+                // End game here
+                entity.transform.position.x = 285;
             }
         });
     }
@@ -123,14 +189,14 @@ class Chef extends Entity
 
 class BumpMoveSystem extends System
 {
-    static readonly convSpeed = 10;
+    static conveyorSpeed = 20;
 
     types = () => [BumpMove]
 
     update(delta: number): void
     {
-        this.runOnEntitiesWithSystem((system: BumpMoveSystem, entity: Entity) => {
-            entity.transform.position.x = (entity.transform.position.x + (delta / 1000) * BumpMoveSystem.convSpeed) % 480;
+        this.runOnEntities((entity: Entity) => {
+            entity.transform.position.x = (entity.transform.position.x + (delta / 1000) * BumpMoveSystem.conveyorSpeed) % 480;
         });
     }
 }
@@ -150,17 +216,36 @@ class ConveyorBump extends Entity
     }
 }
 
-class ConveyorTextComponent extends Component
+class ConveyorRunnerComponent extends Component
 {
 }
 
-class ConveyorText extends Entity
+class ConveyorRunner extends Entity
 {
     onAdded(): void
     {
         super.onAdded();
 
-        this.addComponent(new ConveyorTextComponent());
+        this.addComponent(new ConveyorRunnerComponent());
+        this.addChild(new ConveyorLobsta("lobsta"));
+    }
+}
+
+class ConveyorLobstaComponent extends Component
+{
+}
+
+class ConveyorLobsta extends Entity
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.depth = 1;
+        this.transform.position.x = 120;
+
+        this.addComponent(new ConveyorLobstaComponent());
+        this.addComponent(new RenderRect(0, 10, 10, 10, 0xFF00FF));
     }
 }
 
@@ -176,7 +261,7 @@ class Conveyor extends Entity
             this.addChild(new ConveyorBump("bump", i * 24 + 1));
         }
 
-        this.addChild(new ConveyorText("conveyorText"));
+        this.addChild(new ConveyorRunner("conveyorText"));
     }
 }
 
@@ -192,5 +277,6 @@ export class LobsterMinigame extends Entity
 
         this.scene.addSystem(new BumpMoveSystem());
         this.scene.addSystem(new BeltLetterDirector());
+        this.scene.addSystem(new LobstaDirector());
     }
 }
