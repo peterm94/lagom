@@ -10,13 +10,14 @@ import {TimerSystem} from "../../Common/Timer";
 import {Background} from "./Entities/Background";
 import {DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
+import {Log, LogLevel} from "../../Common/Util";
 
 const collisionMatrix = new CollisionMatrix();
 
 export enum Layers
 {
-    LAYER1,
-    LAYER2
+    OBSTACLE,
+    PLAYER
 }
 
 export enum DrawLayers
@@ -35,7 +36,7 @@ class MainScene extends Scene
         this.addGlobalSystem(new FrameTriggerSystem());
 
         // Collisions
-        collisionMatrix.addCollision(Layers.LAYER1, Layers.LAYER1);
+        collisionMatrix.addCollision(Layers.OBSTACLE, Layers.PLAYER);
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
 
         this.addGUIEntity(new Diagnostics("black", 8));
@@ -43,7 +44,7 @@ class MainScene extends Scene
 
         // Put any init stuff here
         this.addEntity(new RunningMinigame("runninggame", 160, 0, DrawLayers.LOBSTER));
-        this.addEntity(new Divider());
+        // this.addEntity(new Divider());
 
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64, DrawLayers.LOBSTER))
 
@@ -78,5 +79,7 @@ export class LD46 extends Game
               });
 
         this.setScene(new MainScene(this));
+
+        Log.logLevel = LogLevel.INFO;
     }
 }
