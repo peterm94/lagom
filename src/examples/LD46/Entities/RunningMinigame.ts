@@ -1,11 +1,12 @@
 import {Component} from "../../../ECS/Component";
 import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
+import {System} from "../../../ECS/System";
+import {Key} from "../../../Input/Key";
+import {Game} from "../../../ECS/Game";
 import basicSprite from "../Art/basicSpr.png";
 import backgroundSprite from "../Art/backgroundSpr.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
-import {RunningMinigameInfiniteRunner} from "../Systems/RunningMinigame/RunningMinigameInfiniteRunner";
-import {RunningMinigameJump} from "../Systems/RunningMinigame/RunningMinigameJump";
 
 const playerSpriteSheet = new SpriteSheet(basicSprite, 32, 32);
 const backgroundSpriteSheet = new SpriteSheet(backgroundSprite, 32, 32);
@@ -19,8 +20,8 @@ export class RunningMinigame extends Entity {
     onAdded() {
         super.onAdded();
         
-        this.addChild(new RunningMinigameBackgroundController());
-        this.addChild(new RunningMinigamePlayerController());
+        this.addChild(new BackgroundController());
+        this.addChild(new PlayerController());
     }
 
     onRemoved()
@@ -29,9 +30,9 @@ export class RunningMinigame extends Entity {
     }
 }
 
-export class RunningMinigameBackgroundController extends Entity {
+class BackgroundController extends Entity {
     constructor() {
-        super("RunningMinigameBackgroundController")
+        super("BackgroundController")
     }
 
     onAdded() {
@@ -42,10 +43,10 @@ export class RunningMinigameBackgroundController extends Entity {
         this.addComponent(new Sprite(backgroundSpriteSheet.textureFromIndex(0), backgroundConfig));
 
         // Component
-        this.addComponent(new RunningMinigameBackground());
+        this.addComponent(new Background());
 
         // System
-        this.scene.addSystem(new RunningMinigameInfiniteRunner());
+        this.scene.addSystem(new InfiniteRunnerSystem());
     }
 
     onRemoved()
@@ -54,7 +55,7 @@ export class RunningMinigameBackgroundController extends Entity {
     }
 }
 
-export class RunningMinigameBackground extends Component {
+class Background extends Component {
     constructor() {
         super();
     }
@@ -64,9 +65,9 @@ export class RunningMinigameBackground extends Component {
     }
 }
 
-export class RunningMinigamePlayerController extends Entity {
+class PlayerController extends Entity {
     constructor() {
-        super("RunningMinigamePlayer", 80, 90);
+        super("PlayerController", 80, 90);
     }
 
     onAdded() {
@@ -77,10 +78,10 @@ export class RunningMinigamePlayerController extends Entity {
         this.addComponent(new Sprite(playerSpriteSheet.textureFromIndex(0), spriteConfig));
 
         // Component
-        this.addComponent(new RunningMinigamePlayer());
+        this.addComponent(new Player());
 
         // System
-        this.scene.addSystem(new RunningMinigameJump());
+        this.scene.addSystem(new JumpSystem());
     }
 
     onRemoved()
@@ -89,12 +90,36 @@ export class RunningMinigamePlayerController extends Entity {
     }
 }
 
-export class RunningMinigamePlayer extends Component {
+export class Player extends Component {
     constructor() {
         super();
     }
 
     onAdded() {
         super.onAdded();
+    }
+}
+
+class InfiniteRunnerSystem extends System {   
+    public types = () => [Background];
+
+    public update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, runningPlayer: Background) => {
+            entity.transform.position.y += 0.2;
+        });
+    }
+}
+
+class JumpSystem extends System {   
+    public types = () => [Player];
+
+    public update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, runningPlayer: Player) => {
+            if (Game.keyboard.isKeyReleased(Key.Space)) {
+                    // do animation  
+            }
+        });
     }
 }
