@@ -10,10 +10,9 @@ import {System} from "../../../ECS/System";
 import {TextDisp} from "../../../Common/PIXIComponents";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
-import {AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
+import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteController";
 import {Timer} from "../../../Common/Timer";
-import {Log} from "../../../Common/Util";
 
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
 // 108 actual height
