@@ -103,7 +103,7 @@ class BeltLetterDirector extends System
                 for (let i = this.spawned; i < this.letters.length; i++)
                 {
                     const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white"});
-                    const text = new TextDisp(-40, 0, this.letters[i].toUpperCase(), style);
+                    const text = new TextDisp(-40, 5, this.letters[i].toUpperCase(), style);
                     entity.addComponent(text);
                     this.spawned += 1;
                 }
