@@ -10,6 +10,9 @@ import obstacleSprite from "../Art/obstacleSpr.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {Timer} from "../../../Common/Timer";
 import {MathUtil} from "../../../Common/Util";
+import {DiscreteCollisionSystem, CollisionSystem} from "../../../Collisions/CollisionSystems";
+import {BodyType, CircleCollider, Collider, RectCollider} from "../../../Collisions/Colliders";
+import {Layers} from "../LD46";
 
 const playerSpriteSheet = new SpriteSheet(basicSprite, 32, 32);
 const backgroundSpriteSheet = new SpriteSheet(backgroundSprite, 32, 32);
@@ -34,6 +37,9 @@ export class RunningMinigame extends Entity
         // Child entities
         this.addChild(new ObstacleSpawner());
         this.addChild(new PlayerController());
+
+        // System
+        this.scene.addSystem(new ObstacleSystem());
     }
 
     onRemoved()
@@ -61,7 +67,6 @@ class ObstacleSpawner extends Entity
 
         timer.onTrigger.register((caller, data) =>
         {
-            console.log("trigger");
             this.addChild(new ObstacleController());
             caller.remainingMS = MathUtil.randomRange(3000, 5000);
         });
@@ -87,10 +92,19 @@ class ObstacleController extends Entity
         // Components
         this.addComponent(new Obstacle(this.moveSpeed));
         this.addComponent(new Sprite(obstacleSpriteSheet.textureFromIndex(0)));
-        
 
-        // System
-        this.scene.addSystem(new ObstacleSystem());
+        
+        // Collision
+        const system = this.scene.getGlobalSystem<DiscreteCollisionSystem>(CollisionSystem);
+
+        if (system == null) 
+        {
+            console.error("No collision system detected!");
+        } 
+        else 
+        {
+            this.addComponent(new RectCollider(system, {width: 500, height: 500, layer: Layers.LAYER1}));
+        }
     }
 }
 
@@ -125,6 +139,20 @@ class PlayerController extends Entity
         // Component
         this.addComponent(new Player());
 
+        // Collision
+        const system = this.scene.getGlobalSystem<DiscreteCollisionSystem>(CollisionSystem);
+
+        if (system == null) 
+        {
+            console.log("No collision system detected!");
+            return;
+        } 
+        else 
+        {
+            this.addComponent(new RectCollider(system, {width: 50, height: 50, layer: Layers.LAYER1}))
+            .onTriggerEnter.register(() => console.log("HELP"));
+        }
+
         // System
         this.scene.addSystem(new JumpSystem());
     }
@@ -142,7 +170,8 @@ export class Player extends Component
         super();
     }
 
-    onAdded() {
+    onAdded() 
+    {
         super.onAdded();
     }
 }
@@ -175,7 +204,6 @@ class JumpSystem extends System
             if (Game.keyboard.isKeyReleased(Key.Space)) 
             {
                     // do animation  
-                    // second of immunity
             }
         });
     }
