@@ -7,6 +7,7 @@ import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
 import {TimerSystem} from "../../Common/Timer";
+import {Background} from "./Entities/Background";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -23,6 +24,7 @@ class MainScene extends Scene
         super.onAdded();
 
         this.addGUIEntity(new Diagnostics("black", 8));
+        this.addEntity(new Background())
 
         // Put any init stuff here
         this.addEntity(new RunningMinigame());
