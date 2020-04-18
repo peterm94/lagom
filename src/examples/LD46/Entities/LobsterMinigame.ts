@@ -2,6 +2,7 @@ import * as PIXI from "pixi.js";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import cookingSpr from '../Art/cooking_sheet.png'
 import chefSpr from '../Art/swing.png'
+import lobstaSpr from '../Art/legs.png'
 import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {Component} from "../../../ECS/Component";
@@ -17,6 +18,7 @@ import {Log} from "../../../Common/Util";
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
 // 108 actual height
 const chefSheet = new SpriteSheet(chefSpr, 94, 108);
+const lobstaSheet = new SpriteSheet(lobstaSpr, 48, 64);
 
 const GREEN = "#30cc30";
 const ORANGE = "orange";
@@ -304,8 +306,13 @@ class ConveyorLobsta extends Entity
         this.depth = 1;
         this.transform.position.x = 120;
 
+        this.addComponent(new AnimatedSprite(lobstaSheet.textureSliceFromRow(0, 0, 9), {
+            animationEndAction: AnimationEnd.LOOP,
+            animationSpeed: 100,
+            yOffset: -30
+        }))
+
         this.addComponent(new ConveyorLobstaComponent());
-        this.addComponent(new Sprite(cookingSheet.texture(32, 128, 48, 48), {yOffset: -25}))
     }
 }
 
