@@ -2,8 +2,10 @@ import {Game} from "../../ECS/Game";
 import {Scene} from "../../ECS/Scene";
 import {Diagnostics} from "../../Common/Debug";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
-import {TypingMinigame} from "./Entities/TypingMinigame";
+import {TextTyper, TypingMinigame} from "./Entities/TypingMinigame";
 import {TypingDirector} from "./Systems/TypingMinigame/TypingDirector";
+import {Entity} from "../../ECS/Entity";
+import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
 
 
@@ -24,10 +26,24 @@ class MainScene extends Scene
         this.addGUIEntity(new Diagnostics("black", 8));
 
         // Put any init stuff here
+        this.addEntity(new Divider());
         this.addEntity(new TypingMinigame());
-        this.addSystem(new TypingDirector());
-
         this.addEntity(new LobsterMinigame("lobstergame", 85, 64))
+    }
+}
+
+export class Divider extends Entity
+{
+    constructor()
+    {
+        super("Divider", 159, 0);
+    }
+
+    public onAdded()
+    {
+        super.onAdded();
+
+        this.addComponent(new RenderRect(0, 0, 1, 320, null, 0x000));
     }
 }
 
