@@ -63,10 +63,16 @@ export class MainScene extends Scene
         this.audioAtlas = new AudioAtlas();
         const music = this.audioAtlas.load("music", require("./Audio/music.mp3"));
         music.loop(true);
+        music.volume(0.4);
 
         this.audioAtlas.load("chop1", require("./Audio/chop1.wav"));
         this.audioAtlas.load("chop2", require("./Audio/chop2.wav"));
         this.audioAtlas.load("chop3", require("./Audio/chop3.wav"));
+        this.audioAtlas.load("hop", require("./Audio/hop.wav")).volume(0.5);
+        this.audioAtlas.load("jump", require("./Audio/jump.wav")).volume(0.5);
+        this.audioAtlas.load("hurt1", require("./Audio/hurt1.wav")).volume(0.5);
+        this.audioAtlas.load("hurt2", require("./Audio/hurt2.wav")).volume(0.5);
+        this.audioAtlas.load("hurt3", require("./Audio/hurt3.wav")).volume(0.5);
     }
 
 

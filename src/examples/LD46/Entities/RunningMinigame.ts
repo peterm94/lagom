@@ -6,10 +6,10 @@ import {Game} from "../../../ECS/Game";
 import runnerSprite from "../Art/runner.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {Timer} from "../../../Common/Timer";
-import {Log, MathUtil} from "../../../Common/Util";
+import {Log, MathUtil, Util} from "../../../Common/Util";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
 import {RectCollider} from "../../../Collisions/Colliders";
-import {Layers} from "../LD46";
+import {Layers, MainScene} from "../LD46";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import {ConveyorMoveSystem} from "../Entities/LobsterMinigame";
 import {GameState} from "../Systems/StartedSystem";
@@ -143,8 +143,10 @@ class PlayerController extends Entity
                 if (caller.parent.getComponent(Jumping) === null)
                 {
                     Log.info("HIT");
+                    (this.scene as MainScene).audioAtlas.play(Util.choose("hurt1", "hurt2", "hurt3"));
+
                     // bad for nwo
-                    ConveyorMoveSystem.conveyorSpeed = ConveyorMoveSystem.conveyorSpeed* 1.1;
+                    ConveyorMoveSystem.conveyorSpeed = ConveyorMoveSystem.conveyorSpeed * 1.1;
                 }
                 else
                 {
@@ -214,6 +216,8 @@ class MoveSystem extends System
                 && entity.transform.position.x > 10)
             {
                 entity.transform.position.x -= 20;
+                (this.scene as MainScene).audioAtlas.play("hop");
+
                 // const jumping = entity.addComponent(new Jumping());
 
                 // entity.addComponent(new Timer(1000, jumping, false))
@@ -225,6 +229,7 @@ class MoveSystem extends System
                 && entity.transform.position.x < 70)
             {
                 entity.transform.position.x += 20;
+                (this.scene as MainScene).audioAtlas.play("hop");
             }
         });
     }

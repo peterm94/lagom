@@ -7,13 +7,14 @@ import {Component} from "../../../ECS/Component";
 import {System} from "../../../ECS/System";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
 import {RectCollider} from "../../../Collisions/Colliders";
-import {Layers} from "../LD46";
-import {Log, MathUtil} from "../../../Common/Util";
+import {Layers, MainScene} from "../LD46";
+import {Log, MathUtil, Util} from "../../../Common/Util";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 import {Timer} from "../../../Common/Timer";
 import {MoverComponent} from "./Background";
 import {GameState} from "../Systems/StartedSystem";
+import {RenderRect} from "../../../Common/PIXIComponents";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 32, 32);
 
@@ -40,9 +41,10 @@ class Lobster extends Entity
         else
         {
             let coll = this.addComponent(
-                new RectCollider(system, {xOff: 10, yOff: 20, width: 10, height: 10, layer: Layers.JUMP_NET}))
+                new RectCollider(system, {xOff: 10, yOff: 20, width: 10, height: 10, layer: Layers.JUMP_PLAYER}))
 
             coll.onTriggerEnter.register((caller, data) => {
+                (this.scene as MainScene).audioAtlas.play(Util.choose("hurt1", "hurt2", "hurt3"));
                 Log.info("dead");
             })
         }
@@ -77,6 +79,7 @@ class JumpSystem extends System
 
             if (jump.state === JumpState.Ground && Game.keyboard.isKeyPressed(Key.Space))
             {
+                (this.scene as MainScene).audioAtlas.play("jump");
                 jump.state = JumpState.Jumping;
                 jump.yVel = -4;
             }
