@@ -120,7 +120,7 @@ export class MainScene extends Scene
 
         this.addEntity(new NetJumpMinigame("netjumpgame", 0, 0, DrawLayers.MINIGAME));
 
-        this.audioAtlas.play("music");
+        //this.audioAtlas.play("music");
     }
 
     destroy(): void

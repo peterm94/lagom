@@ -20,7 +20,6 @@ export class GameState extends System
             }
             else if (GameState.GameRunning == "DIED")
             {
-
                 this.scene.game.setScene(new MainScene(this.scene.game));
                 this.scene.destroy();
                 GameState.GameRunning = "SYNC-UP";

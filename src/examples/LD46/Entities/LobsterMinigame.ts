@@ -68,79 +68,21 @@ class BeltLetterDirector extends System
 {
     public types = () => [ConveyorRunnerComponent];
 
-    private letterBag = this.fillBag();
-    private pressedLetters: string[] = [];
-    private letters: string[] = [];
-    private trimmed = 0;
-    private spawned = 0;
-    private timeElapsed = 0;
-
-    private fillBag()
-    {
-        const letterBag = "abcdefghijklmnopqrstuvwxyz".split('');
-        // Shuffle the letter bag.
-        return letterBag.sort(() => {
-            return Math.floor(Math.random() * 3) - 1;
-        });
-    }
-
-    private takeLetter = () =>
-    {
-        return this.letterBag.shift();
-    }
-
     public update(delta: number): void
     {
-        // yikes
-        this.runOnEntities((entity: Entity) => {
-            if (GameState.GameRunning == "SYNC-UP")
-            {
-                this.letters = [];
-                this.pressedLetters = [];
-                this.trimmed = 0;
-                this.spawned = 0;
-                this.timeElapsed = 0;
-
-                let letters = entity.getComponentsOfType<TextDisp>(TextDisp, true);
-                letters.forEach((l) => l.destroy());
-            }
-        });
-
-        if (GameState.GameRunning != "RUNNING") return;
-
-        this.timeElapsed += delta;
-
-        // Always spawn one letter at the start, then calculate the amount of letters
-        // based off the difficulty ramp and time elapsed
-        const expectedLetters = (ConveyorMoveSystem.conveyorSpeed * (this.timeElapsed / 10000)) / 10;
-
-        if (this.letters.length < (Math.floor(expectedLetters) + 1))
-        {
-            let nextLetter = this.takeLetter();
-            if (nextLetter == undefined)
-            {
-                this.letterBag = this.fillBag();
-
-                // We know that the bag will be filled here so we can
-                // cast it to direct string instead of string | undefined
-                nextLetter = this.takeLetter() as string;
-            }
-
-            this.letters.push(nextLetter);
-        }
-
         this.runOnEntities((entity: Entity) => {
             let letters = entity.getComponentsOfType<TextDisp>(TextDisp, true);
 
-            // Check if there is a letter for the user to press
-            if (this.pressedLetters.length != this.letters.length)
+            const unpressed = letters.filter((letter) =>
+                letter.pixiObj.style.fill == RED || letter.pixiObj.style.fill == WHITE
+            );
+
+            if (unpressed.length > 0)
             {
-                const nextKey = "Key" + this.letters[this.pressedLetters.length].toUpperCase();
+                const selectedLetter = unpressed[0];
+                const nextKey = "Key" + selectedLetter.pixiObj.text.toUpperCase();
                 if (Game.keyboard.isKeyPressed(nextKey as Key))
                 {
-                    this.pressedLetters.push(this.letters[this.pressedLetters.length]);
-
-                    const selectedLetter = letters[this.pressedLetters.length - 1 - this.trimmed];
                     if (selectedLetter.pixiObj.style.fill == RED)
                     {
                         selectedLetter.pixiObj.style.fill = ORANGE;
@@ -152,31 +94,11 @@ class BeltLetterDirector extends System
                 }
             }
 
-            if (this.spawned < this.letters.length)
-            {
-                // If we have gotten new letters, push them onto the canvas
-                for (let i = this.spawned; i < this.letters.length; i++)
-                {
-                    entity.addChild(new LetterEntity(-40, 5, this.letters[i].toUpperCase()));
-                    this.spawned += 1;
-                }
-
-                // Update the letters after we add them
-                letters = entity.getComponentsOfType<TextDisp>(TextDisp, true);
-            }
-
             for (const letter of letters)
             {
                 if (letter.parent.transform.x > 320)
                 {
-                    // They didn't press the letter even though it went off screen so we add it to
-                    // the array
-                    if (letter.pixiObj.style.fill === RED)
-                    {
-                        this.pressedLetters.push(letter.pixiObj.text);
-                    }
                     letter.parent.destroy();
-                    this.trimmed += 1;
                 }
             }
         });
@@ -366,9 +288,66 @@ class ConveyorRunnerComponent extends Component
 
 class ConveyorRunner extends Entity
 {
+    private totalMs: number = 0;
+
+    private letterBag = this.fillBag();
+
+
+    private fillBag()
+    {
+        const letterBag = "abcdefghijklmnopqrstuvwxyz".split('');
+        // Shuffle the letter bag.
+        return letterBag.sort(() => {
+            return Math.floor(Math.random() * 3) - 1;
+        });
+    }
+
+    private takeLetter = () =>
+    {
+        return this.letterBag.shift();
+    };
+
+    private triggerTimer = (caller: Timer<null>) =>
+    {
+        if (GameState.GameRunning == "SYNC-UP")
+        {
+            this.totalMs = 240000;
+        }
+        if (GameState.GameRunning != "RUNNING") return;
+
+        let difficulty = (this.totalMs / 30000) + 1;
+        if (difficulty > 10) difficulty = 10;
+
+        // Base difficulty is send a letter out every 10 seconds.
+        const trigger = 10000;
+
+        // Ramp up to 1 letter a second
+        const ramper = (trigger / difficulty);
+
+        this.totalMs += ramper;
+
+        let nextLetter = this.takeLetter();
+        if (nextLetter == undefined)
+        {
+            this.letterBag = this.fillBag();
+
+            // We know that the bag will be filled here so we can
+            // cast it to direct string instead of string | undefined
+            nextLetter = this.takeLetter() as string;
+        }
+
+        this.addChild(new LetterEntity(-40, 5, nextLetter.toUpperCase()));
+
+        // Reset.
+        caller.remainingMS = Math.floor(ramper);
+    }
+
     onAdded(): void
     {
         super.onAdded();
+
+        const timer = this.addComponent(new Timer(100, null, true));
+        timer.onTrigger.register(this.triggerTimer);
 
         this.addComponent(new ConveyorRunnerComponent());
         this.addChild(new ConveyorLobsta("lobsta"));
@@ -435,7 +414,7 @@ class ConveyorLobsta extends Entity
 
                     if (caller.parent.transform.position.x > 220)
                     {
-                        GameState.GameRunning = "DIED";
+                        //GameState.GameRunning = "DIED";
                     }
                 }
 
