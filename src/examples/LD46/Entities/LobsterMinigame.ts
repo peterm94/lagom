@@ -544,10 +544,10 @@ export class LobsterMinigame extends Entity
     {
         super.onAdded();
 
+        this.addChild(new IncreaseIndicator("increaseIndicator", 3, 67, 0));
         this.addChild(new Conveyor("conveyor", 0, 84, 1));
         this.addChild(new Chef("chef", 320 - 100, 0, 1));
         this.addChild(new GameTimer("ingameTimer", 292, 60, 1));
-        this.addChild(new IncreaseIndicator("increaseIndicator", 3, 71, 0));
 
         this.scene.addSystem(new ConveyorMoveSystem());
         this.scene.addSystem(new BeltLetterDirector());

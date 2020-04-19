@@ -1,3 +1,4 @@
+import * as PIXI from "pixi.js";
 import {Component} from "../../../ECS/Component";
 import {Entity} from "../../../ECS/Entity";
 import {System} from "../../../ECS/System";
