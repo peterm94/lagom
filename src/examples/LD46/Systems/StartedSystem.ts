@@ -29,6 +29,6 @@ export class GameState extends System
 
     private startSync = () =>
     {
-        setTimeout(() => GameState.GameRunning = "RUNNING", 1000);
+        setTimeout(() => GameState.GameRunning = "RUNNING", 3000);
     }
 }

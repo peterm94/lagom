@@ -28,8 +28,8 @@ export class StartScreen extends Entity
 
         this.depth = 999999;
 
-        const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white"});
-        const text = new TextDisp(-3000, 0, "e", style);
+        const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "100px", fill: "white"});
+        const text = new TextDisp(-50, 180, "4", style);
         this.addComponent(text);
 
         this.addComponent(new StartScreenComponent());
@@ -41,17 +41,39 @@ export class StartScreenMoverSystem extends System
 {
     types = () => [StartScreenComponent]
 
+    public counter = 0;
+
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
+            const text = entity.getComponentsOfType(TextDisp) as TextDisp[];
+
+            if (GameState.GameRunning != "SYNC-UP")
+            {
+                text[0].pixiObj.position.x = -200;
+            }
+
             if (GameState.GameRunning != "SYNC-UP" && GameState.GameRunning != "RUNNING" && GameState.GameRunning != "DIED")
             {
+                this.counter = 0;
                 entity.transform.position.y = 0;
             }
 
             if (GameState.GameRunning != "SYNC-UP") return;
 
+            this.counter += delta;
+
             entity.transform.position.y -= (delta / 1000) * 145;
+            if (entity.transform.position.y < -130)
+            {
+                entity.transform.position.y = -130;
+            }
+
+            //if (this.counter >= 1000)
+            //{
+                text[0].pixiObj.position.x = 140;
+                text[0].pixiObj.text = Math.ceil(3 - ((this.counter - 50) / 1000)).toString();
+            //}
         });
     }
 }

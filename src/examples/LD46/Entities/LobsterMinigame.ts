@@ -292,7 +292,7 @@ class Chef extends Entity
 
 class ChefMoveSystem extends System
 {
-    types = () => [ChefComponent]
+    types = () => [ChefComponent];
 
     update(delta: number): void
     {
