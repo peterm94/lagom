@@ -6,6 +6,8 @@ import {Sprite} from "../../../Common/Sprite/Sprite";
 import {System} from "../../../ECS/System";
 import {GameState} from "../Systems/StartedSystem";
 import {Component} from "../../../ECS/Component";
+import * as PIXI from "pixi.js";
+import {TextDisp} from "../../../Common/PIXIComponents";
 
 const startScreenSheet = new SpriteSheet(startScreen, 320, 180);
 
@@ -17,7 +19,7 @@ export class StartScreen extends Entity
 {
     constructor()
     {
-        super("frame", 0, 0, DrawLayers.BOTTOM_FRAME);
+        super("startScreen", 0, 0, DrawLayers.BOTTOM_FRAME);
     }
 
     onAdded()
@@ -25,6 +27,11 @@ export class StartScreen extends Entity
         super.onAdded();
 
         this.depth = 999999;
+
+        const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white"});
+        const text = new TextDisp(-3000, 0, "e", style);
+        this.addComponent(text);
+
         this.addComponent(new StartScreenComponent());
         this.addComponent(new Sprite(startScreenSheet.texture(0, 0)));
     }

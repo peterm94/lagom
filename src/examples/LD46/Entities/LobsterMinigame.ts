@@ -9,7 +9,7 @@ import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {Component} from "../../../ECS/Component";
 import {System} from "../../../ECS/System";
-import {RenderRect, TextDisp} from "../../../Common/PIXIComponents";
+import {TextDisp} from "../../../Common/PIXIComponents";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
@@ -92,6 +92,21 @@ class BeltLetterDirector extends System
 
     public update(delta: number): void
     {
+        // yikes
+        this.runOnEntities((entity: Entity) => {
+            if (GameState.GameRunning == "SYNC-UP")
+            {
+                this.letters = [];
+                this.pressedLetters = [];
+                this.trimmed = 0;
+                this.spawned = 0;
+                this.timeElapsed = 0;
+
+                let letters = entity.getComponentsOfType<TextDisp>(TextDisp, true);
+                letters.forEach((l) => l.destroy());
+            }
+        });
+
         if (GameState.GameRunning != "RUNNING") return;
 
         this.timeElapsed += delta;
@@ -179,9 +194,11 @@ class LobstaDirector extends System
 
     public update(delta: number): void
     {
-        if (GameState.GameRunning != "RUNNING") return;
-
         this.runOnEntities((entity: Entity) => {
+            if (GameState.GameRunning != "RUNNING")
+            {
+                entity.transform.position.x = 140;
+            }
 
             entity.transform.position.x = (entity.transform.position.x - (delta / 1000) * 3);
 
@@ -301,6 +318,8 @@ export class ConveyorMoveSystem extends System
 
     update(delta: number): void
     {
+        if (GameState.GameRunning != "RUNNING") return;
+
         this.runOnEntities((entity: Entity) => {
             entity.transform.position.x =
                 (entity.transform.position.x + (delta / 1000) * ConveyorMoveSystem.conveyorSpeed);
@@ -363,7 +382,6 @@ class ConveyorLobsta extends Entity
         super.onAdded();
 
         this.depth = 1;
-        this.transform.position.x = 140;
 
         this.addComponent(new AnimatedSprite(lobstaSheet.textureSliceFromRow(0, 0, 9), {
             animationEndAction: AnimationEnd.LOOP,
@@ -409,7 +427,12 @@ class ConveyorLobsta extends Entity
                     txt.pixiObj.style.fill = RED;
 
                     caller.parent.transform.position.x +=
-                        (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed + 1)
+                        (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed + 1);
+
+                    if (caller.parent.transform.position.x > 220)
+                    {
+                        GameState.GameRunning = "DIED";
+                    }
                 }
 
             })

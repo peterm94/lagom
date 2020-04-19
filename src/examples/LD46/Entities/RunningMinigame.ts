@@ -178,6 +178,14 @@ class ObstacleSystem extends System
 
     public update(delta: number): void
     {
+        // cleanup
+        if (GameState.GameRunning == "DIED")
+        {
+            this.runOnEntities((entity: Entity, obstacle: Obstacle) => {
+                entity.destroy();
+            });
+        }
+
         if (GameState.GameRunning != "RUNNING") return;
 
         this.runOnEntities((entity: Entity, obstacle: Obstacle) => {
@@ -202,8 +210,6 @@ class MoveSystem extends System
         if (GameState.GameRunning != "RUNNING") return;
 
         this.runOnEntities((entity: Entity) => {
-            console.log(entity.transform.position.x);
-
             if ((Game.keyboard.isKeyPressed(Key.KeyA) || Game.keyboard.isKeyPressed(Key.ArrowLeft))
                 && entity.transform.position.x > 10)
             {

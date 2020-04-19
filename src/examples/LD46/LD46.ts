@@ -23,6 +23,7 @@ import {ScreenShaker} from "../../Common/Screenshake";
 import {NetJumpMinigame} from "./Entities/NetJumpMinigame";
 import {StartScreen, StartScreenMoverSystem} from "./Entities/StartScreen";
 import {GameState} from "./Systems/StartedSystem";
+import {EndScreen, EndScreenMoverSystem} from "./Entities/EndScreen";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -61,6 +62,7 @@ class MainScene extends Scene
         this.addSystem(new GameState());
         this.addSystem(new FrameMoverSystem());
         this.addSystem(new StartScreenMoverSystem());
+        this.addSystem(new EndScreenMoverSystem());
 
         // Collisions
         collisionMatrix.addCollision(Layers.OBSTACLE, Layers.PLAYER);
@@ -74,6 +76,7 @@ class MainScene extends Scene
         //this.addGUIEntity(new Diagnostics("black", 8));
 
         this.addEntity(new StartScreen());
+        this.addEntity(new EndScreen());
 
         this.addEntity(new ArrowKeys());
         this.addEntity(new SpaceKey());

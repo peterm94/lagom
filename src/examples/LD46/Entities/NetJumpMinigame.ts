@@ -107,6 +107,14 @@ class MoveLefter extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
+            // cleanup
+            if (GameState.GameRunning == "DIED")
+            {
+                entity.destroy();
+            }
+
+            if (GameState.GameRunning != "RUNNING") return;
+
             entity.transform.position.x -= (delta / 1000) * 40;
 
             if (entity.transform.position.x < -100)
