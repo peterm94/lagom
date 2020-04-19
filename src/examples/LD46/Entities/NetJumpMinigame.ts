@@ -106,6 +106,11 @@ class MoveLefter extends System
     {
         this.runOnEntities((entity: Entity) => {
             entity.transform.position.x -= (delta / 1000) * 40;
+
+            if (entity.transform.position.x < -100)
+            {
+                entity.destroy();
+            }
         })
     }
 }
