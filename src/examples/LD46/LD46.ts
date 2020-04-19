@@ -3,6 +3,7 @@ import {Scene} from "../../ECS/Scene";
 import {Diagnostics} from "../../Common/Debug";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import {RunningMinigame} from "./Entities/RunningMinigame";
+import {BoilingMinigame} from "./Entities/BoilingMinigame";
 import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
@@ -77,6 +78,7 @@ class MainScene extends Scene
         // Put any init stuff here
         this.addEntity(new RunningMinigame("runninggame", 220, 0, DrawLayers.MINIGAME));
         // this.addEntity(new Divider());
+        this.addEntity(new BoilingMinigame("lobstergame", 110, 0, DrawLayers.LOBSTER_GAME))
 
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64, DrawLayers.LOBSTER_GAME))
 

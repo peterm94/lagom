@@ -9,7 +9,7 @@ import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {Component} from "../../../ECS/Component";
 import {System} from "../../../ECS/System";
-import {RenderRect, TextDisp} from "../../../Common/PIXIComponents";
+import {TextDisp} from "../../../Common/PIXIComponents";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
