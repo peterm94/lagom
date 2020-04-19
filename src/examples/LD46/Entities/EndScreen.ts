@@ -8,6 +8,7 @@ import {System} from "../../../ECS/System";
 import {GameState} from "../Systems/StartedSystem";
 import {Component} from "../../../ECS/Component";
 import {TextDisp} from "../../../Common/PIXIComponents";
+import {GameTimer} from "../Entities/LobsterMinigame";
 
 const endScreenSheet = new SpriteSheet(endScreen, 320, 180);
 
@@ -33,6 +34,7 @@ export class EndScreen extends Entity
         const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "8px", fill: "white"});
         const text = new TextDisp(240, 120, "Time Survived: ", style);
         this.addComponent(text);
+        this.scene.addSystem(new EndScreenSystem());
     }
 }
 
@@ -52,5 +54,20 @@ export class EndScreenMoverSystem extends System
                 entity.transform.position.y = -9999;
             }
         });
+    }
+}
+
+// sorry peter
+class EndScreenSystem extends System 
+{
+    types = () => [EndScreenComponent]
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity) => 
+        {
+            const text = entity.getComponentsOfType<TextDisp>(TextDisp, true);
+            text[0].pixiObj.text = "Time Survived: " + GameTimer.timerText;
+        })
     }
 }

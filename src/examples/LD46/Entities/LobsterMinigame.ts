@@ -449,9 +449,10 @@ class Conveyor extends Entity
     }
 }
 
-class GameTimer extends Entity
+export class GameTimer extends Entity
 {
     private totalMs: number = 0;
+    static timerText: string = "";
 
     private triggerTimer = (caller: Timer<null>) =>
     {
@@ -467,6 +468,7 @@ class GameTimer extends Entity
         this.totalMs += 1000;
 
         timer.pixiObj.text = this.totalMs / 1000 + "s";
+        GameTimer.timerText = timer.pixiObj.text;
 
         // Right align (hacky)
         timer.pixiObj.position.x = -(timer.pixiObj.width - 24.75);
@@ -544,10 +546,10 @@ export class LobsterMinigame extends Entity
     {
         super.onAdded();
 
-        this.addChild(new IncreaseIndicator("increaseIndicator", 3, 67, 0));
         this.addChild(new Conveyor("conveyor", 0, 84, 1));
         this.addChild(new Chef("chef", 320 - 100, 0, 1));
         this.addChild(new GameTimer("ingameTimer", 292, 60, 1));
+        this.addChild(new IncreaseIndicator("increaseIndicator", 3, 69, 0));
 
         this.scene.addSystem(new ConveyorMoveSystem());
         this.scene.addSystem(new BeltLetterDirector());
