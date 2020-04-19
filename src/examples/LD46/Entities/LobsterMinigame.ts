@@ -73,7 +73,7 @@ class BeltLetterDirector extends System
     private letters: string[] = [];
     private trimmed = 0;
     private spawned = 0;
-    private timeElapsed = 0;//240000;
+    private timeElapsed = 0;
 
     private fillBag()
     {
@@ -93,21 +93,11 @@ class BeltLetterDirector extends System
     {
         this.timeElapsed += delta;
 
-        // Increase difficulty every 30 seconds, to a max of 10 difficulty
-        let difficulty = (this.timeElapsed / 30000) + 1;
-        if (difficulty > 10) difficulty = 10;
-
-        // Base difficulty is send a letter out every 10 seconds.
-        const trigger = 10000;
-
-        // Ramp up to 1 letter a second
-        const ramper = (trigger / difficulty);
-
         // Always spawn one letter at the start, then calculate the amount of letters
         // based off the difficulty ramp and time elapsed
-        const expectedLetters = (this.timeElapsed / ramper) + 1;
+        const expectedLetters = (ConveyorMoveSystem.conveyorSpeed * (this.timeElapsed / 10000)) / 10;
 
-        if (this.letters.length < Math.floor(expectedLetters))
+        if (this.letters.length < (Math.floor(expectedLetters) + 1 ))
         {
             let nextLetter = this.takeLetter();
             if (nextLetter == undefined)
@@ -281,6 +271,7 @@ class ConveyorMoveSystem extends System
 
     update(delta: number): void
     {
+        ConveyorMoveSystem.conveyorSpeed += delta / 1000;
         this.runOnEntities((entity: Entity) => {
             entity.transform.position.x =
                 (entity.transform.position.x + (delta / 1000) * ConveyorMoveSystem.conveyorSpeed);

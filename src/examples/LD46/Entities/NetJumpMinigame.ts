@@ -76,7 +76,7 @@ class JumpSystem extends System
             if (jump.state === JumpState.Ground && Game.keyboard.isKeyPressed(Key.Space))
             {
                 jump.state = JumpState.Jumping;
-                jump.yVel = -4;
+                jump.yVel = -2;
             }
             else if (jump.state === JumpState.Jumping)
             {

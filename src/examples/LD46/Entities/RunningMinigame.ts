@@ -192,7 +192,7 @@ class MoveSystem extends System
         this.runOnEntities((entity: Entity) => {    
             console.log(entity.transform.position.x);
 
-            if (Game.keyboard.isKeyPressed(Key.KeyA) && entity.transform.position.x > 10)
+            if (Game.keyboard.isKeyPressed(Key.ArrowLeft) && entity.transform.position.x > 10)
             {
                 entity.transform.position.x -= 20;
                 // const jumping = entity.addComponent(new Jumping());
@@ -202,7 +202,7 @@ class MoveSystem extends System
                 //     data.destroy();
                 // });
             }
-            else if (Game.keyboard.isKeyPressed(Key.KeyD) && entity.transform.position.x < 70)
+            else if (Game.keyboard.isKeyPressed(Key.ArrowRight) && entity.transform.position.x < 70)
             {
                 entity.transform.position.x += 20;
             }
