@@ -59,7 +59,7 @@ class LetterEntity extends Entity
         }
         else
         {
-            this.addComponent(new RectCollider(system, {width: 12, height: 24, layer: Layers.CONV_LETTERS}));
+            this.addComponent(new RectCollider(system, {width: 18, height: 24, layer: Layers.CONV_LETTERS}));
         }
     }
 }
@@ -97,7 +97,7 @@ class BeltLetterDirector extends System
         // based off the difficulty ramp and time elapsed
         const expectedLetters = (ConveyorMoveSystem.conveyorSpeed * (this.timeElapsed / 10000)) / 10;
 
-        if (this.letters.length < (Math.floor(expectedLetters) + 1 ))
+        if (this.letters.length < (Math.floor(expectedLetters) + 1))
         {
             let nextLetter = this.takeLetter();
             if (nextLetter == undefined)
@@ -263,7 +263,7 @@ class Chef extends Entity
     }
 }
 
-class ConveyorMoveSystem extends System
+export class ConveyorMoveSystem extends System
 {
     static conveyorSpeed = 20;
 

@@ -11,6 +11,7 @@ import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/Coll
 import {RectCollider} from "../../../Collisions/Colliders";
 import {Layers} from "../LD46";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
+import {ConveyorMoveSystem} from "../Entities/LobsterMinigame";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 24, 32);
 
@@ -137,6 +138,8 @@ class PlayerController extends Entity
                 if (caller.parent.getComponent(Jumping) === null)
                 {
                     Log.info("HIT");
+                    // bad for nwo
+                    ConveyorMoveSystem.conveyorSpeed = ConveyorMoveSystem.conveyorSpeed* 1.1;
                 }
                 else
                 {
