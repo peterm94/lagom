@@ -237,7 +237,7 @@ class ChefMoveSystem extends System
 
 export class ConveyorMoveSystem extends System
 {
-    static conveyorSpeed = 20;
+    static conveyorSpeed = 15;
     static increases = 0;
 
     static increaseConveyor = () =>
@@ -422,7 +422,7 @@ class ConveyorLobsta extends Entity
                     caller.parent.transform.position.x +=
                         (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed + 1);
 
-                    if (caller.parent.transform.position.x > 240)
+                    if (caller.parent.transform.position.x > 200)
                     {
                         GameState.GameRunning = "DIED";
                     }
