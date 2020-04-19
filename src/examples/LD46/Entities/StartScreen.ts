@@ -50,12 +50,12 @@ export class StartScreenMoverSystem extends System
 
             if (GameState.GameRunning != "SYNC-UP")
             {
+                this.counter = 0;
                 text[0].pixiObj.position.x = -200;
             }
 
             if (GameState.GameRunning != "SYNC-UP" && GameState.GameRunning != "RUNNING" && GameState.GameRunning != "DIED")
             {
-                this.counter = 0;
                 entity.transform.position.y = 0;
             }
 
@@ -72,7 +72,7 @@ export class StartScreenMoverSystem extends System
             //if (this.counter >= 1000)
             //{
                 text[0].pixiObj.position.x = 140;
-                text[0].pixiObj.text = Math.ceil(3 - ((this.counter - 50) / 1000)).toString();
+                text[0].pixiObj.text = Math.ceil(3 - ((this.counter) / 1000)).toString();
             //}
         });
     }
