@@ -1,6 +1,7 @@
 import {System} from "../../../ECS/System";
 import {Game} from "../../../ECS/Game";
 import {Button} from "../../../Input/Button";
+import {MainScene} from "../LD46";
 
 export class GameState extends System
 {
@@ -19,6 +20,9 @@ export class GameState extends System
             }
             else if (GameState.GameRunning == "DIED")
             {
+
+                this.scene.game.setScene(new MainScene(this.scene.game));
+                this.scene.destroy();
                 GameState.GameRunning = "SYNC-UP";
                 this.startSync();
             }

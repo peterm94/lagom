@@ -116,6 +116,13 @@ export class MainScene extends Scene
 
         this.audioAtlas.play("music");
     }
+
+    destroy(): void
+    {
+        super.destroy();
+
+        this.audioAtlas.sounds.forEach((k, v) => k.stop())
+    }
 }
 
 export class LD46 extends Game
