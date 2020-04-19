@@ -15,6 +15,8 @@ import {Timer} from "../../../Common/Timer";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 32, 32);
 
+const floorY = 80;
+
 class Lobster extends Entity
 {
     onAdded(): void
@@ -84,9 +86,9 @@ class JumpSystem extends System
                 // Gravity
                 entity.transform.y += jump.gravity * delta;
 
-                if (entity.transform.y >= 92)
+                if (entity.transform.y >= floorY)
                 {
-                    entity.transform.y = 92;
+                    entity.transform.y = floorY;
                     jump.state = JumpState.Ground;
                     jump.yVel = 0;
                 }
@@ -104,6 +106,11 @@ class MoveLefter extends System
     {
         this.runOnEntities((entity: Entity) => {
             entity.transform.position.x -= (delta / 1000) * 40;
+
+            if (entity.transform.position.x < -100)
+            {
+                entity.destroy();
+            }
         })
     }
 }
@@ -140,11 +147,11 @@ export class NetJumpMinigame extends Entity
     {
         super.onAdded();
 
-        this.addChild(new Lobster("lobby", 5, 92));
+        this.addChild(new Lobster("lobby", 5, floorY));
 
 
         this.addComponent(new Timer(100, null, true)).onTrigger.register(caller => {
-            caller.parent.addChild(new Net("net", 100, 92));
+            caller.parent.addChild(new Net("net", 100, floorY));
 
             // 4 seconds is probably the fastest it should come out
             caller.remainingMS = MathUtil.randomRange(4000, 10000);
