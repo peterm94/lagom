@@ -26,7 +26,6 @@ export class RunningMinigame extends Entity
         // Child entities
         this.addChild(new ObstacleSpawner(this.gameWidth));
         this.addChild(new PlayerController(this.gameWidth / 2, 55));
-        this.addComponent(new RenderRect(0, 0, this.gameWidth, 100));
 
         // System
         this.scene.addSystem(new ObstacleSystem());
@@ -35,6 +34,8 @@ export class RunningMinigame extends Entity
 
 class ObstacleSpawner extends Entity
 {
+    readonly spawnSpots = [10, 30, 50, 70];
+
     constructor(readonly gameWidth: number)
     {
         super("ObstacleSpawner", 0, 0);
@@ -50,7 +51,7 @@ class ObstacleSpawner extends Entity
         this.addComponent(new ObstacleSpawn());
 
         timer.onTrigger.register((caller) => {
-            this.addChild(new ObstacleController(MathUtil.randomRange(0, this.gameWidth - 12)));
+            this.addChild(new ObstacleController(this.spawnSpots[Math.floor(Math.random() * this.spawnSpots.length)]));
 
             // Reset.
             caller.remainingMS = MathUtil.randomRange(3000, 5000);
@@ -89,7 +90,7 @@ class ObstacleController extends Entity
         }
         else
         {
-            this.addComponent(new RectCollider(system, {width: 24, height: 32, layer: Layers.OBSTACLE}));
+            this.addComponent(new RectCollider(system, {width: 10, height: 10, layer: Layers.OBSTACLE}));
         }
     }
 }
@@ -131,7 +132,7 @@ class PlayerController extends Entity
         else
         {
             this.addComponent(new RectCollider(system, {
-                width: 24, height: 32, layer: Layers.PLAYER
+                width: 10, height: 15, layer: Layers.PLAYER
             })).onTriggerEnter.register((caller, data) => {
                 if (caller.parent.getComponent(Jumping) === null)
                 {
@@ -145,7 +146,7 @@ class PlayerController extends Entity
         }
 
         // System
-        this.scene.addSystem(new JumpSystem());
+        this.scene.addSystem(new MoveSystem());
     }
 
     onRemoved()
@@ -182,22 +183,28 @@ class ObstacleSystem extends System
     }
 }
 
-class JumpSystem extends System
+class MoveSystem extends System
 {
     public types = () => [Player];
 
     public update(delta: number): void
     {
-        this.runOnEntities((entity: Entity) => {
+        this.runOnEntities((entity: Entity) => {    
+            console.log(entity.transform.position.x);
 
-            if (Game.keyboard.isKeyPressed(Key.Space))
+            if (Game.keyboard.isKeyPressed(Key.KeyA) && entity.transform.position.x > 10)
             {
-                const jumping = entity.addComponent(new Jumping());
+                entity.transform.position.x -= 20;
+                // const jumping = entity.addComponent(new Jumping());
 
-                entity.addComponent(new Timer(1000, jumping, false))
-                      .onTrigger.register((caller, data) => {
-                    data.destroy();
-                });
+                // entity.addComponent(new Timer(1000, jumping, false))
+                //       .onTrigger.register((caller, data) => {
+                //     data.destroy();
+                // });
+            }
+            else if (Game.keyboard.isKeyPressed(Key.KeyD) && entity.transform.position.x < 70)
+            {
+                entity.transform.position.x += 20;
             }
         });
     }
