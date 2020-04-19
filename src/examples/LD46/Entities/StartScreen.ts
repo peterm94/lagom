@@ -64,9 +64,9 @@ export class StartScreenMoverSystem extends System
             this.counter += delta;
 
             entity.transform.position.y -= (delta / 1000) * 145;
-            if (entity.transform.position.y < -140)
+            if (entity.transform.position.y < -150)
             {
-                entity.transform.position.y = -140;
+                entity.transform.position.y = -150;
             }
 
             //if (this.counter >= 1000)
