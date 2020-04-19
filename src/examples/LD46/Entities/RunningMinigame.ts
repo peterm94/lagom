@@ -12,6 +12,8 @@ import {RectCollider} from "../../../Collisions/Colliders";
 import {Layers} from "../LD46";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import {ConveyorMoveSystem} from "../Entities/LobsterMinigame";
+import {GameState} from "../Systems/StartedSystem";
+import {MoverComponent} from "./Background";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 24, 32);
 
@@ -24,6 +26,7 @@ export class RunningMinigame extends Entity
         super.onAdded();
 
         // Child entities
+        this.addComponent(new MoverComponent());
         this.addChild(new ObstacleSpawner(this.gameWidth));
         this.addChild(new PlayerController(this.gameWidth / 2, 55));
 
@@ -51,6 +54,8 @@ class ObstacleSpawner extends Entity
         this.addComponent(new ObstacleSpawn());
 
         timer.onTrigger.register((caller) => {
+            if (GameState.GameRunning != "RUNNING") return;
+
             this.addChild(new ObstacleController(this.spawnSpots[Math.floor(Math.random() * this.spawnSpots.length)]));
 
             // Reset.
@@ -173,6 +178,8 @@ class ObstacleSystem extends System
 
     public update(delta: number): void
     {
+        if (GameState.GameRunning != "RUNNING") return;
+
         this.runOnEntities((entity: Entity, obstacle: Obstacle) => {
             if (entity.transform.position.y > 150)
             {
@@ -192,6 +199,8 @@ class MoveSystem extends System
 
     public update(delta: number): void
     {
+        if (GameState.GameRunning != "RUNNING") return;
+
         this.runOnEntities((entity: Entity) => {
             console.log(entity.transform.position.x);
 

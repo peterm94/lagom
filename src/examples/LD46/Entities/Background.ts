@@ -10,26 +10,61 @@ import {DrawLayers} from "../LD46";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 
 import bg from '../Art/bgkitchen.png'
+import bg2 from '../Art/bgkitchen2.png'
+import {System} from "../../../ECS/System";
+import {GameState} from "../Systems/StartedSystem";
+import {Component} from "../../../ECS/Component";
 
 const bgsheet = new SpriteSheet(bg, 320, 180);
+const bg2sheet = new SpriteSheet(bg2, 320, 180);
 const backgroundSheet = new SpriteSheet(background, 320, 180);
 const arrowKeysSpritesheet = new SpriteSheet(adkeys, 64, 32);
 const spaceSpriteSheet = new SpriteSheet(space, 64, 32);
 const mouseSpriteSheet = new SpriteSheet(mouse, 32, 32);
 
+export class MoverComponent extends Component
+{
+}
+
+export class FrameMoverSystem extends System
+{
+    types = () => [MoverComponent]
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity) => {
+            if (GameState.GameRunning != "SYNC-UP" && GameState.GameRunning != "RUNNING")
+            {
+                entity.transform.position.y = -145;
+            }
+
+            if (GameState.GameRunning != "SYNC-UP") return;
+            if (entity.transform.position.y >= 0)
+            {
+                entity.transform.position.y = 0;
+                return;
+            }
+
+            entity.transform.position.y += (delta / 1000) * 144;
+        });
+    }
+}
+
 export class ArrowKeys extends Entity
 {
     constructor()
     {
-        super("adkeys", 215, -2, DrawLayers.BOTTOM_FRAME);
+        super("adkeys", 215, 0, DrawLayers.BOTTOM_FRAME);
     }
 
     onAdded()
     {
         super.onAdded();
+
+        this.addComponent(new MoverComponent());
         this.addComponent(
             new AnimatedSprite(arrowKeysSpritesheet.textures([[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]]),
-                               {animationEndAction: AnimationEnd.LOOP, animationSpeed: 200, xOffset: -20}));
+                               {animationEndAction: AnimationEnd.LOOP, animationSpeed: 200, xOffset: -20, yOffset: -2}));
     }
 }
 
@@ -37,16 +72,19 @@ export class SpaceKey extends Entity
 {
     constructor()
     {
-        super("spacekey", 20, 110, DrawLayers.BOTTOM_FRAME);
+        super("spacekey", 20, 0, DrawLayers.BOTTOM_FRAME);
     }
 
     onAdded()
     {
         super.onAdded();
+
+        this.addComponent(new MoverComponent());
         this.addComponent(new AnimatedSprite(spaceSpriteSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0]]),
                                              {
                                                  animationEndAction: AnimationEnd.LOOP, animationSpeed: 200,
-                                                 xOffset: -20
+                                                 xOffset: -20,
+                                                 yOffset: 110
                                              }));
     }
 }
@@ -55,16 +93,19 @@ export class MouseAnimation extends Entity
 {
     constructor()
     {
-        super("mouse", 70, 5, DrawLayers.BOTTOM_FRAME);
+        super("mouse", 70, 0, DrawLayers.BOTTOM_FRAME);
     }
 
     onAdded()
     {
         super.onAdded();
+
+        this.addComponent(new MoverComponent());
         this.addComponent(new AnimatedSprite(mouseSpriteSheet.textures([[0, 0], [1, 0], [2, 0]]),
                                              {
                                                  animationEndAction: AnimationEnd.LOOP, animationSpeed: 200,
-                                                 xOffset: -20
+                                                 xOffset: -20,
+                                                 yOffset: 5
                                              }));
     }
 }
@@ -80,6 +121,7 @@ export class TopFrame extends Entity
     {
         super.onAdded();
 
+        this.addComponent(new MoverComponent());
         // Coloured stroke.
         this.addComponent(new Sprite(backgroundSheet.texture(2, 0)));
 
@@ -114,6 +156,8 @@ export class MinigameBackgrounds extends Entity
     onAdded()
     {
         super.onAdded();
+
+        this.addComponent(new MoverComponent());
         this.addComponent(new Sprite(backgroundSheet.texture(1, 0)));
     }
 }
@@ -128,6 +172,22 @@ export class Background extends Entity
     onAdded()
     {
         super.onAdded();
+
         this.addComponent(new Sprite(bgsheet.texture(0, 0)));
+    }
+}
+
+export class Background2 extends Entity
+{
+    constructor()
+    {
+        super("frame", 0, 0, DrawLayers.BACKGROUND2);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+
+        this.addComponent(new Sprite(bg2sheet.texture(0, 0)));
     }
 }

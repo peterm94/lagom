@@ -14,13 +14,15 @@ import {
     ArrowKeys,
     SpaceKey,
     MouseAnimation,
-    Background
+    Background, FrameMoverSystem, Background2
 } from "./Entities/Background";
 import {DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {Log, LogLevel} from "../../Common/Util";
 import {ScreenShaker} from "../../Common/Screenshake";
 import {NetJumpMinigame} from "./Entities/NetJumpMinigame";
+import {StartScreen, StartScreenMoverSystem} from "./Entities/StartScreen";
+import {GameState} from "./Systems/StartedSystem";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -38,8 +40,9 @@ export enum Layers
 export enum DrawLayers
 {
     TOP_FRAME = 40,
-    MINIGAME_BACKGROUND = 10,
-    BACKGROUND = 30,
+    MINIGAME_BACKGROUND = 19,
+    BACKGROUND = 18,
+    BACKGROUND2 = 21,
     MINIGAME = 20,
     LOBSTER_GAME = 50,
     BOTTOM_FRAME = 60
@@ -55,6 +58,10 @@ class MainScene extends Scene
         this.addGlobalSystem(new FrameTriggerSystem());
         this.addGlobalSystem(new ScreenShaker());
 
+        this.addSystem(new GameState());
+        this.addSystem(new FrameMoverSystem());
+        this.addSystem(new StartScreenMoverSystem());
+
         // Collisions
         collisionMatrix.addCollision(Layers.OBSTACLE, Layers.PLAYER);
         collisionMatrix.addCollision(Layers.CONV_PLAYER, Layers.CONV_LETTERS);
@@ -64,15 +71,18 @@ class MainScene extends Scene
 
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
 
-        this.addGUIEntity(new Diagnostics("black", 8));
+        //this.addGUIEntity(new Diagnostics("black", 8));
+
+        this.addEntity(new StartScreen());
 
         this.addEntity(new ArrowKeys());
         this.addEntity(new SpaceKey());
         this.addEntity(new MouseAnimation());
         this.addEntity(new TopFrame());
         this.addEntity(new BottomFrame());
-        this.addEntity(new Background());
         this.addEntity(new MinigameBackgrounds());
+        this.addEntity(new Background());
+        this.addEntity(new Background2());
 
         // Put any init stuff here
         this.addEntity(new RunningMinigame("runninggame", 220, 0, DrawLayers.MINIGAME));

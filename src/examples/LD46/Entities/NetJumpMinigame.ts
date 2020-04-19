@@ -12,6 +12,8 @@ import {Log, MathUtil} from "../../../Common/Util";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 import {Timer} from "../../../Common/Timer";
+import {MoverComponent} from "./Background";
+import {GameState} from "../Systems/StartedSystem";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 32, 32);
 
@@ -149,14 +151,16 @@ export class NetJumpMinigame extends Entity
 
         this.addChild(new Lobster("lobby", 5, floorY));
 
-
         this.addComponent(new Timer(100, null, true)).onTrigger.register(caller => {
+            if (GameState.GameRunning != "RUNNING") return;
+
             caller.parent.addChild(new Net("net", 100, floorY));
 
             // 4 seconds is probably the fastest it should come out
             caller.remainingMS = MathUtil.randomRange(4000, 10000);
         })
 
+        this.addComponent(new MoverComponent());
         this.scene.addSystem(new MoveLefter());
         this.scene.addSystem(new JumpSystem());
     }
