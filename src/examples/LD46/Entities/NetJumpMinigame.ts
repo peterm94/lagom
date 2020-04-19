@@ -16,6 +16,7 @@ import {MoverComponent} from "./Background";
 import {GameState} from "../Systems/StartedSystem";
 import {RenderRect} from "../../../Common/PIXIComponents";
 import {SoundManager} from "./SoundManager";
+import {ConveyorMoveSystem} from "./LobsterMinigame";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 32, 32);
 
@@ -47,7 +48,7 @@ class Lobster extends Entity
             coll.onTriggerEnter.register((caller, data) => {
                 (this.scene.getEntityWithName("audio") as SoundManager).playSound(
                     Util.choose("hurt1", "hurt2", "hurt3"));
-                Log.info("dead");
+                ConveyorMoveSystem.increaseConveyor();
             })
         }
     }

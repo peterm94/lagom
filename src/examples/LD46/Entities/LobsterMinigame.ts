@@ -471,8 +471,6 @@ class GameTimer extends Entity
         // Right align (hacky)
         timer.pixiObj.position.x = -(timer.pixiObj.width - 24.75);
 
-        console.log(timer.pixiObj.width);
-
         // Reset.
         caller.remainingMS = 1000;
     }
