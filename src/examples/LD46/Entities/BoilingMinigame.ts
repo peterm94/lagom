@@ -8,6 +8,7 @@ import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprit
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import lobsterSoupSprite from "../Art/lobster_soup.png";
 import {MoverComponent} from "./Background";
+import {ConveyorMoveSystem} from "./LobsterMinigame";
 
 const soupSpriteSheet = new SpriteSheet(lobsterSoupSprite, 80, 71);
 
@@ -144,7 +145,7 @@ class BoilingSystem extends System
 
             if (minigame.boilingAmount == 100)
             {
-                console.log("DEAD FROM BOILING")
+                ConveyorMoveSystem.increaseConveyor();
                 minigame.boilingAmount = 0;
             }
 
