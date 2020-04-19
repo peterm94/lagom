@@ -45,13 +45,18 @@ export class TopFrame extends Entity
 {
     constructor()
     {
-        super("frame", 0, 0, DrawLayers.FRAME);
+        super("frame", 0, 0, DrawLayers.TOP_FRAME);
     }
 
     onAdded()
     {
         super.onAdded();
-        this.addComponent(new Sprite(backgroundSheet.texture(3, 0)));
+
+        // Coloured stroke.
+        this.addComponent(new Sprite(backgroundSheet.texture(2, 0)));
+
+        // Black frame.
+        this.addComponent(new Sprite(backgroundSheet.texture(4, 0)));
     }
 }
 
@@ -65,21 +70,36 @@ export class BottomFrame extends Entity
     onAdded()
     {
         super.onAdded();
-        this.addComponent(new Sprite(backgroundSheet.texture(2, 0)));
+
+        // Bottom 2px border.
+        this.addComponent(new Sprite(backgroundSheet.texture(3, 0)));
     }
 }
 
-export class MinigamePanes extends Entity
+export class MinigameBackgrounds extends Entity
 {
     constructor()
     {
-        super("minigamePanes", 0, 0, DrawLayers.MINIGAME_PANES);
+        super("minigamePanes", 0, 0, DrawLayers.MINIGAME_BACKGROUND);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        this.addComponent(new Sprite(backgroundSheet.texture(1, 0)));
+    }
+}
+
+export class Background extends Entity
+{
+    constructor()
+    {
+        super("frame", 0, 0, DrawLayers.BACKGROUND);
     }
 
     onAdded()
     {
         super.onAdded();
         this.addComponent(new Sprite(backgroundSheet.texture(0, 0)));
-        this.addComponent(new Sprite(backgroundSheet.texture(1, 0)));
     }
 }
