@@ -4,6 +4,12 @@ import {Component} from "../../../ECS/Component";
 import {Timer} from "../../../Common/Timer";
 import {MathUtil} from "../../../Common/Util";
 import { Game } from "../../../ECS/Game";
+import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
+import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
+import lobsterSoupSprite from "../Art/lobster_soup.png";
+import {MoverComponent} from "./Background";
+
+const soupSpriteSheet = new SpriteSheet(lobsterSoupSprite, 76, 71);
 
 export class BoilingMinigame extends Entity 
 {
@@ -12,6 +18,10 @@ export class BoilingMinigame extends Entity
     onAdded(): void
     {
         super.onAdded();
+
+        this.addComponent(new MoverComponent());
+
+        this.addChild(new Pot("boilingPot", 0, 10))
  
         const timer = this.addComponent(new Timer(MathUtil.randomRange(3000, 5000), null, true))
         timer.onTrigger.register((caller) => 
@@ -24,6 +34,17 @@ export class BoilingMinigame extends Entity
             // Reset.
             caller.remainingMS = MathUtil.randomRange(3000, 5000);
         });
+    }
+}
+
+class Pot extends Entity
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addComponent(new AnimatedSprite(soupSpriteSheet.textureSliceFromRow(0, 0, 9),
+                                             {animationSpeed: 200, animationEndAction: AnimationEnd.LOOP}));
     }
 }
 
@@ -46,6 +67,6 @@ class BoilingSystem extends System
                 {
                 }
             }
-        }
+        })
     }
 }
