@@ -305,7 +305,7 @@ class ConveyorRunner extends Entity
 
     private fillBag()
     {
-        const letterBag = "abcdefghijklmnopqrstuvwxyz".split('');
+        const letterBag = "bcefghijklmnopqrstuvwxyz".split('');
         // Shuffle the letter bag.
         return letterBag.sort(() => {
             return Math.floor(Math.random() * 3) - 1;
