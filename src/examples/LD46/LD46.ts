@@ -11,7 +11,7 @@ import {
     TopFrame,
     MinigameBackgrounds,
     BottomFrame,
-    ADKeys,
+    ArrowKeys,
     SpaceKey,
     MouseAnimation,
     Background
@@ -66,7 +66,7 @@ class MainScene extends Scene
 
         this.addGUIEntity(new Diagnostics("black", 8));
 
-        this.addEntity(new ADKeys());
+        this.addEntity(new ArrowKeys());
         this.addEntity(new SpaceKey());
         this.addEntity(new MouseAnimation());
         this.addEntity(new TopFrame())

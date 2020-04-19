@@ -1,6 +1,6 @@
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import background from "../Art/background.png";
-import adkeys from "../Art/adkeys.png";
+import arrowkeys from "../Art/arrowkeys.png";
 import space from "../Art/space.png";
 import mouse from "../Art/mouse.png";
 import {Entity} from "../../../ECS/Entity";
@@ -9,11 +9,11 @@ import {DrawLayers} from "../LD46";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 
 const backgroundSheet = new SpriteSheet(background, 320, 180);
-const adkeysSpriteSheet = new SpriteSheet(adkeys, 64, 32);
+const arrowKeysSpritesheet = new SpriteSheet(arrowkeys, 64, 32);
 const spaceSpriteSheet = new SpriteSheet(space, 64, 32);
 const mouseSpriteSheet = new SpriteSheet(mouse, 32, 32);
 
-export class ADKeys extends Entity
+export class ArrowKeys extends Entity
 {
     constructor()
     {
@@ -23,7 +23,7 @@ export class ADKeys extends Entity
     onAdded()
     {
         super.onAdded();
-        this.addComponent(new AnimatedSprite(adkeysSpriteSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]]),
+        this.addComponent(new AnimatedSprite(arrowKeysSpritesheet.textures([[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]]),
                     {animationEndAction: AnimationEnd.LOOP, animationSpeed: 200, xOffset: -20}));
     }
 }
