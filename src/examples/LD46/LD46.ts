@@ -7,11 +7,12 @@ import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
 import {TimerSystem} from "../../Common/Timer";
-import {TopFrame, MinigamePanes, BottomFrame} from "./Entities/Background";
+import {TopFrame, MinigamePanes, BottomFrame, ADKeys} from "./Entities/Background";
 import {DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {Log, LogLevel} from "../../Common/Util";
 import {ScreenShaker} from "../../Common/Screenshake";
+import {AnimatedSprite, AnimationEnd} from "../../Common/Sprite/AnimatedSprite";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -52,6 +53,8 @@ class MainScene extends Scene
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
 
         this.addGUIEntity(new Diagnostics("black", 8));
+
+        this.addEntity(new ADKeys());
         this.addEntity(new TopFrame())
         this.addEntity(new BottomFrame())
         this.addEntity(new MinigamePanes())

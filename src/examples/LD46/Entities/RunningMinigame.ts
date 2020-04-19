@@ -4,7 +4,6 @@ import {System} from "../../../ECS/System";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 import runnerSprite from "../Art/runner.png";
-import adkeys from "../Art/adkeys.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {Timer} from "../../../Common/Timer";
 import {Log, MathUtil} from "../../../Common/Util";
@@ -15,7 +14,6 @@ import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprit
 import {RenderRect} from "../../../Common/PIXIComponents";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 24, 32);
-const adkeysSpriteSheet = new SpriteSheet(adkeys, 64, 32);
 
 export class RunningMinigame extends Entity
 {
@@ -29,8 +27,6 @@ export class RunningMinigame extends Entity
         this.addChild(new ObstacleSpawner(this.gameWidth));
         this.addChild(new PlayerController(this.gameWidth / 2, 55));
         this.addComponent(new RenderRect(0, 0, this.gameWidth, 100));
-        this.addComponent(new AnimatedSprite(adkeysSpriteSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]]),
-                          {animationEndAction: AnimationEnd.LOOP, animationSpeed: 200, xOffset: -20}));
 
         // System
         this.scene.addSystem(new ObstacleSystem());

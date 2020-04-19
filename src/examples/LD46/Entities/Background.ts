@@ -1,10 +1,28 @@
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import background from "../Art/background.png";
+import adkeys from "../Art/adkeys.png";
 import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {DrawLayers} from "../LD46";
+import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 
 const backgroundSheet = new SpriteSheet(background, 320, 180);
+const adkeysSpriteSheet = new SpriteSheet(adkeys, 64, 32);
+
+export class ADKeys extends Entity
+{
+    constructor()
+    {
+        super("adkeys", 215, -2, DrawLayers.BOTTOM_FRAME);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        this.addComponent(new AnimatedSprite(adkeysSpriteSheet.textures([[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0]]),
+                    {animationEndAction: AnimationEnd.LOOP, animationSpeed: 200, xOffset: -20}));
+    }
+}
 
 export class TopFrame extends Entity
 {
