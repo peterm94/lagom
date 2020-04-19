@@ -32,7 +32,7 @@ export class SpaceKey extends Entity
 {
     constructor()
     {
-        super("spacekey",  60, -2, DrawLayers.BOTTOM_FRAME);
+        super("spacekey",  20, 110, DrawLayers.BOTTOM_FRAME);
     }
 
     onAdded()
@@ -47,7 +47,7 @@ export class MouseAnimation extends Entity
 {
     constructor()
     {
-        super("mouse",  18, 0, DrawLayers.BOTTOM_FRAME);
+        super("mouse",  70, 5, DrawLayers.BOTTOM_FRAME);
     }
 
     onAdded()
