@@ -412,9 +412,9 @@ class ConveyorLobsta extends Entity
                     caller.parent.transform.position.x +=
                         (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed + 1);
 
-                    if (caller.parent.transform.position.x > 220)
+                    if (caller.parent.transform.position.x > 240)
                     {
-                        //GameState.GameRunning = "DIED";
+                        GameState.GameRunning = "DIED";
                     }
                 }
 
