@@ -20,6 +20,7 @@ import {DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {Log, LogLevel} from "../../Common/Util";
 import {ScreenShaker} from "../../Common/Screenshake";
+import {NetJumpMinigame} from "./Entities/NetJumpMinigame";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -29,7 +30,9 @@ export enum Layers
     PLAYER,
     CONV_PLAYER,
     CONV_LETTERS,
-    CHEF_CHOP_TRIGGER
+    CHEF_CHOP_TRIGGER,
+    JUMP_NET,
+    JUMP_PLAYER
 }
 
 export enum DrawLayers
@@ -57,6 +60,7 @@ class MainScene extends Scene
         collisionMatrix.addCollision(Layers.CONV_PLAYER, Layers.CONV_LETTERS);
         collisionMatrix.addCollision(Layers.CONV_PLAYER, Layers.CHEF_CHOP_TRIGGER);
         collisionMatrix.addCollision(Layers.CONV_LETTERS, Layers.CHEF_CHOP_TRIGGER);
+        collisionMatrix.addCollision(Layers.JUMP_NET, Layers.JUMP_PLAYER);
 
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
 
@@ -75,6 +79,8 @@ class MainScene extends Scene
         // this.addEntity(new Divider());
 
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64, DrawLayers.LOBSTER_GAME))
+
+        this.addEntity(new NetJumpMinigame("netjumpgame", 0, 0, DrawLayers.MINIGAME));
 
     }
 }
