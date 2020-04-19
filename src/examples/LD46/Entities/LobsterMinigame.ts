@@ -3,6 +3,8 @@ import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import cookingSpr from '../Art/cooking_sheet.png'
 import chefSpr from '../Art/swing.png'
 import lobstaSpr from '../Art/legs.png'
+import smallBubble from '../Art/small_bubble.png'
+import bigBubble from '../Art/big_bubble.png'
 import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import {Component} from "../../../ECS/Component";
@@ -19,6 +21,8 @@ import {Layers} from "../LD46";
 import {Log} from "../../../Common/Util";
 import {ScreenShake} from "../../../Common/Screenshake";
 
+const smallBubbleSheet = new SpriteSheet(smallBubble, 10, 10);
+const bigBubbleSheet = new SpriteSheet(bigBubble, 32, 32);
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
 // 108 actual height
 const chefSheet = new SpriteSheet(chefSpr, 94, 108);
@@ -348,6 +352,10 @@ class ConveyorLobsta extends Entity
         }))
 
         this.addComponent(new ConveyorLobstaComponent());
+        this.addComponent(new AnimatedSprite(smallBubbleSheet.textures([[0, 0], [1, 0]]),
+                             {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 35, yOffset: -25}));
+        this.addComponent(new AnimatedSprite(bigBubbleSheet.textures([[0, 0], [1, 0]]),
+                             {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 42, yOffset: -46}));
 
         // Collision
         const system = this.scene.getGlobalSystem<DiscreteCollisionSystem>(CollisionSystem);

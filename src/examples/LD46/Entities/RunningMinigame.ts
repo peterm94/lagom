@@ -26,7 +26,6 @@ export class RunningMinigame extends Entity
         // Child entities
         this.addChild(new ObstacleSpawner(this.gameWidth));
         this.addChild(new PlayerController(this.gameWidth / 2, 55));
-        this.addComponent(new RenderRect(0, 0, this.gameWidth, 100));
 
         // System
         this.scene.addSystem(new ObstacleSystem());
