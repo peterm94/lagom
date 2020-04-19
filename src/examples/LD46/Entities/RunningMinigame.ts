@@ -6,12 +6,14 @@ import {Game} from "../../../ECS/Game";
 import runnerSprite from "../Art/runner.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {Timer} from "../../../Common/Timer";
-import {Log, MathUtil} from "../../../Common/Util";
+import {Log, MathUtil, Util} from "../../../Common/Util";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
 import {RectCollider} from "../../../Collisions/Colliders";
-import {Layers} from "../LD46";
+import {Layers, MainScene} from "../LD46";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import {ConveyorMoveSystem} from "../Entities/LobsterMinigame";
+import {GameState} from "../Systems/StartedSystem";
+import {MoverComponent} from "./Background";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 24, 32);
 
@@ -24,6 +26,7 @@ export class RunningMinigame extends Entity
         super.onAdded();
 
         // Child entities
+        this.addComponent(new MoverComponent());
         this.addChild(new ObstacleSpawner(this.gameWidth));
         this.addChild(new PlayerController(this.gameWidth / 2, 55));
 
@@ -51,6 +54,8 @@ class ObstacleSpawner extends Entity
         this.addComponent(new ObstacleSpawn());
 
         timer.onTrigger.register((caller) => {
+            if (GameState.GameRunning != "RUNNING") return;
+
             this.addChild(new ObstacleController(this.spawnSpots[Math.floor(Math.random() * this.spawnSpots.length)]));
 
             // Reset.
@@ -138,8 +143,10 @@ class PlayerController extends Entity
                 if (caller.parent.getComponent(Jumping) === null)
                 {
                     Log.info("HIT");
+                    (this.scene as MainScene).audioAtlas.play(Util.choose("hurt1", "hurt2", "hurt3"));
+
                     // bad for nwo
-                    ConveyorMoveSystem.conveyorSpeed = ConveyorMoveSystem.conveyorSpeed* 1.1;
+                    ConveyorMoveSystem.conveyorSpeed = ConveyorMoveSystem.conveyorSpeed * 1.1;
                 }
                 else
                 {
@@ -173,6 +180,16 @@ class ObstacleSystem extends System
 
     public update(delta: number): void
     {
+        // cleanup
+        if (GameState.GameRunning == "DIED")
+        {
+            this.runOnEntities((entity: Entity, obstacle: Obstacle) => {
+                entity.destroy();
+            });
+        }
+
+        if (GameState.GameRunning != "RUNNING") return;
+
         this.runOnEntities((entity: Entity, obstacle: Obstacle) => {
             if (entity.transform.position.y > 150)
             {
@@ -192,13 +209,15 @@ class MoveSystem extends System
 
     public update(delta: number): void
     {
-        this.runOnEntities((entity: Entity) => {
-            console.log(entity.transform.position.x);
+        if (GameState.GameRunning != "RUNNING") return;
 
+        this.runOnEntities((entity: Entity) => {
             if ((Game.keyboard.isKeyPressed(Key.KeyA) || Game.keyboard.isKeyPressed(Key.ArrowLeft))
                 && entity.transform.position.x > 10)
             {
                 entity.transform.position.x -= 20;
+                (this.scene as MainScene).audioAtlas.play("hop");
+
                 // const jumping = entity.addComponent(new Jumping());
 
                 // entity.addComponent(new Timer(1000, jumping, false))
@@ -210,6 +229,7 @@ class MoveSystem extends System
                 && entity.transform.position.x < 70)
             {
                 entity.transform.position.x += 20;
+                (this.scene as MainScene).audioAtlas.play("hop");
             }
         });
     }

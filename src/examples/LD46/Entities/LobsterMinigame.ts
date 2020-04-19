@@ -17,14 +17,14 @@ import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteCon
 import {Timer} from "../../../Common/Timer";
 import {RectCollider} from "../../../Collisions/Colliders";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
-import {Layers} from "../LD46";
-import {Log} from "../../../Common/Util";
+import {Layers, MainScene} from "../LD46";
+import {Log, Util} from "../../../Common/Util";
 import {ScreenShake} from "../../../Common/Screenshake";
+import {GameState} from "../Systems/StartedSystem";
 
 const smallBubbleSheet = new SpriteSheet(smallBubble, 10, 10);
 const bigBubbleSheet = new SpriteSheet(bigBubble, 32, 32);
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
-// 108 actual height
 const chefSheet = new SpriteSheet(chefSpr, 94, 108);
 const lobstaSheet = new SpriteSheet(lobstaSpr, 48, 64);
 
@@ -91,6 +91,23 @@ class BeltLetterDirector extends System
 
     public update(delta: number): void
     {
+        // yikes
+        this.runOnEntities((entity: Entity) => {
+            if (GameState.GameRunning == "SYNC-UP")
+            {
+                this.letters = [];
+                this.pressedLetters = [];
+                this.trimmed = 0;
+                this.spawned = 0;
+                this.timeElapsed = 0;
+
+                let letters = entity.getComponentsOfType<TextDisp>(TextDisp, true);
+                letters.forEach((l) => l.destroy());
+            }
+        });
+
+        if (GameState.GameRunning != "RUNNING") return;
+
         this.timeElapsed += delta;
 
         // Always spawn one letter at the start, then calculate the amount of letters
@@ -177,6 +194,10 @@ class LobstaDirector extends System
     public update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
+            if (GameState.GameRunning != "RUNNING")
+            {
+                entity.transform.position.x = 140;
+            }
 
             entity.transform.position.x = (entity.transform.position.x - (delta / 1000) * 3);
 
@@ -201,14 +222,19 @@ enum ChefAnimations
     Reset
 }
 
+class ChefComponent extends Component
+{
+}
+
 class Chef extends Entity
 {
     onAdded(): void
     {
         super.onAdded();
 
+        this.addComponent(new ChefComponent());
         const spr = this.addComponent(new AnimatedSpriteController(
-            ChefAnimations.Swinging,
+            ChefAnimations.Idle,
             [
                 {
                     id: ChefAnimations.Idle,
@@ -220,6 +246,7 @@ class Chef extends Entity
                         [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]),
                     config: {animationSpeed: 100, animationEndAction: AnimationEnd.STOP},
                     events: new Map([[4, () => {
+                        (this.scene as MainScene).audioAtlas.play(Util.choose("chop1", "chop2", "chop3"));
                         this.addComponent(new ScreenShake(0.5, 20));
                         const timer = this.addComponent(new Timer(200, spr, false));
                         timer.onTrigger.register((caller, data) => {
@@ -263,6 +290,26 @@ class Chef extends Entity
     }
 }
 
+class ChefMoveSystem extends System
+{
+    types = () => [ChefComponent];
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity) => {
+            if (GameState.GameRunning != "SYNC-UP" && GameState.GameRunning != "RUNNING")
+            {
+                entity.transform.position.x = 320;
+            }
+
+            if (GameState.GameRunning != "SYNC-UP") return;
+            if (entity.transform.position.x < 200) return;
+
+            entity.transform.position.x -= (delta / 1000) * 100;
+        });
+    }
+}
+
 export class ConveyorMoveSystem extends System
 {
     static conveyorSpeed = 20;
@@ -271,7 +318,12 @@ export class ConveyorMoveSystem extends System
 
     update(delta: number): void
     {
-        ConveyorMoveSystem.conveyorSpeed += delta / 1000;
+        if (GameState.GameRunning != "RUNNING")
+        {
+            ConveyorMoveSystem.conveyorSpeed = 20;
+            return;
+        }
+
         this.runOnEntities((entity: Entity) => {
             entity.transform.position.x =
                 (entity.transform.position.x + (delta / 1000) * ConveyorMoveSystem.conveyorSpeed);
@@ -334,7 +386,6 @@ class ConveyorLobsta extends Entity
         super.onAdded();
 
         this.depth = 1;
-        this.transform.position.x = 120;
 
         this.addComponent(new AnimatedSprite(lobstaSheet.textureSliceFromRow(0, 0, 9), {
             animationEndAction: AnimationEnd.LOOP,
@@ -343,10 +394,10 @@ class ConveyorLobsta extends Entity
         }))
 
         this.addComponent(new ConveyorLobstaComponent());
-        this.addComponent(new AnimatedSprite(smallBubbleSheet.textures([[0, 0], [1, 0]]),
-                             {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 35, yOffset: -25}));
-        this.addComponent(new AnimatedSprite(bigBubbleSheet.textures([[0, 0], [1, 0]]),
-                             {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 42, yOffset: -46}));
+        /*this.addComponent(new AnimatedSprite(smallBubbleSheet.textures([[0, 0], [1, 0]]),
+         {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 35, yOffset: -25}));
+         this.addComponent(new AnimatedSprite(bigBubbleSheet.textures([[0, 0], [1, 0]]),
+         {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 42, yOffset: -46}));*/
 
         // Collision
         const system = this.scene.getGlobalSystem<DiscreteCollisionSystem>(CollisionSystem);
@@ -380,7 +431,12 @@ class ConveyorLobsta extends Entity
                     txt.pixiObj.style.fill = RED;
 
                     caller.parent.transform.position.x +=
-                        (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed + 1)
+                        (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed + 1);
+
+                    if (caller.parent.transform.position.x > 220)
+                    {
+                        GameState.GameRunning = "DIED";
+                    }
                 }
 
             })
@@ -417,5 +473,6 @@ export class LobsterMinigame extends Entity
         this.scene.addSystem(new BeltLetterDirector());
         this.scene.addSystem(new LobstaDirector());
         this.scene.addSystem(new BumpResetSystem());
+        this.scene.addSystem(new ChefMoveSystem());
     }
 }

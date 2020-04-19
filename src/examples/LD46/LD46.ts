@@ -15,13 +15,18 @@ import {
     ArrowKeys,
     SpaceKey,
     MouseAnimation,
-    Background
+    Background, FrameMoverSystem, Background2
 } from "./Entities/Background";
 import {DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {Log, LogLevel} from "../../Common/Util";
 import {ScreenShaker} from "../../Common/Screenshake";
 import {NetJumpMinigame} from "./Entities/NetJumpMinigame";
+import {StartScreen, StartScreenMoverSystem} from "./Entities/StartScreen";
+import {GameState} from "./Systems/StartedSystem";
+import {EndScreen, EndScreenMoverSystem} from "./Entities/EndScreen";
+import {AudioAtlas} from "../../Audio/AudioAtlas";
+import {System} from "../../ECS/System";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -39,15 +44,39 @@ export enum Layers
 export enum DrawLayers
 {
     TOP_FRAME = 40,
-    MINIGAME_BACKGROUND = 10,
-    BACKGROUND = 30,
+    MINIGAME_BACKGROUND = 19,
+    BACKGROUND = 18,
+    BACKGROUND2 = 21,
     MINIGAME = 20,
     LOBSTER_GAME = 50,
     BOTTOM_FRAME = 60
 }
 
-class MainScene extends Scene
+export class MainScene extends Scene
 {
+    audioAtlas: AudioAtlas;
+
+    constructor(game: Game)
+    {
+        super(game);
+
+        // Load sounds
+        this.audioAtlas = new AudioAtlas();
+        const music = this.audioAtlas.load("music", require("./Audio/music.mp3"));
+        music.loop(true);
+        music.volume(0.4);
+
+        this.audioAtlas.load("chop1", require("./Audio/chop1.wav"));
+        this.audioAtlas.load("chop2", require("./Audio/chop2.wav"));
+        this.audioAtlas.load("chop3", require("./Audio/chop3.wav"));
+        this.audioAtlas.load("hop", require("./Audio/hop.wav")).volume(0.5);
+        this.audioAtlas.load("jump", require("./Audio/jump.wav")).volume(0.5);
+        this.audioAtlas.load("hurt1", require("./Audio/hurt1.wav")).volume(0.5);
+        this.audioAtlas.load("hurt2", require("./Audio/hurt2.wav")).volume(0.5);
+        this.audioAtlas.load("hurt3", require("./Audio/hurt3.wav")).volume(0.5);
+    }
+
+
     onAdded(): void
     {
         super.onAdded();
@@ -55,6 +84,11 @@ class MainScene extends Scene
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new FrameTriggerSystem());
         this.addGlobalSystem(new ScreenShaker());
+
+        this.addSystem(new GameState());
+        this.addSystem(new FrameMoverSystem());
+        this.addSystem(new StartScreenMoverSystem());
+        this.addSystem(new EndScreenMoverSystem());
 
         // Collisions
         collisionMatrix.addCollision(Layers.OBSTACLE, Layers.PLAYER);
@@ -65,15 +99,19 @@ class MainScene extends Scene
 
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
 
-        this.addGUIEntity(new Diagnostics("black", 8));
+        // this.addGUIEntity(new Diagnostics("white", 8));
+
+        this.addEntity(new StartScreen());
+        this.addEntity(new EndScreen());
 
         this.addEntity(new ArrowKeys());
         this.addEntity(new SpaceKey());
         this.addEntity(new MouseAnimation());
         this.addEntity(new TopFrame());
         this.addEntity(new BottomFrame());
-        this.addEntity(new Background());
         this.addEntity(new MinigameBackgrounds());
+        this.addEntity(new Background());
+        this.addEntity(new Background2());
 
         // Put any init stuff here
         this.addEntity(new RunningMinigame("runninggame", 220, 0, DrawLayers.MINIGAME));
@@ -84,21 +122,14 @@ class MainScene extends Scene
 
         this.addEntity(new NetJumpMinigame("netjumpgame", 0, 0, DrawLayers.MINIGAME));
 
-    }
-}
-
-export class Divider extends Entity
-{
-    constructor()
-    {
-        super("Divider", 159, 0);
+        this.audioAtlas.play("music");
     }
 
-    public onAdded()
+    destroy(): void
     {
-        super.onAdded();
+        super.destroy();
 
-        this.addComponent(new RenderRect(0, 0, 1, 320, null, 0x000));
+        this.audioAtlas.sounds.forEach((k, v) => k.stop())
     }
 }
 

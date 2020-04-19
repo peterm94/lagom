@@ -7,11 +7,14 @@ import {Component} from "../../../ECS/Component";
 import {System} from "../../../ECS/System";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
 import {RectCollider} from "../../../Collisions/Colliders";
-import {Layers} from "../LD46";
-import {Log, MathUtil} from "../../../Common/Util";
+import {Layers, MainScene} from "../LD46";
+import {Log, MathUtil, Util} from "../../../Common/Util";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 import {Timer} from "../../../Common/Timer";
+import {MoverComponent} from "./Background";
+import {GameState} from "../Systems/StartedSystem";
+import {RenderRect} from "../../../Common/PIXIComponents";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 32, 32);
 
@@ -38,9 +41,10 @@ class Lobster extends Entity
         else
         {
             let coll = this.addComponent(
-                new RectCollider(system, {xOff: 10, yOff: 20, width: 10, height: 10, layer: Layers.JUMP_NET}))
+                new RectCollider(system, {xOff: 10, yOff: 20, width: 10, height: 10, layer: Layers.JUMP_PLAYER}))
 
             coll.onTriggerEnter.register((caller, data) => {
+                (this.scene as MainScene).audioAtlas.play(Util.choose("hurt1", "hurt2", "hurt3"));
                 Log.info("dead");
             })
         }
@@ -75,10 +79,20 @@ class JumpSystem extends System
 
             if (jump.state === JumpState.Ground && Game.keyboard.isKeyPressed(Key.Space))
             {
+                (this.scene as MainScene).audioAtlas.play("jump");
                 jump.state = JumpState.Jumping;
-                jump.yVel = -2;
+                jump.yVel = -4;
             }
-            else if (jump.state === JumpState.Jumping)
+        });
+    }
+
+    fixedUpdate(delta: number): void
+    {
+        super.fixedUpdate(delta);
+
+        this.runOnEntities((entity: Entity, jump: Jump) => {
+
+            if (jump.state === JumpState.Jumping)
             {
                 jump.yVel -= jump.yVel * jump.drag * delta;
                 entity.transform.y += jump.yVel;
@@ -105,6 +119,14 @@ class MoveLefter extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity) => {
+            // cleanup
+            if (GameState.GameRunning == "DIED")
+            {
+                entity.destroy();
+            }
+
+            if (GameState.GameRunning != "RUNNING") return;
+
             entity.transform.position.x -= (delta / 1000) * 40;
 
             if (entity.transform.position.x < -100)
@@ -149,14 +171,16 @@ export class NetJumpMinigame extends Entity
 
         this.addChild(new Lobster("lobby", 5, floorY));
 
-
         this.addComponent(new Timer(100, null, true)).onTrigger.register(caller => {
+            if (GameState.GameRunning != "RUNNING") return;
+
             caller.parent.addChild(new Net("net", 100, floorY));
 
             // 4 seconds is probably the fastest it should come out
             caller.remainingMS = MathUtil.randomRange(4000, 10000);
         })
 
+        this.addComponent(new MoverComponent());
         this.scene.addSystem(new MoveLefter());
         this.scene.addSystem(new JumpSystem());
     }
