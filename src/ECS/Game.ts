@@ -1,6 +1,7 @@
 import * as PIXI from "pixi.js";
 import {Scene} from "./Scene";
 import {Log} from "../Common/Util";
+import WebFont from "webfontloader";
 
 // https://www.npmjs.com/package/pixi.js-keyboard
 // keys: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/code#Code_values
@@ -52,6 +53,8 @@ export class Game
 
     // Accumulated time since the last update. Used to keep the framerate fixed independently of the elapsed time.
     private elapsedSinceUpdate = 0;
+
+    fontContext?: WebFont.Config;
 
     // Fixed timestep rate for logic updates (60hz)
     static readonly fixedDeltaMS = 1000 / 60;
@@ -112,12 +115,14 @@ export class Game
         preserveDrawingBuffer?: boolean;
         backgroundColor?: number;
         powerPreference?: string;
+        fontContext?: WebFont.Config;
         context?: unknown;
     })
     {
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
         this.manager = new PIXI.interaction.InteractionManager(this.renderer);
+        this.fontContext = options?.fontContext ?? undefined;
     }
 
     /**

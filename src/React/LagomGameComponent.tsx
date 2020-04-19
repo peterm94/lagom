@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {Game} from "../ECS/Game";
-
+import Webfont from "webfontloader";
 
 export class LagomGameComponent extends React.Component<{ game: Game }, {}>
 {
@@ -13,7 +13,6 @@ export class LagomGameComponent extends React.Component<{ game: Game }, {}>
         this.game = props.game;
     }
 
-
     /**
      * After mounting, add the Pixi Renderer to the div and start the Application.
      */
@@ -23,7 +22,21 @@ export class LagomGameComponent extends React.Component<{ game: Game }, {}>
         {
             this.gameCanvas.appendChild(this.game.renderer.view);
         }
-        this.game.start();
+
+        if (this.game.fontContext != null)
+        {
+            Webfont.load({
+                ...this.game.fontContext,
+                active: () =>
+                {
+                    this.game.start();
+                }
+            });
+        }
+        else
+        {
+            this.game.start();
+        }
     }
 
     componentWillUnmount(): void
