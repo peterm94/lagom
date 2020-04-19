@@ -156,7 +156,7 @@ class BeltLetterDirector extends System
 
             for (const letter of letters)
             {
-                if (letter.pixiObj.position.x > 320)
+                if (letter.parent.transform.x > 320)
                 {
                     // They didn't press the letter even though it went off screen so we add it to
                     // the array
@@ -227,7 +227,7 @@ class Chef extends Entity
                     config: {animationSpeed: 100, animationEndAction: AnimationEnd.STOP},
                     events: new Map([[4, () => {
                         this.addComponent(new ScreenShake(0.5, 20));
-                        const timer = this.addComponent(new Timer(500, spr, false));
+                        const timer = this.addComponent(new Timer(200, spr, false));
                         timer.onTrigger.register((caller, data) => {
                             data.setAnimation(ChefAnimations.Reset)
                         });
@@ -238,7 +238,7 @@ class Chef extends Entity
                     textures: chefSheet.textures([[5, 0], [0, 0]]),
                     config: {animationSpeed: 100, animationEndAction: AnimationEnd.STOP},
                     events: new Map([[1, () => {
-                        const timer = this.addComponent(new Timer(200, spr, false));
+                        const timer = this.addComponent(new Timer(100, spr, false));
                         timer.onTrigger.register((caller, data) => {
                             data.setAnimation(ChefAnimations.Idle)
                         });
@@ -343,8 +343,8 @@ class ConveyorLobsta extends Entity
 
         this.addComponent(new AnimatedSprite(lobstaSheet.textureSliceFromRow(0, 0, 9), {
             animationEndAction: AnimationEnd.LOOP,
-            animationSpeed: 100,
-            yOffset: -30
+            animationSpeed: 80,
+            yOffset: -35
         }))
 
         this.addComponent(new ConveyorLobstaComponent());
@@ -380,8 +380,8 @@ class ConveyorLobsta extends Entity
                 {
                     txt.pixiObj.style.fill = RED;
 
-                    caller.parent.transform.position.x += (Game.fixedDeltaMS / 1000)
-                        * (ConveyorMoveSystem.conveyorSpeed - 1)
+                    caller.parent.transform.position.x +=
+                        (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed + 1)
                 }
 
             })
@@ -411,8 +411,8 @@ export class LobsterMinigame extends Entity
     {
         super.onAdded();
 
-        this.addChild(new Conveyor("conveyor", 0, 84));
-        this.addChild(new Chef("chef", 320 - 100));
+        this.addChild(new Conveyor("conveyor", 0, 84, 1));
+        this.addChild(new Chef("chef", 320 - 100, 0, 1));
 
         this.scene.addSystem(new ConveyorMoveSystem());
         this.scene.addSystem(new BeltLetterDirector());
