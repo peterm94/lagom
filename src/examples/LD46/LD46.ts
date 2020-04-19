@@ -24,8 +24,16 @@ import {NetJumpMinigame} from "./Entities/NetJumpMinigame";
 import {StartScreen, StartScreenMoverSystem} from "./Entities/StartScreen";
 import {GameState} from "./Systems/StartedSystem";
 import {EndScreen, EndScreenMoverSystem} from "./Entities/EndScreen";
+import {AudioAtlas} from "../../Audio/AudioAtlas";
+import {System} from "../../ECS/System";
 
 const collisionMatrix = new CollisionMatrix();
+
+// Load sounds
+const audioAtlas = new AudioAtlas();
+const music = audioAtlas.load("music", require("./Audio/music.mp3"));
+music.loop(true);
+music.rate(1);
 
 export enum Layers
 {
@@ -73,7 +81,7 @@ class MainScene extends Scene
 
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
 
-        //this.addGUIEntity(new Diagnostics("black", 8));
+        // this.addGUIEntity(new Diagnostics("white", 8));
 
         this.addEntity(new StartScreen());
         this.addEntity(new EndScreen());
@@ -95,21 +103,7 @@ class MainScene extends Scene
 
         this.addEntity(new NetJumpMinigame("netjumpgame", 0, 0, DrawLayers.MINIGAME));
 
-    }
-}
-
-export class Divider extends Entity
-{
-    constructor()
-    {
-        super("Divider", 159, 0);
-    }
-
-    public onAdded()
-    {
-        super.onAdded();
-
-        this.addComponent(new RenderRect(0, 0, 1, 320, null, 0x000));
+        audioAtlas.play("music");
     }
 }
 
