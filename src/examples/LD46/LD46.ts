@@ -7,7 +7,7 @@ import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
 import {TimerSystem} from "../../Common/Timer";
-import {Background} from "./Entities/Background";
+import {TopFrame, MinigamePanes, BottomFrame} from "./Entities/Background";
 import {DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {Log, LogLevel} from "../../Common/Util";
@@ -26,8 +26,11 @@ export enum Layers
 
 export enum DrawLayers
 {
-    BACKGROUND = 100,
-    LOBSTER = 150
+    FRAME = 120,
+    MINIGAME_PANES = 90,
+    MINIGAME = 100,
+    LOBSTER = 150,
+    BOTTOM_FRAME = 200
 }
 
 class MainScene extends Scene
@@ -49,10 +52,12 @@ class MainScene extends Scene
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
 
         this.addGUIEntity(new Diagnostics("black", 8));
-        this.addEntity(new Background())
+        this.addEntity(new TopFrame())
+        this.addEntity(new BottomFrame())
+        this.addEntity(new MinigamePanes())
 
         // Put any init stuff here
-        this.addEntity(new RunningMinigame("runninggame", 220, 0, DrawLayers.LOBSTER));
+        this.addEntity(new RunningMinigame("runninggame", 220, 0, DrawLayers.MINIGAME));
         // this.addEntity(new Divider());
 
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64, DrawLayers.LOBSTER))
