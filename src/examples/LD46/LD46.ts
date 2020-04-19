@@ -11,7 +11,7 @@ import {
     TopFrame,
     MinigameBackgrounds,
     BottomFrame,
-    ADKeys,
+    ArrowKeys,
     SpaceKey,
     MouseAnimation,
     Background
@@ -66,13 +66,13 @@ class MainScene extends Scene
 
         this.addGUIEntity(new Diagnostics("black", 8));
 
-        this.addEntity(new ADKeys());
+        this.addEntity(new ArrowKeys());
         this.addEntity(new SpaceKey());
         this.addEntity(new MouseAnimation());
-        this.addEntity(new TopFrame())
-        this.addEntity(new BottomFrame())
-        this.addEntity(new Background())
-        this.addEntity(new MinigameBackgrounds())
+        this.addEntity(new TopFrame());
+        this.addEntity(new BottomFrame());
+        this.addEntity(new Background());
+        this.addEntity(new MinigameBackgrounds());
 
         // Put any init stuff here
         this.addEntity(new RunningMinigame("runninggame", 220, 0, DrawLayers.MINIGAME));
