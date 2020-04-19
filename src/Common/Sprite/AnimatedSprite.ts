@@ -146,6 +146,6 @@ export class AnimatedSprite extends FrameTrigger<number>
     {
         super.onRemoved();
         this.onFrameChange.releaseAll();
-        if (this.sprite) this.sprite.destroy();
+        if (this.sprite && this.sprite.active) this.sprite.destroy();
     }
 }

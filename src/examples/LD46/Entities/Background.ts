@@ -6,16 +6,45 @@ import {DrawLayers} from "../LD46";
 
 const backgroundSheet = new SpriteSheet(background, 320, 180);
 
-export class Background extends Entity
+export class TopFrame extends Entity
 {
     constructor()
     {
-        super("background", 0, 0, DrawLayers.BACKGROUND);
+        super("frame", 0, 0, DrawLayers.FRAME);
     }
 
     onAdded()
     {
         super.onAdded();
-        this.addComponent(new Sprite(backgroundSheet.textureFromIndex(0)));
+        this.addComponent(new Sprite(backgroundSheet.texture(3, 0)));
+    }
+}
+
+export class BottomFrame extends Entity
+{
+    constructor()
+    {
+        super("frame", 0, 0, DrawLayers.BOTTOM_FRAME);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        this.addComponent(new Sprite(backgroundSheet.texture(2, 0)));
+    }
+}
+
+export class MinigamePanes extends Entity
+{
+    constructor()
+    {
+        super("minigamePanes", 0, 0, DrawLayers.MINIGAME_PANES);
+    }
+
+    onAdded()
+    {
+        super.onAdded();
+        this.addComponent(new Sprite(backgroundSheet.texture(0, 0)));
+        this.addComponent(new Sprite(backgroundSheet.texture(1, 0)));
     }
 }
