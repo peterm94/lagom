@@ -59,7 +59,7 @@ class LetterEntity extends Entity
         }
         else
         {
-            this.addComponent(new RectCollider(system, {width: 18, height: 24, layer: Layers.CONV_LETTERS}));
+            this.addComponent(new RectCollider(system, {width: 12, height: 24, layer: Layers.CONV_LETTERS}));
         }
     }
 }
