@@ -93,7 +93,7 @@ export class MouseAnimation extends Entity
 {
     constructor()
     {
-        super("mouse", 70, 0, DrawLayers.BOTTOM_FRAME);
+        super("mouse", 90, 0, DrawLayers.BOTTOM_FRAME);
     }
 
     onAdded()
