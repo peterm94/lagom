@@ -110,7 +110,13 @@ export class LD46 extends Game
                   height: 180,
                   resolution: 4,
                   backgroundColor: 0x88965d,
-                  antialias: false
+                  antialias: false,
+                  fontContext: {
+                      custom: {
+                          families: ['8bitoperator JVE'],
+                          urls: ['css/stylesheet.css']
+                      }
+                  }
               });
 
         this.setScene(new MainScene(this));
