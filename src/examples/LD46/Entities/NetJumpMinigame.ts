@@ -82,18 +82,29 @@ class JumpSystem extends System
             }
             else if (jump.state === JumpState.Jumping)
             {
-                jump.yVel -= jump.yVel * jump.drag * delta;
-                entity.transform.y += jump.yVel;
-
-                // Gravity
-                entity.transform.y += jump.gravity * delta;
-
                 if (entity.transform.y >= floorY)
                 {
                     entity.transform.y = floorY;
                     jump.state = JumpState.Ground;
                     jump.yVel = 0;
                 }
+            }
+        });
+    }
+
+    fixedUpdate(delta: number): void
+    {
+        super.fixedUpdate(delta);
+
+        this.runOnEntities((entity: Entity, jump: Jump) => {
+
+            if (jump.state === JumpState.Jumping)
+            {
+                jump.yVel -= jump.yVel * jump.drag * delta;
+                entity.transform.y += jump.yVel;
+
+                // Gravity
+                entity.transform.y += jump.gravity * delta;
             }
         });
     }
