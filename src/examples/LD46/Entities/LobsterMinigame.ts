@@ -344,7 +344,7 @@ class ConveyorLobsta extends Entity
         this.addComponent(new AnimatedSprite(lobstaSheet.textureSliceFromRow(0, 0, 9), {
             animationEndAction: AnimationEnd.LOOP,
             animationSpeed: 80,
-            yOffset: -30
+            yOffset: -35
         }))
 
         this.addComponent(new ConveyorLobstaComponent());
@@ -381,7 +381,7 @@ class ConveyorLobsta extends Entity
                     txt.pixiObj.style.fill = RED;
 
                     caller.parent.transform.position.x +=
-                        (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed - 1)
+                        (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed + 1)
                 }
 
             })
