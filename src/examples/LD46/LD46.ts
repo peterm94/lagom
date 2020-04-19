@@ -116,7 +116,7 @@ export class MainScene extends Scene
         // Put any init stuff here
         this.addEntity(new RunningMinigame("runninggame", 220, 0, DrawLayers.MINIGAME));
         // this.addEntity(new Divider());
-        this.addEntity(new BoilingMinigame("lobstergame", 110, 0, DrawLayers.LOBSTER_GAME))
+        this.addEntity(new BoilingMinigame("boilinggame", 110, 0, DrawLayers.MINIGAME))
 
         this.addEntity(new LobsterMinigame("lobstergame", 0, 64, DrawLayers.LOBSTER_GAME))
 
