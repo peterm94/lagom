@@ -319,7 +319,7 @@ class ConveyorRunner extends Entity
         if (difficulty > 10) difficulty = 10;
 
         // Base difficulty is send a letter out every 10 seconds.
-        const trigger = 10000;
+        const trigger = 5000;
 
         // Ramp up to 1 letter a second
         const ramper = (trigger / difficulty);
