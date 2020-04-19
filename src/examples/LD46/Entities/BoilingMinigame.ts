@@ -22,7 +22,7 @@ export class BoilingMinigame extends Entity
         this.addComponent(new MoverComponent());
 
         this.addChild(new Pot("boilingPot", 0, 10))
- 
+
         const timer = this.addComponent(new Timer(MathUtil.randomRange(3000, 5000), null, true))
         timer.onTrigger.register((caller) => 
         {
@@ -43,12 +43,17 @@ class Pot extends Entity
     {
         super.onAdded();
 
+        // Soup.
         this.addComponent(new AnimatedSprite(soupSpriteSheet.textureSliceFromRow(0, 0, 9),
                                              {animationSpeed: 200, animationEndAction: AnimationEnd.LOOP}));
+
+        // Overflow.
+        this.addComponent(new AnimatedSprite(soupSpriteSheet.textureSliceFromRow(0, 10, 14),
+                                             {animationSpeed: 200, animationEndAction: AnimationEnd.LOOP}))
     }
 }
 
-class BoilingPot extends Component 
+class BoilingPot extends Component
 {
 
 }
