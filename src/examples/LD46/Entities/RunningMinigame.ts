@@ -11,7 +11,6 @@ import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/Coll
 import {RectCollider} from "../../../Collisions/Colliders";
 import {Layers} from "../LD46";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
-import {RenderRect} from "../../../Common/PIXIComponents";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 24, 32);
 
@@ -90,7 +89,8 @@ class ObstacleController extends Entity
         }
         else
         {
-            this.addComponent(new RectCollider(system, {width: 10, height: 10, layer: Layers.OBSTACLE}));
+            this.addComponent(
+                new RectCollider(system, {xOff: 7, yOff: 18, width: 10, height: 10, layer: Layers.OBSTACLE}));
         }
     }
 }
@@ -132,7 +132,7 @@ class PlayerController extends Entity
         else
         {
             this.addComponent(new RectCollider(system, {
-                width: 10, height: 15, layer: Layers.PLAYER
+                xOff: 7, yOff: 5, width: 10, height: 8, layer: Layers.PLAYER
             })).onTriggerEnter.register((caller, data) => {
                 if (caller.parent.getComponent(Jumping) === null)
                 {
@@ -189,7 +189,7 @@ class MoveSystem extends System
 
     public update(delta: number): void
     {
-        this.runOnEntities((entity: Entity) => {    
+        this.runOnEntities((entity: Entity) => {
             console.log(entity.transform.position.x);
 
             if ((Game.keyboard.isKeyPressed(Key.KeyA) || Game.keyboard.isKeyPressed(Key.ArrowLeft))
