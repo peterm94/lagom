@@ -25,7 +25,6 @@ import {GameState} from "../Systems/StartedSystem";
 const smallBubbleSheet = new SpriteSheet(smallBubble, 10, 10);
 const bigBubbleSheet = new SpriteSheet(bigBubble, 32, 32);
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
-// 108 actual height
 const chefSheet = new SpriteSheet(chefSpr, 94, 108);
 const lobstaSheet = new SpriteSheet(lobstaSpr, 48, 64);
 

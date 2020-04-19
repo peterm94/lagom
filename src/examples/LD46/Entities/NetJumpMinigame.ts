@@ -78,16 +78,7 @@ class JumpSystem extends System
             if (jump.state === JumpState.Ground && Game.keyboard.isKeyPressed(Key.Space))
             {
                 jump.state = JumpState.Jumping;
-                jump.yVel = -2;
-            }
-            else if (jump.state === JumpState.Jumping)
-            {
-                if (entity.transform.y >= floorY)
-                {
-                    entity.transform.y = floorY;
-                    jump.state = JumpState.Ground;
-                    jump.yVel = 0;
-                }
+                jump.yVel = -4;
             }
         });
     }
@@ -105,6 +96,13 @@ class JumpSystem extends System
 
                 // Gravity
                 entity.transform.y += jump.gravity * delta;
+
+                if (entity.transform.y >= floorY)
+                {
+                    entity.transform.y = floorY;
+                    jump.state = JumpState.Ground;
+                    jump.yVel = 0;
+                }
             }
         });
     }
