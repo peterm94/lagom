@@ -311,7 +311,7 @@ class ConveyorRunner extends Entity
     {
         if (GameState.GameRunning == "SYNC-UP")
         {
-            this.totalMs = 240000;
+            this.totalMs = 0;
         }
         if (GameState.GameRunning != "RUNNING") return;
 
