@@ -148,7 +148,7 @@ class PlayerController extends Entity
                         Util.choose("hurt1", "hurt2", "hurt3"));
 
                     // bad for nwo
-                    ConveyorMoveSystem.conveyorSpeed = ConveyorMoveSystem.conveyorSpeed * 1.1;
+                    ConveyorMoveSystem.increaseConveyor();
                 }
                 else
                 {
