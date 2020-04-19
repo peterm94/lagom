@@ -1,6 +1,7 @@
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import background from "../Art/background.png";
 import arrowkeys from "../Art/arrowkeys.png";
+import adkeys from "../Art/adkeys.png";
 import space from "../Art/space.png";
 import mouse from "../Art/mouse.png";
 import {Entity} from "../../../ECS/Entity";
@@ -12,7 +13,7 @@ import bg from '../Art/bgkitchen.png'
 
 const bgsheet = new SpriteSheet(bg, 320, 180);
 const backgroundSheet = new SpriteSheet(background, 320, 180);
-const arrowKeysSpritesheet = new SpriteSheet(arrowkeys, 64, 32);
+const arrowKeysSpritesheet = new SpriteSheet(adkeys, 64, 32);
 const spaceSpriteSheet = new SpriteSheet(space, 64, 32);
 const mouseSpriteSheet = new SpriteSheet(mouse, 32, 32);
 

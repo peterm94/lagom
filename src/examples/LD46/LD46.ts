@@ -69,10 +69,10 @@ class MainScene extends Scene
         this.addEntity(new ArrowKeys());
         this.addEntity(new SpaceKey());
         this.addEntity(new MouseAnimation());
-        this.addEntity(new TopFrame())
-        this.addEntity(new BottomFrame())
-        this.addEntity(new Background())
-        this.addEntity(new MinigameBackgrounds())
+        this.addEntity(new TopFrame());
+        this.addEntity(new BottomFrame());
+        this.addEntity(new Background());
+        this.addEntity(new MinigameBackgrounds());
 
         // Put any init stuff here
         this.addEntity(new RunningMinigame("runninggame", 220, 0, DrawLayers.MINIGAME));
