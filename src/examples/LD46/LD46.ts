@@ -7,7 +7,15 @@ import {Entity} from "../../ECS/Entity";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {LobsterMinigame} from "./Entities/LobsterMinigame";
 import {TimerSystem} from "../../Common/Timer";
-import {TopFrame, MinigameBackgrounds, BottomFrame, ADKeys, SpaceKey, MouseAnimation} from "./Entities/Background";
+import {
+    TopFrame,
+    MinigameBackgrounds,
+    BottomFrame,
+    ADKeys,
+    SpaceKey,
+    MouseAnimation,
+    Background
+} from "./Entities/Background";
 import {DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {Log, LogLevel} from "../../Common/Util";
@@ -59,6 +67,7 @@ class MainScene extends Scene
         this.addEntity(new MouseAnimation());
         this.addEntity(new TopFrame())
         this.addEntity(new BottomFrame())
+        this.addEntity(new Background())
         this.addEntity(new MinigameBackgrounds())
 
         // Put any init stuff here
