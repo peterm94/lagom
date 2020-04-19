@@ -318,7 +318,11 @@ export class ConveyorMoveSystem extends System
 
     update(delta: number): void
     {
-        if (GameState.GameRunning != "RUNNING") return;
+        if (GameState.GameRunning != "RUNNING")
+        {
+            ConveyorMoveSystem.conveyorSpeed = 20;
+            return;
+        }
 
         this.runOnEntities((entity: Entity) => {
             entity.transform.position.x =
