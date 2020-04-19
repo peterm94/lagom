@@ -9,7 +9,7 @@ import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import lobsterSoupSprite from "../Art/lobster_soup.png";
 import {MoverComponent} from "./Background";
 
-const soupSpriteSheet = new SpriteSheet(lobsterSoupSprite, 76, 71);
+const soupSpriteSheet = new SpriteSheet(lobsterSoupSprite, 80, 71);
 
 export class BoilingMinigame extends Entity 
 {
@@ -46,6 +46,10 @@ class Pot extends Entity
         // Soup.
         this.addComponent(new AnimatedSprite(soupSpriteSheet.textureSliceFromRow(0, 0, 9),
                                              {animationSpeed: 200, animationEndAction: AnimationEnd.LOOP}));
+
+        // Pot selected.
+        this.addComponent(new AnimatedSprite(soupSpriteSheet.textureSliceFromRow(0, 15, 15),
+                                             {animationSpeed: 200, animationEndAction: AnimationEnd.LOOP}))
 
         // Overflow.
         this.addComponent(new AnimatedSprite(soupSpriteSheet.textureSliceFromRow(0, 10, 14),
