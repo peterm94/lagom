@@ -9,6 +9,7 @@ import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import lobsterSoupSprite from "../Art/lobster_soup.png";
 import {MoverComponent} from "./Background";
 import {ConveyorMoveSystem} from "./LobsterMinigame";
+import {Button} from "../../../Input/Button";
 
 const soupSpriteSheet = new SpriteSheet(lobsterSoupSprite, 80, 71);
 
@@ -152,7 +153,7 @@ class BoilingSystem extends System
             const mouse = this.scene.game.renderer.plugins.interaction.mouse;
             const x = mouse.global.x;
             const y = mouse.global.y;
-            const mouseDown = mouse.button == 0
+            const mouseDown = Game.mouse.isButtonPressed(Button.LEFT)
             const potSelected = entity.findChildWithName<PotSelected>("potSelected");
 
             if (x > 120 && x < 182 && y > 28.5 && y < 72)
