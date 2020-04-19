@@ -28,7 +28,7 @@ export class StartScreen extends Entity
 
         this.depth = 999999;
 
-        const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "100px", fill: "white"});
+        const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "100px", fill: "white", stroke: "black", strokeThickness: 2});
         const text = new TextDisp(-50, 180, "4", style);
         this.addComponent(text);
 
@@ -64,15 +64,15 @@ export class StartScreenMoverSystem extends System
             this.counter += delta;
 
             entity.transform.position.y -= (delta / 1000) * 145;
-            if (entity.transform.position.y < -160)
+            if (entity.transform.position.y < -140)
             {
-                entity.transform.position.y = -160;
+                entity.transform.position.y = -140;
             }
 
             //if (this.counter >= 1000)
             //{
-                text[0].pixiObj.position.x = 140;
-                text[0].pixiObj.text = Math.ceil(3 - ((this.counter) / 1000)).toString();
+            text[0].pixiObj.position.x = 140;
+            text[0].pixiObj.text = Math.ceil(3 - ((this.counter) / 1000)).toString();
             //}
         });
     }

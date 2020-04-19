@@ -238,6 +238,13 @@ class ChefMoveSystem extends System
 export class ConveyorMoveSystem extends System
 {
     static conveyorSpeed = 20;
+    static increases = 0;
+
+    static increaseConveyor = () =>
+    {
+        ConveyorMoveSystem.conveyorSpeed *= 1.2;
+        ConveyorMoveSystem.increases += 1;
+    }
 
     types = () => [OnConveyor]
 
@@ -245,6 +252,7 @@ export class ConveyorMoveSystem extends System
     {
         if (GameState.GameRunning != "RUNNING")
         {
+            ConveyorMoveSystem.increases = 0;
             ConveyorMoveSystem.conveyorSpeed = 20;
             return;
         }
@@ -294,7 +302,6 @@ class ConveyorRunner extends Entity
     private totalMs: number = 0;
 
     private letterBag = this.fillBag();
-
 
     private fillBag()
     {
@@ -442,6 +449,97 @@ class Conveyor extends Entity
     }
 }
 
+class GameTimer extends Entity
+{
+    private totalMs: number = 0;
+
+    private triggerTimer = (caller: Timer<null>) =>
+    {
+        const timer = this.getComponent(TextDisp) as TextDisp;
+
+        if (GameState.GameRunning == "INTRO" || GameState.GameRunning == "SYNC-UP")
+        {
+            this.totalMs = 0;
+            timer.pixiObj.position.x = 1000;
+        }
+        if (GameState.GameRunning != "RUNNING") return;
+
+        this.totalMs += 1000;
+
+        timer.pixiObj.text = this.totalMs / 1000 + "s";
+
+        // Right align (hacky)
+        timer.pixiObj.position.x = -(timer.pixiObj.width - 24.75);
+
+        console.log(timer.pixiObj.width);
+
+        // Reset.
+        caller.remainingMS = 1000;
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        const timer = this.addComponent(new Timer(1000, null, true));
+        timer.onTrigger.register(this.triggerTimer);
+
+        const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white", stroke: "black", strokeThickness: 2});
+        const text = new TextDisp(1000, 0, this.totalMs / 1000 + "s", style);
+        this.addComponent(text);
+    }
+}
+
+class IncreaseIndicator extends Entity
+{
+    private lastCheckup = 0;
+    private indicatedAt = 0;
+    private totalMs: number = 0;
+
+    private triggerTimer = (caller: Timer<null>) =>
+    {
+        const timer = this.getComponent(TextDisp) as TextDisp;
+        if (GameState.GameRunning == "INTRO" || GameState.GameRunning == "SYNC-UP")
+        {
+            this.totalMs = 0;
+            this.lastCheckup = 0;
+            this.indicatedAt = 0;
+            timer.pixiObj.position.x = 1000;
+        }
+        if (GameState.GameRunning != "RUNNING") return;
+
+        this.totalMs += 100;
+
+        if (ConveyorMoveSystem.increases > this.lastCheckup)
+        {
+            this.lastCheckup = ConveyorMoveSystem.increases;
+            this.indicatedAt = this.totalMs;
+            timer.pixiObj.position.x = 0;
+            timer.pixiObj.text = `Failed x ${ConveyorMoveSystem.increases}. Speeding up...`;
+        }
+
+        if (this.totalMs > this.indicatedAt + 3000)
+        {
+            timer.pixiObj.position.x = 1000;
+        }
+
+        // Reset.
+        caller.remainingMS = 100;
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        const timer = this.addComponent(new Timer(100, null, true));
+        timer.onTrigger.register(this.triggerTimer);
+
+        const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "14px", fill: "red", stroke: "black", strokeThickness: 2});
+        const text = new TextDisp(1000, 0, "Failed. Speeding up...", style);
+        this.addComponent(text);
+    }
+}
+
 export class LobsterMinigame extends Entity
 {
     onAdded(): void
@@ -450,6 +548,8 @@ export class LobsterMinigame extends Entity
 
         this.addChild(new Conveyor("conveyor", 0, 84, 1));
         this.addChild(new Chef("chef", 320 - 100, 0, 1));
+        this.addChild(new GameTimer("ingameTimer", 292, 60, 1));
+        this.addChild(new IncreaseIndicator("increaseIndicator", 3, 71, 0));
 
         this.scene.addSystem(new ConveyorMoveSystem());
         this.scene.addSystem(new BeltLetterDirector());
