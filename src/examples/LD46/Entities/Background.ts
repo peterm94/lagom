@@ -32,7 +32,7 @@ export class SpaceKey extends Entity
 {
     constructor()
     {
-        super("spacekey",  20, 110, DrawLayers.BOTTOM_FRAME);
+        super("spacekey",  18, 30, DrawLayers.BOTTOM_FRAME);
     }
 
     onAdded()
