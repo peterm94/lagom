@@ -14,6 +14,7 @@ import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprit
 import {ConveyorMoveSystem} from "../Entities/LobsterMinigame";
 import {GameState} from "../Systems/StartedSystem";
 import {MoverComponent} from "./Background";
+import {SoundManager} from "./SoundManager";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 24, 32);
 
@@ -143,7 +144,8 @@ class PlayerController extends Entity
                 if (caller.parent.getComponent(Jumping) === null)
                 {
                     Log.info("HIT");
-                    (this.scene as MainScene).audioAtlas.play(Util.choose("hurt1", "hurt2", "hurt3"));
+                    (this.scene.getEntityWithName("audio") as SoundManager).playSound(
+                        Util.choose("hurt1", "hurt2", "hurt3"));
 
                     // bad for nwo
                     ConveyorMoveSystem.conveyorSpeed = ConveyorMoveSystem.conveyorSpeed * 1.1;
@@ -216,7 +218,7 @@ class MoveSystem extends System
                 && entity.transform.position.x > 10)
             {
                 entity.transform.position.x -= 20;
-                (this.scene as MainScene).audioAtlas.play("hop");
+                (this.scene.getEntityWithName("audio") as SoundManager).playSound("hop");
 
                 // const jumping = entity.addComponent(new Jumping());
 
@@ -229,7 +231,7 @@ class MoveSystem extends System
                 && entity.transform.position.x < 70)
             {
                 entity.transform.position.x += 20;
-                (this.scene as MainScene).audioAtlas.play("hop");
+                (this.scene.getEntityWithName("audio") as SoundManager).playSound("hop");
             }
         });
     }

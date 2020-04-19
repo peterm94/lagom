@@ -21,6 +21,7 @@ import {Layers, MainScene} from "../LD46";
 import {Log, Util} from "../../../Common/Util";
 import {ScreenShake} from "../../../Common/Screenshake";
 import {GameState} from "../Systems/StartedSystem";
+import {SoundManager} from "./SoundManager";
 
 const smallBubbleSheet = new SpriteSheet(smallBubble, 10, 10);
 const bigBubbleSheet = new SpriteSheet(bigBubble, 32, 32);
@@ -74,7 +75,7 @@ class BeltLetterDirector extends System
             let letters = entity.getComponentsOfType<TextDisp>(TextDisp, true);
 
             const unpressed = letters.filter((letter) =>
-                letter.pixiObj.style.fill == RED || letter.pixiObj.style.fill == WHITE
+                                                 letter.pixiObj.style.fill == RED || letter.pixiObj.style.fill == WHITE
             );
 
             if (unpressed.length > 0)
@@ -168,7 +169,9 @@ class Chef extends Entity
                         [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]),
                     config: {animationSpeed: 100, animationEndAction: AnimationEnd.STOP},
                     events: new Map([[4, () => {
-                        (this.scene as MainScene).audioAtlas.play(Util.choose("chop1", "chop2", "chop3"));
+                        (this.scene.getEntityWithName("audio") as SoundManager).playSound(
+                            Util.choose("chop1", "chop2", "chop3"));
+
                         this.addComponent(new ScreenShake(0.5, 20));
                         const timer = this.addComponent(new Timer(200, spr, false));
                         timer.onTrigger.register((caller, data) => {

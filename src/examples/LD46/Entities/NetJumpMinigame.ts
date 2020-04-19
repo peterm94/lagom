@@ -15,6 +15,7 @@ import {Timer} from "../../../Common/Timer";
 import {MoverComponent} from "./Background";
 import {GameState} from "../Systems/StartedSystem";
 import {RenderRect} from "../../../Common/PIXIComponents";
+import {SoundManager} from "./SoundManager";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 32, 32);
 
@@ -44,7 +45,8 @@ class Lobster extends Entity
                 new RectCollider(system, {xOff: 10, yOff: 20, width: 10, height: 10, layer: Layers.JUMP_PLAYER}))
 
             coll.onTriggerEnter.register((caller, data) => {
-                (this.scene as MainScene).audioAtlas.play(Util.choose("hurt1", "hurt2", "hurt3"));
+                (this.scene.getEntityWithName("audio") as SoundManager).playSound(
+                    Util.choose("hurt1", "hurt2", "hurt3"));
                 Log.info("dead");
             })
         }
@@ -79,7 +81,7 @@ class JumpSystem extends System
 
             if (jump.state === JumpState.Ground && Game.keyboard.isKeyPressed(Key.Space))
             {
-                (this.scene as MainScene).audioAtlas.play("jump");
+                (this.scene.getEntityWithName("audio") as SoundManager).playSound("jump");
                 jump.state = JumpState.Jumping;
                 jump.yVel = -4;
             }
