@@ -29,12 +29,6 @@ import {System} from "../../ECS/System";
 
 const collisionMatrix = new CollisionMatrix();
 
-// Load sounds
-const audioAtlas = new AudioAtlas();
-const music = audioAtlas.load("music", require("./Audio/music.mp3"));
-music.loop(true);
-music.rate(1);
-
 export enum Layers
 {
     OBSTACLE,
@@ -57,8 +51,25 @@ export enum DrawLayers
     BOTTOM_FRAME = 60
 }
 
-class MainScene extends Scene
+export class MainScene extends Scene
 {
+    audioAtlas: AudioAtlas;
+
+    constructor(game: Game)
+    {
+        super(game);
+
+        // Load sounds
+        this.audioAtlas = new AudioAtlas();
+        const music = this.audioAtlas.load("music", require("./Audio/music.mp3"));
+        music.loop(true);
+
+        this.audioAtlas.load("chop1", require("./Audio/chop1.wav"));
+        this.audioAtlas.load("chop2", require("./Audio/chop2.wav"));
+        this.audioAtlas.load("chop3", require("./Audio/chop3.wav"));
+    }
+
+
     onAdded(): void
     {
         super.onAdded();
@@ -103,7 +114,7 @@ class MainScene extends Scene
 
         this.addEntity(new NetJumpMinigame("netjumpgame", 0, 0, DrawLayers.MINIGAME));
 
-        audioAtlas.play("music");
+        this.audioAtlas.play("music");
     }
 }
 

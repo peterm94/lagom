@@ -17,8 +17,8 @@ import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteCon
 import {Timer} from "../../../Common/Timer";
 import {RectCollider} from "../../../Collisions/Colliders";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
-import {Layers} from "../LD46";
-import {Log} from "../../../Common/Util";
+import {Layers, MainScene} from "../LD46";
+import {Log, Util} from "../../../Common/Util";
 import {ScreenShake} from "../../../Common/Screenshake";
 import {GameState} from "../Systems/StartedSystem";
 
@@ -246,6 +246,7 @@ class Chef extends Entity
                         [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0]]),
                     config: {animationSpeed: 100, animationEndAction: AnimationEnd.STOP},
                     events: new Map([[4, () => {
+                        (this.scene as MainScene).audioAtlas.play(Util.choose("chop1", "chop2", "chop3"));
                         this.addComponent(new ScreenShake(0.5, 20));
                         const timer = this.addComponent(new Timer(200, spr, false));
                         timer.onTrigger.register((caller, data) => {
@@ -394,9 +395,9 @@ class ConveyorLobsta extends Entity
 
         this.addComponent(new ConveyorLobstaComponent());
         /*this.addComponent(new AnimatedSprite(smallBubbleSheet.textures([[0, 0], [1, 0]]),
-                             {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 35, yOffset: -25}));
-        this.addComponent(new AnimatedSprite(bigBubbleSheet.textures([[0, 0], [1, 0]]),
-                             {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 42, yOffset: -46}));*/
+         {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 35, yOffset: -25}));
+         this.addComponent(new AnimatedSprite(bigBubbleSheet.textures([[0, 0], [1, 0]]),
+         {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 42, yOffset: -46}));*/
 
         // Collision
         const system = this.scene.getGlobalSystem<DiscreteCollisionSystem>(CollisionSystem);
