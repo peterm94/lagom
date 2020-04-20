@@ -166,7 +166,7 @@ class PlayerController extends Entity
                     const flash = new AnimatedSprite(backgroundSheet.textureSliceFromRow(0, 8, 8), {
                         animationSpeed: 1000,
                         animationEndAction: AnimationEnd.STOP,
-                        xOffset: 220
+                        xOffset: -220
                     });
 
                     this.parent?.addComponent(flash)
