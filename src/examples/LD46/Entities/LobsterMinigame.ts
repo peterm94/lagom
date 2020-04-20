@@ -120,20 +120,23 @@ class LobstaDirector extends System
 
     public update(delta: number): void
     {
-        this.runOnEntities((entity: Entity) => {
+        this.runOnEntities((entity: Entity, comp: ConveyorLobstaComponent) => {
             if (GameState.GameRunning != "RUNNING")
             {
                 entity.transform.position.x = 140;
             }
 
-            entity.transform.position.x = (entity.transform.position.x - (delta / 1000) * 3);
+            if (!comp.dead)
+            {
+                entity.transform.position.x = (entity.transform.position.x - (delta / 1000) * 3);
+            }
 
             if (entity.transform.position.x < 50)
             {
                 entity.transform.position.x = 50;
             }
 
-            if (entity.transform.position.x > 285)
+            if (!comp.dead && entity.transform.position.x > 285)
             {
                 // End game here
                 entity.transform.position.x = 285;
@@ -238,7 +241,8 @@ class Chef extends Entity
                     data.other.parent.addComponent(new Timer(400, data.other.parent)).onTrigger
                         .register((caller1, data1) => {
                             data1.getComponent<AnimatedSpriteController>(AnimatedSpriteController)?.setAnimation(1);
-                            data1.addComponent(new Timer(4000, null)).onTrigger.register(caller2 => {
+                            data1.getComponent<ConveyorLobstaComponent>(ConveyorLobstaComponent)!.dead = true;
+                            data1.addComponent(new Timer(5000, null)).onTrigger.register(() => {
                                 GameState.GameRunning = "DIED";
                             })
                         })
@@ -399,6 +403,7 @@ class ConveyorRunner extends Entity
 
 class ConveyorLobstaComponent extends Component
 {
+    dead = false;
 }
 
 class ConveyorLobsta extends Entity
