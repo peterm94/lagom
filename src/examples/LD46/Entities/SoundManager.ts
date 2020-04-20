@@ -1,5 +1,4 @@
 import {Entity} from "../../../ECS/Entity";
-import {AudioAtlas} from "../../../Audio/AudioAtlas";
 import {Component} from "../../../ECS/Component";
 import {System} from "../../../ECS/System";
 import {Button} from "../../../Input/Button";
@@ -7,31 +6,18 @@ import muteSpr from "../Art/mute.png"
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import {Game} from "../../../ECS/Game";
 import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteController";
+import {LD46} from "../LD46";
+import {Log} from "../../../Common/Util";
+import {GameState} from "../Systems/StartedSystem";
+import {Timer} from "../../../Common/Timer";
 
 let muteSheet = new SpriteSheet(muteSpr, 22, 22);
-let muted = false;
 
 export class SoundManager extends Entity
 {
-    audioAtlas: AudioAtlas = new AudioAtlas();
-
     constructor()
     {
         super("audio", 0, 0);
-
-        // Load sounds
-        const music = this.audioAtlas.load("music", require("../Audio/music.mp3"));
-        music.loop(true);
-        music.volume(0.4);
-
-        this.audioAtlas.load("chop1", require("../Audio/chop1.wav"));
-        this.audioAtlas.load("chop2", require("../Audio/chop2.wav"));
-        this.audioAtlas.load("chop3", require("../Audio/chop3.wav"));
-        this.audioAtlas.load("hop", require("../Audio/hop.wav")).volume(0.5);
-        this.audioAtlas.load("jump", require("../Audio/jump.wav")).volume(0.5);
-        this.audioAtlas.load("hurt1", require("../Audio/hurt1.wav")).volume(0.5);
-        this.audioAtlas.load("hurt2", require("../Audio/hurt2.wav")).volume(0.5);
-        this.audioAtlas.load("hurt3", require("../Audio/hurt3.wav")).volume(0.5);
 
         this.startMusic();
     }
@@ -41,7 +27,7 @@ export class SoundManager extends Entity
         super.onAdded();
 
         this.addComponent(new MuteComp());
-        this.addComponent(new AnimatedSpriteController(Number(muted), [
+        const spr = this.addComponent(new AnimatedSpriteController(Number(LD46.muted), [
             {
                 id: 0,
                 textures: muteSheet.textures([[0, 0]])
@@ -50,14 +36,18 @@ export class SoundManager extends Entity
                 textures: muteSheet.textures([[1, 0]])
             }]));
 
+        this.addComponent(new Timer(50, spr, false)).onTrigger.register((caller, data) => {
+            data.setAnimation(Number(LD46.muted));
+        })
+
         this.scene.addSystem(new MuteListener());
     }
 
     toggleMute()
     {
-        muted = !muted;
+        LD46.muted = !LD46.muted;
 
-        if (muted)
+        if (LD46.muted)
         {
             this.stopAllSounds();
         }
@@ -69,15 +59,17 @@ export class SoundManager extends Entity
 
     startMusic()
     {
-        if (!muted)
+        if (!LD46.muted && !LD46.musicPlaying)
         {
-            this.audioAtlas.play("music");
+            LD46.audioAtlas.play("music");
+            LD46.musicPlaying = true;
         }
     }
 
     stopAllSounds()
     {
-        this.audioAtlas.sounds.forEach((k, v) => k.stop())
+        LD46.audioAtlas.sounds.forEach((k, v) => k.stop())
+        LD46.musicPlaying = false;
     }
 
     onRemoved(): void
@@ -88,9 +80,9 @@ export class SoundManager extends Entity
 
     playSound(name: string)
     {
-        if (!muted)
+        if (!LD46.muted)
         {
-            this.audioAtlas.play(name);
+            LD46.audioAtlas.play(name);
         }
     }
 }
@@ -114,7 +106,7 @@ class MuteListener extends System
                 if (pos.x > 0 && pos.x < 22 && pos.y > 0 && pos.y < 22)
                 {
                     (e.scene.getEntityWithName("audio") as SoundManager).toggleMute();
-                    spr.setAnimation(Number(muted));
+                    spr.setAnimation(Number(LD46.muted));
                 }
             }
         });
