@@ -238,7 +238,7 @@ class Chef extends Entity
                     data.other.parent.addComponent(new Timer(500, data.other.parent)).onTrigger
                         .register((caller1, data1) => {
                             data1.getComponent<AnimatedSpriteController>(AnimatedSpriteController)?.setAnimation(1);
-                            data1.addComponent(new Timer(5000, null)).onTrigger.register(caller2 => {
+                            data1.addComponent(new Timer(4000, null)).onTrigger.register(caller2 => {
                                 GameState.GameRunning = "DIED";
                             })
                         })
