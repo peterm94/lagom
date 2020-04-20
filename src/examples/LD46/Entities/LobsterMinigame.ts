@@ -69,6 +69,20 @@ class LetterEntity extends Entity
     }
 }
 
+
+class Plated extends Entity
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.depth = 1;
+
+        this.addComponent(new OnConveyor());
+        this.addComponent(new Sprite(platedSheet.textureFromIndex(0), {yOffset: -10}));
+    }
+}
+
 class BeltLetterDirector extends System
 {
     public types = () => [ConveyorRunnerComponent];
@@ -126,17 +140,14 @@ class LobstaDirector extends System
                 entity.transform.position.x = 140;
             }
 
-            if (!comp.dead)
-            {
-                entity.transform.position.x = (entity.transform.position.x - (delta / 1000) * 3);
-            }
+            entity.transform.position.x = (entity.transform.position.x - (delta / 1000) * 3)
 
             if (entity.transform.position.x < 50)
             {
                 entity.transform.position.x = 50;
             }
 
-            if (!comp.dead && entity.transform.position.x > 285)
+            if (entity.transform.position.x > 285)
             {
                 // End game here
                 entity.transform.position.x = 285;
@@ -240,11 +251,12 @@ class Chef extends Entity
                     // forgive me
                     data.other.parent.addComponent(new Timer(400, data.other.parent)).onTrigger
                         .register((caller1, data1) => {
-                            data1.getComponent<AnimatedSpriteController>(AnimatedSpriteController)?.setAnimation(1);
-                            data1.getComponent<ConveyorLobstaComponent>(ConveyorLobstaComponent)!.dead = true;
-                            data1.addComponent(new Timer(5000, null)).onTrigger.register(() => {
+                            data1.parent?.addChild(
+                                new Plated("plated", data1.transform.position.x, data1.transform.position.y));
+                            data1.parent?.addComponent(new Timer(5000, null)).onTrigger.register(() => {
                                 GameState.GameRunning = "DIED";
-                            })
+                            });
+                            data1.destroy();
                         })
                 }
             })
@@ -403,7 +415,6 @@ class ConveyorRunner extends Entity
 
 class ConveyorLobstaComponent extends Component
 {
-    dead = false;
 }
 
 class ConveyorLobsta extends Entity
@@ -414,23 +425,12 @@ class ConveyorLobsta extends Entity
 
         this.depth = 1;
 
-        const spr = this.addComponent(new AnimatedSpriteController(0, [
-            {
-                id: 0,
-                textures: lobstaSheet.textureSliceFromRow(0, 0, 9),
-                config: {
-                    animationEndAction: AnimationEnd.LOOP,
-                    animationSpeed: 80,
-                    yOffset: -35
-                }
-            },
-            {
-                id: 1,
-                textures: platedSheet.textures([[0, 0]]),
-                config: {
-                    yOffset: -10
-                }
-            }]));
+        this.addComponent(new AnimatedSprite(lobstaSheet.textureSliceFromRow(0, 0, 9),
+                                             {
+                                                 animationEndAction: AnimationEnd.LOOP,
+                                                 animationSpeed: 80,
+                                                 yOffset: -35
+                                             }));
 
         this.addComponent(new ConveyorLobstaComponent());
 
