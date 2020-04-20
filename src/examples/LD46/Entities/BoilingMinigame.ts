@@ -1,6 +1,5 @@
 import {Entity} from "../../../ECS/Entity";
 import {System} from "../../../ECS/System";
-import {Component} from "../../../ECS/Component";
 import {Timer} from "../../../Common/Timer";
 import {MathUtil} from "../../../Common/Util";
 import {Game} from "../../../ECS/Game";
@@ -8,7 +7,7 @@ import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprit
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import lobsterSoupSprite from "../Art/lobster_soup.png";
 import burn from "../Art/burn.png";
-import {MoverComponent} from "./Background";
+import {backgroundSheet, MoverComponent} from "./Background";
 import {ConveyorMoveSystem} from "./LobsterMinigame";
 import {Button} from "../../../Input/Button";
 
@@ -120,6 +119,17 @@ class Pot extends Entity
     }
 }
 
+class BgFlash extends Entity
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addComponent(new AnimatedSprite(backgroundSheet.textureSliceFromRow(0, 7, 7),
+                                             {animationSpeed: 1000, animationEndAction: AnimationEnd.LOOP}))
+    }
+}
+
 class BoilingSystem extends System
 {
     types = () => [Soup]
@@ -158,6 +168,14 @@ class BoilingSystem extends System
 
             if (minigame.boilingAmount == 100)
             {
+                const flash = new BgFlash("greenFlash", -110, 0, 5)
+
+                entity.parent?.addChild(flash)
+
+                entity.addComponent(new Timer(500, null, false)).onTrigger.register(_ => {
+                    entity.parent?.removeChild(flash);
+                });
+
                 ConveyorMoveSystem.increaseConveyor();
                 minigame.boilingAmount = 0;
             }
