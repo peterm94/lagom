@@ -112,7 +112,6 @@ class ObstacleController extends Entity
 
         if (system == null)
         {
-            console.error("No collision system detected!");
         }
         else
         {

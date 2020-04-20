@@ -37,7 +37,6 @@ class Lobster extends Entity
 
         if (system === null)
         {
-            console.log("No collision system detected!");
             return;
         }
         else

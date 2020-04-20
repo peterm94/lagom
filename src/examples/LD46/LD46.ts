@@ -141,6 +141,6 @@ export class LD46 extends Game
 
         this.setScene(new MainScene(this));
 
-        Log.logLevel = LogLevel.INFO;
+        Log.logLevel = LogLevel.NONE;
     }
 }
