@@ -27,13 +27,31 @@ export class RunningMinigame extends Entity
     {
         super.onAdded();
 
-        // Child entities
-        this.addComponent(new MoverComponent());
-        this.addChild(new ObstacleSpawner(this.gameWidth));
-        this.addChild(new PlayerController(this.gameWidth / 2, 55));
+        this.addComponent(new Timer(100, null, true)).onTrigger.register(caller =>
+        {
+            // Wait for sync up trigger, then wait 40 seconds for the minigame to load
+            if (GameState.GameRunning == "SYNC-UP")
+            {
+                caller.remainingMS = 42000;
 
-        // System
-        this.scene.addSystem(new ObstacleSystem());
+                return;
+            }
+
+            if (GameState.GameRunning != "RUNNING")
+            {
+                caller.remainingMS = 100;
+
+                return;
+            }
+            // Child entities
+            this.addComponent(new MoverComponent());
+            this.addChild(new ObstacleSpawner(this.gameWidth));
+            this.addChild(new PlayerController(this.gameWidth / 2, 55));
+
+            // System
+            this.scene.addSystem(new ObstacleSystem());
+            caller.destroy();
+        });
     }
 }
 

@@ -7,11 +7,13 @@ import {Game} from "../../../ECS/Game";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import lobsterSoupSprite from "../Art/lobster_soup.png";
+import burn from "../Art/burn.png";
 import {MoverComponent} from "./Background";
 import {ConveyorMoveSystem} from "./LobsterMinigame";
 import {Button} from "../../../Input/Button";
 
 const soupSpriteSheet = new SpriteSheet(lobsterSoupSprite, 80, 71);
+const burnSpriteSheet = new SpriteSheet(burn, 32, 32);
 
 export class BoilingMinigame extends Entity
 {
@@ -38,6 +40,15 @@ export class BoilingMinigame extends Entity
                                  });
 
         this.scene.addSystem(new BoilingSystem());
+    }
+}
+
+class BurnIndicator extends AnimatedSprite
+{
+    constructor()
+    {
+        super(burnSpriteSheet.textureSliceFromRow(0, 0, 1),
+                {animationSpeed: 100, animationEndAction: AnimationEnd.LOOP, xOffset: 28, yOffset: 18});
     }
 }
 
@@ -95,6 +106,7 @@ class Heat extends Entity
 
         this.addComponent(new AnimatedSprite(soupSpriteSheet.textureSliceFromRow(0, 16, 16),
                                              {animationSpeed: 200, animationEndAction: AnimationEnd.LOOP}));
+        this.addComponent(new BurnIndicator());
     }
 }
 

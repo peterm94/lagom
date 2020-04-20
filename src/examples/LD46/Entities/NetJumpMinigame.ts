@@ -78,8 +78,9 @@ class JumpSystem extends System
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, jump: Jump) => {
+        if (GameState.GameRunning != "RUNNING") return;
 
+        this.runOnEntities((entity: Entity, jump: Jump) => {
             if (jump.state === JumpState.Ground && Game.keyboard.isKeyPressed(Key.Space))
             {
                 (this.scene.getEntityWithName("audio") as SoundManager).playSound("jump");
@@ -172,19 +173,39 @@ export class NetJumpMinigame extends Entity
     {
         super.onAdded();
 
-        this.addChild(new Lobster("lobby", 5, floorY));
+        this.addComponent(new Timer(100, null, true)).onTrigger.register(caller =>
+        {
+            // Wait for sync up trigger, then wait 20 seconds for the minigame to load
+            if (GameState.GameRunning == "SYNC-UP")
+            {
+                caller.remainingMS = 22000;
 
-        this.addComponent(new Timer(100, null, true)).onTrigger.register(caller => {
-            if (GameState.GameRunning != "RUNNING") return;
+                return;
+            }
 
-            caller.parent.addChild(new Net("net", 100, floorY));
+            if (GameState.GameRunning != "RUNNING")
+            {
+                caller.remainingMS = 100;
 
-            // 4 seconds is probably the fastest it should come out
-            caller.remainingMS = MathUtil.randomRange(4000, 10000);
-        })
+                return;
+            }
 
-        this.addComponent(new MoverComponent());
-        this.scene.addSystem(new MoveLefter());
-        this.scene.addSystem(new JumpSystem());
+            this.addChild(new Lobster("lobby", 5, floorY));
+
+            this.addComponent(new Timer(100, null, true)).onTrigger.register(caller => {
+                if (GameState.GameRunning != "RUNNING") return;
+
+                caller.parent.addChild(new Net("net", 100, floorY));
+
+                // 4 seconds is probably the fastest it should come out
+                caller.remainingMS = MathUtil.randomRange(4000, 10000);
+            })
+
+            this.addComponent(new MoverComponent());
+            this.scene.addSystem(new MoveLefter());
+            this.scene.addSystem(new JumpSystem());
+
+            caller.destroy();
+        });
     }
 }
