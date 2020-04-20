@@ -147,8 +147,8 @@ export class MouseAnimation extends Entity
         this.addComponent(new AnimatedSprite(mouseSpriteSheet.textures([[0, 0], [1, 0], [2, 0]]),
                                              {
                                                  animationEndAction: AnimationEnd.LOOP, animationSpeed: 200,
-                                                 xOffset: -10,
-                                                 yOffset: 7
+                                                 xOffset: 80,
+                                                 yOffset: 50
                                              }));
     }
 }

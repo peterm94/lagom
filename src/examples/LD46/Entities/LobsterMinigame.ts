@@ -18,7 +18,7 @@ import {Timer} from "../../../Common/Timer";
 import {RectCollider} from "../../../Collisions/Colliders";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
 import {Layers, MainScene} from "../LD46";
-import {Log, Util} from "../../../Common/Util";
+import {Log, MathUtil, Util} from "../../../Common/Util";
 import {ScreenShake} from "../../../Common/Screenshake";
 import {GameState} from "../Systems/StartedSystem";
 import {SoundManager} from "./SoundManager";
@@ -383,10 +383,18 @@ class ConveyorLobsta extends Entity
         }))
 
         this.addComponent(new ConveyorLobstaComponent());
-        /*this.addComponent(new AnimatedSprite(smallBubbleSheet.textures([[0, 0], [1, 0]]),
-         {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 35, yOffset: -25}));
-         this.addComponent(new AnimatedSprite(bigBubbleSheet.textures([[0, 0], [1, 0]]),
-         {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 42, yOffset: -46}));*/
+
+        // dont want to make a system and deal with seperating it, this was done last second
+        this.addComponent(new Timer(100, null, true)).onTrigger.register(caller => {
+            if (GameState.GameRunning != "SYNC-UP") return;
+
+            this.addComponent(new AnimatedSprite(smallBubbleSheet.textures([[0, 0], [1, 0]]),
+                {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 35, yOffset: -25}));
+            this.addComponent(new AnimatedSprite(bigBubbleSheet.textures([[0, 0], [1, 0]]),
+                {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 42, yOffset: -46}));
+
+            caller.destroy();
+        })
 
         // Collision
         const system = this.scene.getGlobalSystem<DiscreteCollisionSystem>(CollisionSystem);
@@ -547,7 +555,7 @@ export class LobsterMinigame extends Entity
         super.onAdded();
 
         this.addChild(new Conveyor("conveyor", 0, 84, 1));
-        this.addChild(new Chef("chef", 320 - 100, 0, 1));
+        this.addChild(new Chef("chef", 320 - 100, 8, 1));
         this.addChild(new GameTimer("ingameTimer", 292, 60, 1));
         this.addChild(new IncreaseIndicator("increaseIndicator", 3, 71, 0));
 

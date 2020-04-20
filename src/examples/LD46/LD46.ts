@@ -25,6 +25,7 @@ import {StartScreen, StartScreenMoverSystem} from "./Entities/StartScreen";
 import {GameState} from "./Systems/StartedSystem";
 import {EndScreen, EndScreenMoverSystem} from "./Entities/EndScreen";
 import {SoundManager} from "./Entities/SoundManager";
+import {AudioAtlas} from "../../Audio/AudioAtlas";
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -103,6 +104,10 @@ export class MainScene extends Scene
 
 export class LD46 extends Game
 {
+    static muted = false;
+    static musicPlaying = false;
+    static audioAtlas: AudioAtlas = new AudioAtlas();
+
     constructor()
     {
         super({
@@ -118,6 +123,20 @@ export class LD46 extends Game
                       }
                   }
               });
+
+        // Load sounds
+        const music = LD46.audioAtlas.load("music", require("./Audio/music.mp3"));
+        music.loop(true);
+        music.volume(0.4);
+
+        LD46.audioAtlas.load("chop1", require("./Audio/chop1.wav"));
+        LD46.audioAtlas.load("chop2", require("./Audio/chop2.wav"));
+        LD46.audioAtlas.load("chop3", require("./Audio/chop3.wav"));
+        LD46.audioAtlas.load("hop", require("./Audio/hop.wav")).volume(0.5);
+        LD46.audioAtlas.load("jump", require("./Audio/jump.wav")).volume(0.5);
+        LD46.audioAtlas.load("hurt1", require("./Audio/hurt1.wav")).volume(0.5);
+        LD46.audioAtlas.load("hurt2", require("./Audio/hurt2.wav")).volume(0.5);
+        LD46.audioAtlas.load("hurt3", require("./Audio/hurt3.wav")).volume(0.5);
 
         this.setScene(new MainScene(this));
 
