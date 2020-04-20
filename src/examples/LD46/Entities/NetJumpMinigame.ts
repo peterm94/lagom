@@ -12,10 +12,11 @@ import {MathUtil, Util} from "../../../Common/Util";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 import {Timer} from "../../../Common/Timer";
-import {MoverComponent} from "./Background";
+import {backgroundSheet, MoverComponent} from "./Background";
 import {GameState} from "../Systems/StartedSystem";
 import {SoundManager} from "./SoundManager";
 import {ConveyorMoveSystem} from "./LobsterMinigame";
+import {ScreenShake} from "../../../Common/Screenshake";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 32, 32);
 
@@ -45,8 +46,23 @@ class Lobster extends Entity
                 new RectCollider(system, {xOff: 10, yOff: 20, width: 10, height: 10, layer: Layers.JUMP_PLAYER}))
 
             coll.onTriggerEnter.register((caller, data) => {
+
+                const flash = new AnimatedSprite(backgroundSheet.textureSliceFromRow(0, 6, 6), {
+                    animationSpeed: 1000,
+                    animationEndAction: AnimationEnd.STOP
+                });
+
+                this.parent?.addComponent(flash)
+
+                this.addComponent(new Timer(500, null, false)).onTrigger.register(_ => {
+                    this.parent?.removeComponent(flash, true);
+                });
+
+                this.addComponent(new ScreenShake(0.25, 500));
+
                 (this.scene.getEntityWithName("audio") as SoundManager).playSound(
                     Util.choose("hurt1", "hurt2", "hurt3"));
+
                 ConveyorMoveSystem.increaseConveyor();
             })
         }

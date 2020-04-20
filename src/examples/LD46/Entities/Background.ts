@@ -19,7 +19,7 @@ import {Timer} from "../../../Common/Timer";
 
 const bgsheet = new SpriteSheet(bg, 320, 180);
 const bg2sheet = new SpriteSheet(bg2, 320, 180);
-const backgroundSheet = new SpriteSheet(background, 320, 180);
+export const backgroundSheet = new SpriteSheet(background, 320, 180);
 const arrowKeysSpritesheet = new SpriteSheet(adkeys, 64, 32);
 const spaceSpriteSheet = new SpriteSheet(space, 64, 32);
 const mouseSpriteSheet = new SpriteSheet(mouse, 32, 32);
