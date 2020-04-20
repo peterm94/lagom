@@ -40,14 +40,26 @@ export class EndScreen extends Entity
 
 export class EndScreenMoverSystem extends System
 {
+    cleanedUp = false;
+
     types = () => [EndScreenComponent]
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity) => {
+        this.runOnEntitiesWithSystem((sys: EndScreenMoverSystem, entity: Entity) => {
             if (GameState.GameRunning == "DIED")
             {
                 entity.transform.position.y = 0;
+
+                if (!sys.cleanedUp)
+                {
+                    entity.scene.getEntityWithName("runninggame")?.destroy();
+                    entity.scene.getEntityWithName("boilinggame")?.destroy();
+                    entity.scene.getEntityWithName("lobstergame")?.destroy();
+                    entity.scene.getEntityWithName("netjumpgame")?.destroy();
+
+                    sys.cleanedUp = true;
+                }
             }
             else
             {
@@ -58,16 +70,16 @@ export class EndScreenMoverSystem extends System
 }
 
 // sorry peter
-class EndScreenSystem extends System 
+class EndScreenSystem extends System
 {
     types = () => [EndScreenComponent]
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity) => 
-        {
-            const text = entity.getComponentsOfType<TextDisp>(TextDisp, true);
-            text[0].pixiObj.text = "Time Survived: " + GameTimer.timerText;
-        })
+        this.runOnEntities((entity: Entity) =>
+                           {
+                               const text = entity.getComponentsOfType<TextDisp>(TextDisp, true);
+                               text[0].pixiObj.text = "Time Survived: " + GameTimer.timerText;
+                           })
     }
 }
