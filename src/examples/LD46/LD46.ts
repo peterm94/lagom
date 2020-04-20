@@ -47,6 +47,7 @@ export enum DrawLayers
     BACKGROUND = 18,
     BACKGROUND2 = 21,
     MINIGAME = 20,
+    START_SCREEN = 45,
     LOBSTER_GAME = 50,
     BOTTOM_FRAME = 60
 }

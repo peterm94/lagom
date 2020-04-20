@@ -26,7 +26,7 @@ export class StartScreen extends Entity
     {
         super.onAdded();
 
-        this.depth = 999999;
+        this.depth = DrawLayers.START_SCREEN;
 
         const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "100px", fill: "white", stroke: "black", strokeThickness: 2});
         const text = new TextDisp(-50, 180, "4", style);
