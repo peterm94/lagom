@@ -14,8 +14,9 @@ import {Layers, MainScene} from "../LD46";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import {ConveyorMoveSystem} from "../Entities/LobsterMinigame";
 import {GameState} from "../Systems/StartedSystem";
-import {MoverComponent} from "./Background";
+import {backgroundSheet, MoverComponent} from "./Background";
 import {SoundManager} from "./SoundManager";
+import {ScreenShake} from "../../../Common/Screenshake";
 
 const runnerSpriteSheet = new SpriteSheet(runnerSprite, 24, 32);
 
@@ -162,7 +163,20 @@ class PlayerController extends Entity
             })).onTriggerEnter.register((caller, data) => {
                 if (caller.parent.getComponent(Jumping) === null)
                 {
-                    Log.info("HIT");
+                    const flash = new AnimatedSprite(backgroundSheet.textureSliceFromRow(0, 8, 8), {
+                        animationSpeed: 1000,
+                        animationEndAction: AnimationEnd.STOP,
+                        xOffset: 220
+                    });
+
+                    this.parent?.addComponent(flash)
+
+                    this.addComponent(new Timer(500, null, false)).onTrigger.register(_ => {
+                        this.parent?.removeComponent(flash, true);
+                    });
+
+                    this.addComponent(new ScreenShake(0.25, 500));
+
                     (this.scene.getEntityWithName("audio") as SoundManager).playSound(
                         Util.choose("hurt1", "hurt2", "hurt3"));
 

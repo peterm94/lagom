@@ -1,7 +1,7 @@
 import {Entity} from "../../../ECS/Entity";
 import {System} from "../../../ECS/System";
 import {Timer} from "../../../Common/Timer";
-import {MathUtil} from "../../../Common/Util";
+import {MathUtil, Util} from "../../../Common/Util";
 import {Game} from "../../../ECS/Game";
 import {AnimatedSprite, AnimationEnd} from "../../../Common/Sprite/AnimatedSprite";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
@@ -10,6 +10,8 @@ import burn from "../Art/burn.png";
 import {backgroundSheet, MoverComponent} from "./Background";
 import {ConveyorMoveSystem} from "./LobsterMinigame";
 import {Button} from "../../../Input/Button";
+import {ScreenShake} from "../../../Common/Screenshake";
+import {SoundManager} from "./SoundManager";
 
 const soupSpriteSheet = new SpriteSheet(lobsterSoupSprite, 80, 71);
 const burnSpriteSheet = new SpriteSheet(burn, 32, 32);
@@ -47,7 +49,7 @@ class BurnIndicator extends AnimatedSprite
     constructor()
     {
         super(burnSpriteSheet.textureSliceFromRow(0, 0, 1),
-                {animationSpeed: 100, animationEndAction: AnimationEnd.LOOP, xOffset: 28, yOffset: 18});
+              {animationSpeed: 100, animationEndAction: AnimationEnd.LOOP, xOffset: 28, yOffset: 18});
     }
 }
 
@@ -119,17 +121,6 @@ class Pot extends Entity
     }
 }
 
-class BgFlash extends Entity
-{
-    onAdded(): void
-    {
-        super.onAdded();
-
-        this.addComponent(new AnimatedSprite(backgroundSheet.textureSliceFromRow(0, 7, 7),
-                                             {animationSpeed: 1000, animationEndAction: AnimationEnd.LOOP}))
-    }
-}
-
 class BoilingSystem extends System
 {
     types = () => [Soup]
@@ -168,13 +159,22 @@ class BoilingSystem extends System
 
             if (minigame.boilingAmount == 100)
             {
-                const flash = new BgFlash("greenFlash", -110, 0, 5)
+                const flash = new AnimatedSprite(backgroundSheet.textureSliceFromRow(0, 7, 7), {
+                    animationSpeed: 1000,
+                    animationEndAction: AnimationEnd.STOP,
+                    xOffset: -110
+                });
 
-                entity.parent?.addChild(flash)
+                entity.parent?.addComponent(flash)
 
                 entity.addComponent(new Timer(500, null, false)).onTrigger.register(_ => {
-                    entity.parent?.removeChild(flash);
+                    entity.parent?.removeComponent(flash, true);
                 });
+
+                entity.addComponent(new ScreenShake(0.25, 500));
+
+                (this.scene.getEntityWithName("audio") as SoundManager).playSound(
+                    Util.choose("hurt1", "hurt2", "hurt3"));
 
                 ConveyorMoveSystem.increaseConveyor();
                 minigame.boilingAmount = 0;
