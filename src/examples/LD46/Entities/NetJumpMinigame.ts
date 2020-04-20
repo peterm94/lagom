@@ -7,14 +7,13 @@ import {Component} from "../../../ECS/Component";
 import {System} from "../../../ECS/System";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
 import {RectCollider} from "../../../Collisions/Colliders";
-import {Layers, MainScene} from "../LD46";
-import {Log, MathUtil, Util} from "../../../Common/Util";
+import {Layers} from "../LD46";
+import {MathUtil, Util} from "../../../Common/Util";
 import {Key} from "../../../Input/Key";
 import {Game} from "../../../ECS/Game";
 import {Timer} from "../../../Common/Timer";
 import {backgroundSheet, MoverComponent} from "./Background";
 import {GameState} from "../Systems/StartedSystem";
-import {RenderRect} from "../../../Common/PIXIComponents";
 import {SoundManager} from "./SoundManager";
 import {ConveyorMoveSystem} from "./LobsterMinigame";
 import {ScreenShake} from "../../../Common/Screenshake";
@@ -189,9 +188,9 @@ export class NetJumpMinigame extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new Timer(100, null, true)).onTrigger.register(caller =>
-        {
-            // Wait for sync up trigger, then wait 20 seconds for the minigame to load
+        this.addComponent(new Timer(100, null, true)).onTrigger.register(caller => {
+            // Wait for sync up trigger, then wait 20
+            // seconds for the minigame to load
             if (GameState.GameRunning == "SYNC-UP")
             {
                 caller.remainingMS = 22000;
@@ -206,16 +205,27 @@ export class NetJumpMinigame extends Entity
                 return;
             }
 
-            this.addChild(new Lobster("lobby", 5, floorY));
+            this.addChild(
+                new Lobster("lobby", 5, floorY));
 
-            this.addComponent(new Timer(100, null, true)).onTrigger.register(caller => {
-                if (GameState.GameRunning != "RUNNING") return;
+            this.addComponent(
+                new Timer(100, null, true)).onTrigger
+                .register(caller => {
+                    if (GameState.GameRunning !=
+                        "RUNNING")
+                    {
+                        return;
+                    }
 
-                caller.parent.addChild(new Net("net", 100, floorY));
+                    caller.parent.addChild(
+                        new Net("net", 100, floorY));
 
-                // 4 seconds is probably the fastest it should come out
-                caller.remainingMS = MathUtil.randomRange(4000, 10000);
-            })
+                    // 4 seconds is probably the
+                    // fastest it should come out
+                    caller.remainingMS =
+                        MathUtil.randomRange(4000,
+                                             10000);
+                })
 
             this.addComponent(new MoverComponent());
             this.scene.addSystem(new MoveLefter());

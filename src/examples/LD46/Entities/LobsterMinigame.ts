@@ -2,7 +2,9 @@ import * as PIXI from "pixi.js";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
 import cookingSpr from '../Art/cooking_sheet.png'
 import chefSpr from '../Art/swing.png'
+import chefBodSpr from '../Art/chefBod.png'
 import lobstaSpr from '../Art/legs.png'
+import platedSpr from '../Art/plated.png'
 import smallBubble from '../Art/small_bubble.png'
 import bigBubble from '../Art/big_bubble.png'
 import {Entity} from "../../../ECS/Entity";
@@ -17,8 +19,8 @@ import {AnimatedSpriteController} from "../../../Common/Sprite/AnimatedSpriteCon
 import {Timer} from "../../../Common/Timer";
 import {RectCollider} from "../../../Collisions/Colliders";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../../Collisions/CollisionSystems";
-import {Layers, MainScene} from "../LD46";
-import {Log, MathUtil, Util} from "../../../Common/Util";
+import {Layers} from "../LD46";
+import {Log, Util} from "../../../Common/Util";
 import {ScreenShake} from "../../../Common/Screenshake";
 import {GameState} from "../Systems/StartedSystem";
 import {SoundManager} from "./SoundManager";
@@ -28,6 +30,8 @@ const bigBubbleSheet = new SpriteSheet(bigBubble, 32, 32);
 const cookingSheet = new SpriteSheet(cookingSpr, 1, 1);
 const chefSheet = new SpriteSheet(chefSpr, 94, 108);
 const lobstaSheet = new SpriteSheet(lobstaSpr, 48, 64);
+const platedSheet = new SpriteSheet(platedSpr, 56, 45);
+const chefBodSheet = new SpriteSheet(chefBodSpr, 35, 13);
 
 const GREEN = "#30cc30";
 const ORANGE = "orange";
@@ -149,6 +153,22 @@ class ChefComponent extends Component
 {
 }
 
+class ChefBod extends Entity
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        // 59, 63 off
+        this.addComponent(new Sprite(chefBodSheet.textureFromIndex(0), {
+            xOffset: 59,
+            yOffset: 63
+        }));
+
+        this.addComponent(new ChefComponent());
+    }
+}
+
 class Chef extends Entity
 {
     onAdded(): void
@@ -210,6 +230,19 @@ class Chef extends Entity
             coll.onTriggerEnter.register((caller, data) => {
                 caller.parent.getComponent<AnimatedSpriteController>(AnimatedSpriteController)
                       ?.setAnimation(ChefAnimations.Swinging);
+
+
+                if (data.other.parent.name === "lobsta")
+                {
+                    // forgive me
+                    data.other.parent.addComponent(new Timer(500, data.other.parent)).onTrigger
+                        .register((caller1, data1) => {
+                            data1.getComponent<AnimatedSpriteController>(AnimatedSpriteController)?.setAnimation(1);
+                            data1.addComponent(new Timer(4000, null)).onTrigger.register(caller2 => {
+                                GameState.GameRunning = "DIED";
+                            })
+                        })
+                }
             })
         }
     }
@@ -376,11 +409,23 @@ class ConveyorLobsta extends Entity
 
         this.depth = 1;
 
-        this.addComponent(new AnimatedSprite(lobstaSheet.textureSliceFromRow(0, 0, 9), {
-            animationEndAction: AnimationEnd.LOOP,
-            animationSpeed: 80,
-            yOffset: -35
-        }))
+        const spr = this.addComponent(new AnimatedSpriteController(0, [
+            {
+                id: 0,
+                textures: lobstaSheet.textureSliceFromRow(0, 0, 9),
+                config: {
+                    animationEndAction: AnimationEnd.LOOP,
+                    animationSpeed: 80,
+                    yOffset: -35
+                }
+            },
+            {
+                id: 1,
+                textures: platedSheet.textures([[0, 0]]),
+                config: {
+                    yOffset: -10
+                }
+            }]));
 
         this.addComponent(new ConveyorLobstaComponent());
 
@@ -389,9 +434,15 @@ class ConveyorLobsta extends Entity
             if (GameState.GameRunning != "SYNC-UP") return;
 
             this.addComponent(new AnimatedSprite(smallBubbleSheet.textures([[0, 0], [1, 0]]),
-                {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 35, yOffset: -25}));
+                                                 {
+                                                     animationEndAction: AnimationEnd.LOOP, animationSpeed: 800,
+                                                     xOffset: 35, yOffset: -25
+                                                 }));
             this.addComponent(new AnimatedSprite(bigBubbleSheet.textures([[0, 0], [1, 0]]),
-                {animationEndAction: AnimationEnd.LOOP, animationSpeed: 800, xOffset: 42, yOffset: -46}));
+                                                 {
+                                                     animationEndAction: AnimationEnd.LOOP, animationSpeed: 800,
+                                                     xOffset: 42, yOffset: -46
+                                                 }));
 
             caller.destroy();
         })
@@ -429,13 +480,7 @@ class ConveyorLobsta extends Entity
 
                     caller.parent.transform.position.x +=
                         (Game.fixedDeltaMS / 1000) * (ConveyorMoveSystem.conveyorSpeed + 1);
-
-                    if (caller.parent.transform.position.x > 200)
-                    {
-                        GameState.GameRunning = "DIED";
-                    }
                 }
-
             })
         }
     }
@@ -492,7 +537,8 @@ export class GameTimer extends Entity
         const timer = this.addComponent(new Timer(1000, null, true));
         timer.onTrigger.register(this.triggerTimer);
 
-        const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white", stroke: "black", strokeThickness: 2});
+        const style = new PIXI.TextStyle(
+            {fontFamily: "8bitoperator JVE", fontSize: "26px", fill: "white", stroke: "black", strokeThickness: 2});
         const text = new TextDisp(1000, 0, this.totalMs / 1000 + "s", style);
         this.addComponent(text);
     }
@@ -542,7 +588,8 @@ class IncreaseIndicator extends Entity
         const timer = this.addComponent(new Timer(100, null, true));
         timer.onTrigger.register(this.triggerTimer);
 
-        const style = new PIXI.TextStyle({fontFamily: "8bitoperator JVE", fontSize: "14px", fill: "red", stroke: "black", strokeThickness: 2});
+        const style = new PIXI.TextStyle(
+            {fontFamily: "8bitoperator JVE", fontSize: "14px", fill: "red", stroke: "black", strokeThickness: 2});
         const text = new TextDisp(1000, 0, "Failed. Speeding up...", style);
         this.addComponent(text);
     }
@@ -556,6 +603,7 @@ export class LobsterMinigame extends Entity
 
         this.addChild(new Conveyor("conveyor", 0, 84, 1));
         this.addChild(new Chef("chef", 320 - 100, 8, 1));
+        this.addChild(new ChefBod("chefbod", 320 - 100, 8, 0));
         this.addChild(new GameTimer("ingameTimer", 292, 60, 1));
         this.addChild(new IncreaseIndicator("increaseIndicator", 3, 71, 0));
 
