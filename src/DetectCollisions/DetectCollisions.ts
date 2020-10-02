@@ -1,6 +1,6 @@
 import {Component} from "../ECS/Component";
 import {Util} from "../Common/Util";
-import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
+import {CollisionMatrix} from "../Collisions/CollisionMatrix";
 import {Collisions, Result} from "detect-collisions";
 import {LagomType} from "../ECS/LifecycleObject";
 import {System} from "../ECS/System";
@@ -63,7 +63,6 @@ export class DetectCollisionSystem extends System
 
                 while (xMag > 0 || yMag > 0)
                 {
-
                     // TODO I am not sure where to do this, but we need to stop looping if the thing was destroyed
                     //  during iteration (which is likely on a collision frame)
                     if (!entity.active || !body.active || !collider.active) return;

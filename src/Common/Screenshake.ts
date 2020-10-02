@@ -10,6 +10,11 @@ export class ScreenShake extends Component
     readonly intensity: number;
     readonly duration: number;
 
+    /**
+     * Constructor.
+     * @param intensity Intensity of the shake.
+     * @param durationMS Duration of the shake in milliseconds.
+     */
     constructor(intensity: number, durationMS: number)
     {
         super();

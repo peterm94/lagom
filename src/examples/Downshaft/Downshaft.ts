@@ -2,8 +2,8 @@ import * as PIXI from "pixi.js";
 
 import {Game} from "../../ECS/Game";
 import {Diagnostics} from "../../Common/Debug";
-import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
-import {Entity, GUIEntity} from "../../ECS/Entity";
+import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
+import {Entity} from "../../ECS/Entity";
 import {System} from "../../ECS/System";
 import {Component} from "../../ECS/Component";
 import {Scene} from "../../ECS/Scene";
@@ -107,7 +107,7 @@ class MainScene extends Scene
         this.addGlobalSystem(new FrameTriggerSystem());
         this.addGlobalSystem(new TimerSystem());
 
-        this.addEntity(new Diagnostics("cyan", 10));
+        this.addGUIEntity(new Diagnostics("cyan", 10));
 
         this.addEntity(new Player(64, topY - 32));
 
@@ -335,7 +335,7 @@ class BulletMover extends System
     }
 }
 
-class PlayerGUI extends GUIEntity
+class PlayerGUI extends Entity
 {
     constructor(readonly ammo: Ammo)
     {
@@ -375,6 +375,12 @@ class Ammo extends Component
     private _ammo = 0;
 
     readonly onChange: Observable<Ammo, number> = new Observable();
+
+    onRemoved(): void
+    {
+        super.onRemoved();
+        this.onChange.releaseAll();
+    }
 }
 
 class Player extends Entity
@@ -398,7 +404,7 @@ class Player extends Entity
         this.addComponent(new DetectRigidbody());
 
         const ammo = this.addComponent(new Ammo(10));
-        this.getScene().addEntity(new PlayerGUI(ammo));
+        this.getScene().addGUIEntity(new PlayerGUI(ammo));
         this.addComponent(new PlayerControlled());
         this.addComponent(new FollowMe());
         this.addComponent(new CanShoot());

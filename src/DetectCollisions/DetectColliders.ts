@@ -52,6 +52,7 @@ export abstract class DetectCollider extends Component
     {
         super.onRemoved();
 
+        // TODO I think this is fixed?
         // TODO this needs to be checked in the lifecycle, not here. Make that a set?
         if (this.alreadyRemoved)
         {

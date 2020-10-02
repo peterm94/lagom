@@ -35,7 +35,7 @@ export class GameDirector extends Entity
         if (this.counter.count === 0 && !this.win && this.overThreshold)
         {
             const player = this.getScene().getEntityWithName("player");
-            this.getScene().addEntity(new YouWin());
+            this.getScene().addGUIEntity(new YouWin());
             this.win = true;
         }
 

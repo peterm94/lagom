@@ -17,7 +17,7 @@ export class CollisionMatrix
     {
         if (!this.validLayer(l1) || !this.validLayer(l2))
         {
-            throw Error(`Layer must be between 1 and ${this.maxLayer}`);
+            throw Error(`Layer must be between 0 and ${this.maxLayer}`);
         }
 
         // Bump everything by 1, makes it easier for people to use enums and not worry about 0 being invalid.
@@ -26,7 +26,6 @@ export class CollisionMatrix
 
         let layer1mask = this.layers.get(layer1);
         layer1mask = layer1mask === undefined ? 0 : layer1mask;
-        // TODO Check braces, this might actually be the other way around. Same below. and in canCollide
         this.layers.set(layer1, layer1mask | (1 << layer2));
 
         let layer2mask = this.layers.get(layer2);

@@ -12,12 +12,12 @@ export abstract class System extends LifecycleObject implements Updatable
 {
     private readonly runOn: Map<Entity, Component[]> = new Map();
 
+    scene !: Scene;
+
     private onComponentAdded(entity: Entity, component: Component): void
     {
         // Check if we care about this type at all
-        if (this.types().find((val) => {
-            return component instanceof val;
-        }) === undefined)
+        if (this.types().find((val) => component instanceof val) === undefined)
         {
             return;
         }
@@ -41,7 +41,7 @@ export abstract class System extends LifecycleObject implements Updatable
         const inTypes = this.types();
         const ret: Component[] = [];
 
-        for (let type of inTypes)
+        for (const type of inTypes)
         {
             const comp = entity.getComponent(type);
             if (comp == null) return null;
@@ -54,14 +54,12 @@ export abstract class System extends LifecycleObject implements Updatable
     private onComponentRemoved(entity: Entity, component: Component): void
     {
         // Check if we care about this type at all
-        if (this.types().find((val) => {
-            return component instanceof val;
-        }) === undefined)
+        if (this.types().find((val) => component instanceof val) === undefined)
         {
             return;
         }
 
-        let entry = this.runOn.get(entity);
+        const entry = this.runOn.get(entity);
 
         // Not actually registered, return
         if (entry === undefined) return;
@@ -108,7 +106,7 @@ export abstract class System extends LifecycleObject implements Updatable
 
             // Check it, add if ready.
             const ret = this.findComponents(entity);
-            if (ret != null)
+            if (ret !== null)
             {
                 this.runOn.set(entity, ret);
             }
@@ -147,8 +145,8 @@ export abstract class System extends LifecycleObject implements Updatable
      * Call this from update() to run on the requested component instances.
      * @param f A function that will be called with the requested components passed through as parameters. The
      * owning entity will always be the first parameter, followed by each component in the order defined by types().
-     * For example, if types() is [Sprite, MCollider], the function arguments would look as follows: (entity:
-     * Entity, sprite: Sprite, collider: MCollider).
+     * For example, if types() is [Sprite, Collider], the function arguments would look as follows: (entity:
+     * Entity, sprite: Sprite, collider: Collider).
      */
     protected runOnEntities(f: Function): void
     {
@@ -157,6 +155,14 @@ export abstract class System extends LifecycleObject implements Updatable
         });
     }
 
+    /**
+     * Call this from update() to run on the requested component instances. The system will be passed through as the
+     * first parameter to f.
+     * @param f A function that will be called with the system instance, and the requested components passed through as
+     * parameters. The system will always be the first parameter, followed by the owning entity, then by each component
+     * in the order defined by types(). For example, if types() is [Sprite, Collider], the function arguments would
+     * look as follows: (system: System, entity: Entity, sprite: Sprite, collider: Collider).
+     */
     protected runOnEntitiesWithSystem(f: Function): void
     {
         this.runOn.forEach((value: Component[], key: Entity) => {
@@ -170,6 +176,6 @@ export abstract class System extends LifecycleObject implements Updatable
      */
     getScene(): Scene
     {
-        return this.getParent() as Scene;
+        return this.scene;
     }
 }

@@ -1,36 +1,16 @@
-import {Log} from "../Common/Util";
-
-
 /**
  * Base class for any lifecycle-aware object.
  */
 export abstract class LifecycleObject
 {
-    parent!: LifecycleObject;
     active = true;
-
-    /**
-     * Retrieve the parent. If this object is not part of the ECS, it will throw an exception.
-     *
-     * @returns The parent of this object.
-     */
-    getParent(): LifecycleObject
-    {
-        if (this.parent == null)
-        {
-            // TODO throw or something
-            Log.error("Object has no parent :( Use onAdded() for any initialization logic instead of the contructor.");
-            return null as any;
-        }
-
-        return this.parent;
-    }
 
     /**
      * Will be called when added to the Game.
      */
     onAdded(): void
     {
+        // Default empty implementation.
     }
 
     /**

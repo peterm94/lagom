@@ -1,3 +1,6 @@
+/**
+ * Mouse buttons.
+ */
 export enum Button
 {
     LEFT,

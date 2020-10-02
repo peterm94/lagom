@@ -1,6 +1,6 @@
 import {Game} from "../../ECS/Game";
 import {Scene} from "../../ECS/Scene";
-import {CollisionMatrix} from "../../LagomCollisions/CollisionMatrix";
+import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {DetectCollisionSystem} from "../../DetectCollisions/DetectCollisions";
 import {FollowCamera} from "../../Common/CameraUtil";

@@ -1,5 +1,4 @@
 import * as PIXI from "pixi.js";
-import {GUIEntity} from "../ECS/Entity";
 import {TextDisp} from "./PIXIComponents";
 import {Entity} from "../ECS/Entity";
 import {System} from "../ECS/System";
@@ -7,7 +6,9 @@ import {Component} from "../ECS/Component";
 import {Game} from "../ECS/Game";
 import {LagomType} from "../ECS/LifecycleObject";
 
-
+/**
+ * FPS tracking component.
+ */
 class FpsTracker extends Component
 {
     constructor(readonly verbose: boolean)
@@ -16,6 +17,9 @@ class FpsTracker extends Component
     }
 }
 
+/**
+ * System that updates with diagnostic information.
+ */
 class FpsUpdater extends System
 {
     printFrame = 10;
@@ -54,7 +58,12 @@ class FpsUpdater extends System
     {
         this.frameCount++;
 
-        this.avgUpdateDt = this.rollAverage(this.avgUpdateDt, 1000 / delta);
+        // Delta of exactly 0 will break the average.
+        if (delta !== 0)
+        {
+            this.avgUpdateDt = this.rollAverage(this.avgUpdateDt, 1000 / delta);
+        }
+
         this.avgUpdate = this.rollAverage(this.avgUpdate, this.game.diag.updateTime);
         this.avgFixedUpdate = this.rollAverage(this.avgFixedUpdate, this.game.diag.fixedUpdateTime);
         this.avgRender = this.rollAverage(this.avgRender, this.game.diag.renderTime);
@@ -99,7 +108,7 @@ class FpsUpdater extends System
 /**
  * Entity that adds FPS information to the canvas.
  */
-export class Diagnostics extends GUIEntity
+export class Diagnostics extends Entity
 {
     onAdded(): void
     {
@@ -112,6 +121,12 @@ export class Diagnostics extends GUIEntity
         scene.addSystem(new FpsUpdater());
     }
 
+    /**
+     * Constructor.
+     * @param textCol Colour of the debug text.
+     * @param textSize Size of the debug text.
+     * @param verbose Set to true for more information. False will just display simple FPS.
+     */
     constructor(private readonly textCol: string,
                 private readonly textSize: number = 10,
                 private verbose: boolean = false)

@@ -8,11 +8,21 @@ import {Observable} from "./Observer";
  */
 export class Timer<T> extends Component
 {
+    /**
+     * Event that is triggered when the timer is completed.
+     */
     onTrigger: Observable<Timer<T>, T> = new Observable();
+
     remainingMS: number;
     payload: T;
     repeat: boolean;
 
+    /**
+     * Create a new timer.
+     * @param lengthMS Timer length in milliseconds.
+     * @param payload What will be delivered in the trigger event.
+     * @param repeat Set to true to repeat the timer after it triggers.
+     */
     constructor(lengthMS: number, payload: T, repeat = false)
     {
         super();
@@ -20,9 +30,17 @@ export class Timer<T> extends Component
         this.payload = payload;
         this.repeat = repeat;
     }
+
+    onRemoved(): void
+    {
+        super.onRemoved();
+        this.onTrigger.releaseAll();
+    }
 }
 
-// This is frame synced. Could be an async call instead? Not sure if I want to do that though
+/**
+ * System used to drive the Timer.
+ */
 export class TimerSystem extends GlobalSystem
 {
     types(): LagomType<Component>[]
@@ -51,13 +69,18 @@ export class TimerSystem extends GlobalSystem
 }
 
 /**
- * Non frame-synced timer.
+ * Non frame-synced timer. Not controlled by the ECS at all. Be careful with references that may expire.
  */
 export class AsyncTimer
 {
     private remainingMS: number;
     private readonly callback: () => void;
 
+    /**
+     * Create a new timer.
+     * @param lengthMS Timer duration in milliseconds.
+     * @param triggerCallback Callback that is called when the timer is triggered.
+     */
     constructor(lengthMS: number, triggerCallback: () => void)
     {
         this.remainingMS = lengthMS;

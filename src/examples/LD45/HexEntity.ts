@@ -16,7 +16,7 @@ import {Explosion} from "./Entities/Turret";
 
 export class HexRegister extends Component
 {
-    readonly register: Map<String, HexEntity> = new Map();
+    readonly register: Map<string, HexEntity> = new Map();
 
     computeValue(): number
     {
@@ -55,17 +55,17 @@ export class HexRegister extends Component
         return false;
     }
 
-    removeHex(hexEntity: HexEntity)
+    removeHex(hexEntity: HexEntity): void
     {
         const remPos = hexToWorld(hexEntity.hex);
 
         // Remove the hex from the map.
         this.register.delete(hexEntity.hex.toString());
 
-        const visited = new Set();
+        const visited = new Set<HexEntity>();
 
         // Find any node that can't reach the core any more
-        this.register.forEach((potential: HexEntity, _) => {
+        this.register.forEach((potential: HexEntity) => {
             const attached = this.findUnattached(visited, potential);
 
             if (!attached)
@@ -194,7 +194,7 @@ export class Damage extends Component
 {
     constructor(readonly amt: number = 3)
     {
-        super()
+        super();
     }
 }
 
@@ -223,7 +223,7 @@ export class DamageSystem extends System
                 if (entity.name === "player")
                 {
                     // End the game.
-                    this.getScene().addEntity(new GameOver());
+                    this.getScene().addGUIEntity(new GameOver());
                 }
 
                 this.entity.addComponent(new ScreenShake(0.8, 80));

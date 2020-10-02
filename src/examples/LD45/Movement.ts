@@ -9,8 +9,7 @@ import {MathUtil} from "../../Common/Util";
 import {Game} from "../../ECS/Game";
 import {Key} from "../../Input/Key";
 import {Button} from "../../Input/Button";
-import {Vector} from "../../LagomPhysics/Physics";
-import {TextDisp} from "../../Common/PIXIComponents";
+import {Vector} from "../../Common/Vector";
 
 export class PlayerControlled extends Component
 {
@@ -65,7 +64,7 @@ export class Movement extends Component
     aimY = 0;
     shooting = false;
 
-    move(x: number = 0, y: number = 0,)
+    move(x = 0, y = 0)
     {
         this.x += x;
         this.y += y;
@@ -113,7 +112,7 @@ export class Mover extends System
 
     update(delta: number)
     {
-        this.runOnEntities((entity: Entity, body: DetectRigidbody, movement: Movement, txt: TextDisp) => {
+        this.runOnEntities((entity: Entity, body: DetectRigidbody, movement: Movement) => {
 
             // apply drag to existing motion
             movement.xVel -= movement.xVel * movement.linDrag * delta;
@@ -155,7 +154,7 @@ export class ClearMovement extends System
     {
         this.runOnEntities((entity: Entity, movement: Movement) => {
             movement.clear();
-        })
+        });
     }
 }
 

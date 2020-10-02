@@ -1,13 +1,11 @@
 import {Scene} from "../ECS/Scene";
 import {Game} from "../ECS/Game";
 import {Entity} from "../ECS/Entity";
-import {CollisionMatrix} from "../LagomCollisions/CollisionMatrix";
+import {CollisionMatrix} from "../Collisions/CollisionMatrix";
 import {Component} from "../ECS/Component";
 import {System} from "../ECS/System";
 import {Result} from "detect-collisions";
 import * as PIXI from "pixi.js";
-
-import spr_block from './resources/block.png';
 import {RenderCircle, RenderRect} from "../Common/PIXIComponents";
 import {Diagnostics} from "../Common/Debug";
 import {LagomType} from "../ECS/LifecycleObject";
@@ -50,46 +48,8 @@ class DrawBounds extends Entity
     }
 }
 
-export class CameraDemo extends Game
+class PlayerControlled extends Component
 {
-    constructor()
-    {
-        super({width: 512, height: 512, resolution: 1, backgroundColor: 0xe0c723},
-              loader);
-
-        loader.add([spr_block]).load(() => {
-            // TODO this is probably broken
-        });
-
-        this.setScene(new CameraDemoScene(this));
-    }
-}
-
-export class CameraDemoScene extends Scene
-{
-    onAdded(): void
-    {
-        super.onAdded();
-
-        const collisions = new CollisionMatrix();
-
-        collisions.addCollision(Layers.Layer1, Layers.Layer2);
-        collisions.addCollision(Layers.Layer1, Layers.Layer1);
-
-        this.addSystem(new PlayerMover());
-
-        this.addGlobalSystem(new ScreenShaker());
-        this.addEntity(new Diagnostics("blue"));
-        this.addEntity(new Square(50, 50));
-        this.addEntity(new CircleBoy(200, 200));
-        this.addEntity(new Player("player", 256, 256));
-
-        this.addSystem(new FollowCamera({xOffset: 256, yOffset: 256}));
-
-        this.addEntity(new DrawTLC(""));
-        this.addEntity(new DrawTLC("", 256, 256));
-        this.addEntity(new DrawBounds(""));
-    }
 }
 
 class Square extends Entity
@@ -153,7 +113,7 @@ class Player extends Entity
 
         this.addComponent(new RectCollider(0, 0, 32, 32, this.layer))
             .onCollision.register((caller: DetectCollider,
-                                   res: { other: DetectCollider, result: Result }) => {
+                                   res: { other: DetectCollider; result: Result }) => {
             this.transform.x -= res.result.overlap * res.result.overlap_x;
             this.transform.y -= res.result.overlap * res.result.overlap_y;
         });
@@ -162,9 +122,6 @@ class Player extends Entity
     }
 }
 
-class PlayerControlled extends Component
-{
-}
 
 class PlayerMover extends System
 {
@@ -199,5 +156,42 @@ class PlayerMover extends System
                 entity.addComponent(new ScreenShake(2, 800));
             }
         });
+    }
+}
+
+export class CameraDemoScene extends Scene
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        const collisions = new CollisionMatrix();
+
+        collisions.addCollision(Layers.Layer1, Layers.Layer2);
+        collisions.addCollision(Layers.Layer1, Layers.Layer1);
+
+        this.addSystem(new PlayerMover());
+
+        this.addGlobalSystem(new ScreenShaker());
+        this.addGUIEntity(new Diagnostics("blue"));
+        this.addEntity(new Square(50, 50));
+        this.addEntity(new CircleBoy(200, 200));
+        this.addEntity(new Player("player", 256, 256));
+
+        this.addSystem(new FollowCamera({xOffset: 256, yOffset: 256}));
+
+        this.addEntity(new DrawTLC(""));
+        this.addEntity(new DrawTLC("", 256, 256));
+        this.addEntity(new DrawBounds(""));
+    }
+}
+
+export class CameraDemo extends Game
+{
+    constructor()
+    {
+        super({width: 512, height: 512, resolution: 1, backgroundColor: 0xe0c723});
+
+        this.setScene(new CameraDemoScene(this));
     }
 }

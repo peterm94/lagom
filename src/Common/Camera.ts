@@ -32,14 +32,15 @@ export class Camera
      * Translate a view position to a world position.
      * @param x The x position on the view.
      * @param y The y position on the view.
+     * @returns The world position.
      */
     viewToWorld(x: number, y: number): PIXI.Point
     {
         const point = new PIXI.Point();
         this.scene.getGame().manager.mapPositionToPoint(point, x, y);
 
-        point.x -= this.scene.sceneNode.position.x;
-        point.y -= this.scene.sceneNode.position.y;
+        point.x -= this.scene.sceneNode.transform.position.x;
+        point.y -= this.scene.sceneNode.transform.position.y;
 
         return point;
     }
@@ -50,7 +51,7 @@ export class Camera
      */
     position(): PIXI.Point
     {
-        return new PIXI.Point(-this.scene.sceneNode.position.x, -this.scene.sceneNode.position.y);
+        return new PIXI.Point(-this.scene.sceneNode.transform.position.x, -this.scene.sceneNode.transform.position.y);
     }
 
     /**
@@ -63,8 +64,8 @@ export class Camera
     move(x: number, y: number, offsetX = 0, offsetY = 0): void
     {
         // Move the scene the change amount
-        this.scene.sceneNode.position.x = -x + offsetX;
-        this.scene.sceneNode.position.y = -y + offsetY;
+        this.scene.sceneNode.transform.position.x = -x + offsetX;
+        this.scene.sceneNode.transform.position.y = -y + offsetY;
     }
 
     /**
@@ -75,8 +76,8 @@ export class Camera
      */
     moveTowards(x: number, y: number, lerpAmt = 0.5): void
     {
-        const xdist = x + this.scene.sceneNode.position.x;
-        const ydist = y + this.scene.sceneNode.position.y;
+        const xdist = x + this.scene.sceneNode.transform.position.x;
+        const ydist = y + this.scene.sceneNode.transform.position.y;
 
         this.translate(MathUtil.lerp(0, xdist, lerpAmt),
                        MathUtil.lerp(0, ydist, lerpAmt));
@@ -90,8 +91,8 @@ export class Camera
     translate(x: number, y: number): void
     {
         // Move the scene the change amount
-        this.scene.sceneNode.position.x -= x;
-        this.scene.sceneNode.position.y -= y;
+        this.scene.sceneNode.transform.position.x -= x;
+        this.scene.sceneNode.transform.position.y -= y;
     }
 
     /**
@@ -100,10 +101,14 @@ export class Camera
      */
     rotate(angle: number): void
     {
-        this.scene.sceneNode.angle = angle;
+        this.scene.sceneNode.transform.angle = angle;
         this.angle = angle;
     }
 
+    /**
+     * TODO Remove this if it doesn't work. I think i was trying to rotate around the centre point instead of top left.
+     * @param angle
+     */
     rotate2(angle: number): void
     {
         const rads = MathUtil.degToRad(angle);
@@ -113,9 +118,9 @@ export class Camera
         const transY = -this.halfWidth;
 
         // Rotate
-        this.scene.sceneNode.angle += angle;
-        this.scene.sceneNode.position.x += transX * Math.cos(rads) - transY * Math.sin(rads) + this.halfWidth;
-        this.scene.sceneNode.position.y += transX * Math.sin(rads) + transY * Math.cos(rads) + this.halfHeight;
+        this.scene.sceneNode.transform.angle += angle;
+        this.scene.sceneNode.transform.position.x += transX * Math.cos(rads) - transY * Math.sin(rads) + this.halfWidth;
+        this.scene.sceneNode.transform.position.y += transX * Math.sin(rads) + transY * Math.cos(rads) + this.halfHeight;
 
         // Move it back.
         // this.scene.sceneNode.position.x += this.halfWidth;
@@ -131,11 +136,11 @@ export class Camera
     rotateAround(angle: number, offsetX = 0, offsetY = 0): void
     {
         // TODO this does not work if the camera moves at all.
-        this.scene.sceneNode.pivot.set(offsetX, offsetY);
-        this.scene.sceneNode.angle = angle;
-        this.angle = this.scene.sceneNode.angle;
+        this.scene.sceneNode.transform.pivot.set(offsetX, offsetY);
+        this.scene.sceneNode.transform.angle = angle;
+        this.angle = this.scene.sceneNode.transform.angle;
 
-        this.scene.sceneNode.position.x = offsetX;
-        this.scene.sceneNode.position.y = offsetY;
+        this.scene.sceneNode.transform.position.x = offsetX;
+        this.scene.sceneNode.transform.position.y = offsetY;
     }
 }

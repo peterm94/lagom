@@ -1,4 +1,4 @@
-import {Entity, GUIEntity} from "../../../ECS/Entity";
+import {Entity} from "../../../ECS/Entity";
 import {Sprite} from "../../../Common/Sprite/Sprite";
 import loseSpr from "../art/lose.png";
 import {SpriteSheet} from "../../../Common/Sprite/SpriteSheet";
@@ -14,7 +14,7 @@ export class GameOverComp extends Component
 {
 }
 
-export class GameOver extends GUIEntity
+export class GameOver extends Entity
 {
     constructor()
     {

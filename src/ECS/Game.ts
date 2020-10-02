@@ -22,7 +22,14 @@ class Diag
  */
 export class Game
 {
+    /**
+     * Use this to get mouse input events. Updated every update() frame.
+     */
     static mouse = Mouse;
+
+    /**
+     * Use this to get keyboard events. Updated every update() frame.
+     */
     static keyboard = Keyboard;
 
     // Set this to true to end the game
@@ -105,8 +112,8 @@ export class Game
         preserveDrawingBuffer?: boolean;
         backgroundColor?: number;
         powerPreference?: string;
-        context?: any;
-    }, private readonly loader?: PIXI.Loader)
+        context?: unknown;
+    })
     {
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
@@ -122,18 +129,8 @@ export class Game
         {
             throw new Error("Ensure a scene is set before starting the game.");
         }
-        // TODO remove this whole concept and do it like the platformer does.
-        // If we need to load additional resources, do that.
-        if (this.loader)
-        {
-            this.loader.load(() => {
-                this.startInternal();
-            });
-        }
-        else
-        {
-            this.startInternal();
-        }
+
+        this.startInternal();
     }
 
     private startInternal(): void
@@ -149,9 +146,6 @@ export class Game
     {
         this.currentScene.update(delta);
 
-        // TODO this is fine here, but we should document it. If something in fixedUpdate() is looking for keyboard
-        //  events it is going to have a bad time.
-        // TODO put this in a system? in scene itself?
         Game.keyboard.update();
         Game.mouse.update();
     }
@@ -164,6 +158,7 @@ export class Game
     /**
      * Set a scene to load. Will be started instantly.
      * @param scene The Scene to load.
+     * @returns The scene.
      */
     setScene<T extends Scene>(scene: T): T
     {
