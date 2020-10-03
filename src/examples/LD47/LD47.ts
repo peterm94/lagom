@@ -87,7 +87,7 @@ class Train extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new Sprite(trains.texture(0, 0)));
+        this.addComponent(new Sprite(trains.texture(3, 0)));
     }
 }
 
@@ -209,7 +209,7 @@ export class LD47 extends Game
                   width: 640,
                   height: 360,
                   resolution: 2,
-                  backgroundColor: 0x90d1c7
+                  backgroundColor: 0x263238
               });
 
         this.setScene(new TrainsScene(this));
