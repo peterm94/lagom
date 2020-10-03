@@ -51,6 +51,10 @@ class Straight implements Edge
     }
 }
 
+class AddScore extends Component
+{
+}
+
 class Goal extends Entity
 {
     constructor(x: number, y: number, readonly trainId: number)
@@ -78,6 +82,7 @@ class Goal extends Entity
             if (trainId != this.trainId) return;
 
             // TODO add a point to something
+            caller.getScene().getEntityWithName("manager")?.addComponent(new AddScore());
 
             const track = caller.getScene().getEntityWithName<Track>("track");
 
@@ -202,6 +207,30 @@ class JunctionSwitcher extends System
         });
     }
 }
+
+class Score extends Component
+{
+    constructor(public score: number)
+    {
+        super();
+    }
+}
+
+class GameManager extends Entity
+{
+    constructor()
+    {
+        super("manager");
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addComponent(new Score(0));
+    }
+}
+
 
 class DenySwitch extends Component
 {
