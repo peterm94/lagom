@@ -4,8 +4,8 @@ import {Entity} from "../../ECS/Entity";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import {Component, PIXIComponent} from "../../ECS/Component";
 import {System} from "../../ECS/System";
-import spritesheet from './Art/spritesheet.png';
-import tracksheet from './Art/track.png';
+import trainsheet from './Art/train1.png';
+import tracksheet from './Art/track3.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {MathUtil} from "../../Common/Util";
@@ -13,8 +13,8 @@ import {Sprite} from "../../Common/Sprite/Sprite";
 
 const collisionMatrix = new CollisionMatrix();
 
-const sprites = new SpriteSheet(spritesheet, 16, 16);
-const track = new SpriteSheet(tracksheet, 16, 16);
+const trains = new SpriteSheet(trainsheet, 16, 32);
+const track = new SpriteSheet(tracksheet, 3, 8);
 
 
 interface Edge
@@ -93,7 +93,7 @@ class Train extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new Sprite(sprites.texture(1, 0, 32, 16)));
+        this.addComponent(new Sprite(trains.texture(3, 0)));
     }
 }
 
@@ -207,10 +207,10 @@ export class LD47 extends Game
     constructor()
     {
         super({
-                  width: 1280,
-                  height: 720,
-                  resolution: 1,
-                  backgroundColor: 0x90d1c7
+                  width: 640,
+                  height: 360,
+                  resolution: 2,
+                  backgroundColor: 0x263238
               });
 
         this.setScene(new TrainsScene(this));
