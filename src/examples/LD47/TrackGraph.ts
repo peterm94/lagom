@@ -19,7 +19,7 @@ export class TrackGraph
 {
     nodes: Node[] = [];
     edges: Straight[] = [];
-    switches: { control: Node; paths: Node[]; chosen: number }[] = [];
+    junctions: { control: Node; paths: Node[]; chosen: number }[] = [];
 
     public next(prevNode: Node, currNode: Node): Node
     {
@@ -28,10 +28,10 @@ export class TrackGraph
 
         if (potential !== undefined) return potential.n2;
 
-        // check for switches
-        const switchNode = this.switches.find(x => x.control === currNode);
+        // check for junctions
+        const switchNode = this.junctions.find(x => x.control === currNode);
 
-        // TODO this should not happen, unless we are at the end of a path
+        // This will only happen if we are at the end of a sequence that hasn't been routed somewhere.
         if (switchNode === undefined) return currNode;
 
         return switchNode.paths[switchNode.chosen];
@@ -45,9 +45,8 @@ export class TrackGraph
 
     /**
      * Add a list of nodes that will be connected as a sequence.
-     * @param nodes
      */
-    addSequence(nodes: Node[])
+    addSequence(nodes: Node[]): void
     {
         // Add all nodes to the graph
         this.nodes.push(...nodes);
@@ -66,7 +65,7 @@ export class TrackGraph
     /**
      * Create a junction between 3 nodes. We assume the nodes are already in the graph.
      */
-    createJunction(controlNode: Node, switchNodes: Node[])
+    createJunction(controlNode: Node, switchNodes: Node[]): Node
     {
         // valid links:
         // control -> switch[0]
@@ -82,6 +81,17 @@ export class TrackGraph
         badLinks.forEach(x => Util.remove(this.edges, x));
 
         // use the switch to control the pathing
-        this.switches.push({control: controlNode, paths: switchNodes, chosen: 0});
+        const junction = {control: controlNode, paths: switchNodes, chosen: 0};
+        this.junctions.push(junction);
+
+        return controlNode;
+    }
+
+    switchJunction(node: Node): number
+    {
+        const junction = this.junctions.find(x => x.control.x === node.x && x.control.y === node.y);
+        if (junction === undefined) return -1;
+        junction.chosen = (junction.chosen + 1) % 2;
+        return junction.chosen;
     }
 }
