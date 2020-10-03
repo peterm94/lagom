@@ -182,7 +182,7 @@ class TrainMover extends System
 
             const movecomp = MathUtil.lengthDirXY(100 * (delta / 1000), -targetDir);
 
-            sprite.applyConfig({rotation: -targetDir});
+            sprite.applyConfig({rotation: -targetDir + MathUtil.degToRad(90)});
             entity.transform.x += movecomp.x;
             entity.transform.y += movecomp.y;
         });
