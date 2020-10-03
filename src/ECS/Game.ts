@@ -66,6 +66,14 @@ export class Game
             let now = Date.now();
             const totalUpdateStart = now;
             this.deltaTime = now - this.lastFrameTime;
+
+            // TODO there is probably a better way, but this stops catchup issues when the tab isn't in focus.
+            if (this.deltaTime > 100)
+            {
+                Log.warn("DeltaTime registered at " + this.deltaTime + "ms. Capping at " + 100);
+                this.deltaTime = 100;
+            }
+
             this.lastFrameTime = now;
 
             this.elapsedSinceUpdate += this.deltaTime;
