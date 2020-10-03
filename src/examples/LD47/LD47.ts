@@ -17,20 +17,6 @@ const trains = new SpriteSheet(trainsheet, 16, 32);
 const track = new SpriteSheet(tracksheet, 3, 8);
 
 
-interface Edge
-{
-    next(previous: Node): Node;
-}
-
-class Node
-{
-    edge!: Edge;
-
-    constructor(readonly x: number, readonly y: number)
-    {
-    }
-}
-
 class Straight implements Edge
 {
     constructor(readonly n1: Node, readonly n2: Node)
@@ -65,6 +51,21 @@ class Junction implements Edge
         }
     }
 }
+
+interface Edge
+{
+    next(previous: Node): Node;
+}
+
+class Node
+{
+    edge: Edge = new Straight(this, this);
+
+    constructor(readonly x: number, readonly y: number)
+    {
+    }
+}
+
 enum Layers
 {
     TRACK,
@@ -123,33 +124,77 @@ class Rope extends PIXIComponent<PIXI.SimpleRope>
 
 class Track extends Entity
 {
+    makeStraightTrack(points: number[][]): Node[]
+    {
+        const nodes: Node[] = [];
+        points.forEach(x => nodes.push(new Node(x[0] + this.transform.x, x[1] + this.transform.y)));
+
+        let prevNode = null;
+
+        for (const node of nodes)
+        {
+            if (prevNode !== null)
+            {
+                prevNode.edge = new Straight(prevNode, node);
+            }
+            prevNode = node;
+        }
+
+        return nodes;
+    }
+
     onAdded(): void
     {
         super.onAdded();
 
         this.addComponent(new TrackRender());
 
-        const points = [];
-        const nodes = [];
+        const points: number[][] = [];
 
         const radius = 100;
 
-        for (let i = 0; i < 360; i += 1)
+        for (let i = 0; i < 90; i += 1)
         {
             const gx = Math.sin(MathUtil.degToRad(i)) * radius;
             const gy = Math.cos(MathUtil.degToRad(i)) * radius;
             points.push([gx, gy]);
-            nodes.push(new Node(gx + this.transform.x, gy + this.transform.y));
         }
 
-        let prevNode = nodes[nodes.length - 1];
-        for (const node of nodes)
-        {
-            node.edge = new Straight(prevNode, node);
-            prevNode = node;
-        }
+
+        points.push([220, 0]);
+
+        const nodes = this.makeStraightTrack(points);
+
+
+        // FORK
+        // branch 1
+        const points1: number[][] = [];
+        points1.push([240, -10]);
+        points1.push([340, -10]);
+
+        const nodes1 = this.makeStraightTrack(points1);
+
+
+        // branch 2
+        const points2: number[][] = [];
+        points2.push([240, 50]);
+        points2.push([340, 50]);
+
+        const nodes2 = this.makeStraightTrack(points2);
+
+        // link it
+        nodes[nodes.length - 1].edge = new Junction(nodes[nodes.length - 1], [nodes1[0], nodes2[0]], 0);
+
+
+        points1.reverse().push(points[points.length - 1]);
+        points1.reverse();
+        points2.reverse().push(points[points.length - 1]);
+        points2.reverse();
 
         this.addComponent(new Rope(track.textureFromIndex(0), points));
+        this.addComponent(new Rope(track.textureFromIndex(0), points1));
+        this.addComponent(new Rope(track.textureFromIndex(0), points2));
+
 
         this.getScene().getEntityWithName("train")?.addComponent(new Destination(nodes[0], nodes[0].edge));
     }
@@ -179,7 +224,7 @@ class TrainMover extends System
                 destination.next();
             }
 
-            const movecomp = MathUtil.lengthDirXY(100 * (delta / 1000), -targetDir);
+            const movecomp = MathUtil.lengthDirXY(moveAmt, -targetDir);
 
             sprite.applyConfig({rotation: -targetDir + MathUtil.degToRad(90)});
             entity.transform.x += movecomp.x;
