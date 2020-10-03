@@ -8,7 +8,7 @@ import trainsheet from './Art/train1.png';
 import tracksheet from './Art/track3.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
-import {MathUtil, MultiMap} from "../../Common/Util";
+import {MathUtil} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
 
 const collisionMatrix = new CollisionMatrix();
@@ -17,47 +17,52 @@ const trains = new SpriteSheet(trainsheet, 16, 32);
 const track = new SpriteSheet(tracksheet, 3, 8);
 
 
+interface Edge
+{
+    next(previous: Node): Node;
+}
+
 class Node
 {
-    constructor(readonly graph: DiGraph, readonly x: number, readonly y: number)
-    {
-    }
+    edge!: Edge;
 
-    next(): Node
+    constructor(readonly x: number, readonly y: number)
     {
-        return this.graph.edges.get(this)[1];
     }
 }
 
-class DiGraph
+class Straight implements Edge
 {
-    readonly nodes: Node[] = [];
-    readonly edges: MultiMap<Node, Node> = new MultiMap<Node, Node>();
-
-
-    addNode(node: Node): void
+    constructor(readonly n1: Node, readonly n2: Node)
     {
-        this.nodes.push(node);
-    };
-
-    addConnectedNode(node: Node, incoming: Node[], outgoing: Node[]): void
-    {
-        this.addNode(node);
-
-        for (const inc of incoming)
-        {
-            this.addConnection(inc, node);
-        }
-
-        for (const out of outgoing)
-        {
-            this.addConnection(node, out);
-        }
     }
 
-    addConnection(node: Node, dest: Node): void
+    next(previous: Node): Node
     {
-        this.edges.put(node, dest);
+        if (this.n1 === previous)
+        {
+            return this.n2;
+        }
+        return this.n1;
+    }
+}
+
+class Junction implements Edge
+{
+    constructor(readonly controlEdge: Node, readonly switchEdge: Node[], public currActive = 0)
+    {
+    }
+
+    next(previous: Node): Node
+    {
+        if (previous === this.controlEdge)
+        {
+            return this.switchEdge[this.currActive];
+        }
+        else
+        {
+            return this.controlEdge;
+        }
     }
 }
 
@@ -69,14 +74,15 @@ enum Layers
 
 class Destination extends Component
 {
-    constructor(public node: Node)
+    constructor(public node: Node, public edge: Edge)
     {
         super();
     }
 
     next(): void
     {
-        this.node = this.node.next();
+        this.node = this.edge.next(this.node);
+        this.edge = this.node.edge;
     }
 }
 
@@ -125,33 +131,28 @@ class Track extends Entity
         this.addComponent(new TrackRender());
 
         const points = [];
-        const graph = new DiGraph();
+        const nodes = [];
 
         const radius = 100;
-        let prevNode: Node | undefined;
 
-        for (let i = 0; i < 360; i += 10)
+        for (let i = 0; i < 360; i += 1)
         {
             const gx = Math.sin(MathUtil.degToRad(i)) * radius;
             const gy = Math.cos(MathUtil.degToRad(i)) * radius;
             points.push([gx, gy]);
+            nodes.push(new Node(gx + this.transform.x, gy + this.transform.y));
+        }
 
-            const node = new Node(graph, gx + /*radius*/ +this.transform.x, gy + /*radius*/ +this.transform.y);
-
-            if (prevNode !== undefined)
-            {
-                graph.addConnectedNode(node, [prevNode], [prevNode]);
-            }
-
+        let prevNode = nodes[nodes.length - 1];
+        for (const node of nodes)
+        {
+            node.edge = new Straight(prevNode, node);
             prevNode = node;
         }
 
-        graph.addConnection(prevNode as Node, graph.nodes[0]);
-        graph.addConnection(graph.nodes[0], prevNode as Node);
-
         this.addComponent(new Rope(track.textureFromIndex(0), points));
 
-        this.getScene().getEntityWithName("train")?.addComponent(new Destination(graph.nodes[0]));
+        this.getScene().getEntityWithName("train")?.addComponent(new Destination(nodes[0], nodes[0].edge));
     }
 }
 
