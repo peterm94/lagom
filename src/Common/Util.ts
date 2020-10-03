@@ -1,4 +1,3 @@
-import {Entity} from "../ECS/Entity";
 import * as PIXI from "pixi.js";
 import {Vector} from "./Vector";
 
@@ -382,5 +381,10 @@ export class MultiMap<K, V>
     public put(key: K, value: V): void
     {
         this.entries.push(new MapEntry<K, V>(key, value));
+    }
+
+    public get(key: K): V[]
+    {
+        return this.entries.filter(x => x.key === key).flatMap(x => x.value);
     }
 }
