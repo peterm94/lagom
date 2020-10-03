@@ -8,10 +8,10 @@ import trainsheet from './Art/train1.png';
 import tracksheet from './Art/track3.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
-import {Log, MathUtil} from "../../Common/Util";
+import {MathUtil} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
-import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
+import {CollisionSystem, DebugCollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
 import {LagomType} from "../../ECS/LifecycleObject";
@@ -160,6 +160,10 @@ class JunctionSwitcher extends System
     }
 }
 
+class DenySwitch extends Component
+{
+}
+
 class JunctionButton extends Entity
 {
     constructor(readonly junction: Junction)
@@ -172,8 +176,8 @@ class JunctionButton extends Entity
         super.onAdded();
         if (this.parent !== null)
         {
-            this.transform.x = this.junction.controlEdge.x - this.parent.transform.x;
-            this.transform.y = this.junction.controlEdge.y - this.parent.transform.y;
+            this.transform.x = this.junction.controlEdge.x - this.parent.transform.x - 25;
+            this.transform.y = this.junction.controlEdge.y - this.parent.transform.y - 25;
         }
         this.addComponent(new JunctionHolder(this.junction));
         this.addComponent(new RenderRect(0, 0, 50, 50, 0x0));
@@ -182,9 +186,22 @@ class JunctionButton extends Entity
         if (sys !== null)
         {
             const coll = this.addComponent(new RectCollider(sys, {width: 50, height: 50, layer: Layers.BUTTON}));
-            coll.onTriggerEnter.register(caller => {
-                caller.getEntity().addComponent(new SwitchJunction());
-                Log.info("switching");
+            coll.onTriggerEnter.register((caller, data) => {
+                if (data.other.layer === Layers.MOUSE_COLL &&
+                    caller.getEntity().getComponent<DenySwitch>(DenySwitch) === null)
+                {
+                    caller.getEntity().addComponent(new SwitchJunction());
+                }
+                else if (data.other.layer === Layers.TRAIN)
+                {
+                    caller.getEntity().addComponent(new DenySwitch());
+                }
+            });
+            coll.onTriggerExit.register((caller, other) => {
+                if (other.layer === Layers.TRAIN)
+                {
+                    caller.getEntity().getComponent<DenySwitch>(DenySwitch)?.destroy();
+                }
             });
         }
     }
@@ -209,6 +226,15 @@ class Train extends Entity
                                                                this.transform.y, this.carriage - 1, false)));
         }
         this.addComponent(new Sprite(trains.texture(3, this.front ? 0 : 1), {xAnchor: 0.5, yAnchor: 0.5}));
+        const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
+
+        if (sys !== null)
+        {
+            this.addComponent(new RectCollider(sys, {
+                layer: Layers.TRAIN, width: 16, height: 32,
+                xOff: -8, yOff: -16
+            }));
+        }
     }
 }
 
@@ -316,11 +342,11 @@ class TrainMover extends System
 {
     readonly speed = 1;
 
-    types = () => [Destination, Sprite];
+    types = () => [Destination];
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, destination: Destination, sprite: Sprite) => {
+        this.runOnEntities((entity: Entity, destination: Destination) => {
 
             const targetDir = MathUtil.pointDirection(entity.transform.x, entity.transform.y,
                                                       destination.node.x, destination.node.y);
@@ -337,9 +363,9 @@ class TrainMover extends System
 
             const movecomp = MathUtil.lengthDirXY(moveAmt, -targetDir);
 
-            sprite.applyConfig({rotation: -targetDir + MathUtil.degToRad(90)});
             entity.transform.x += movecomp.x;
             entity.transform.y += movecomp.y;
+            entity.transform.rotation = -targetDir + MathUtil.degToRad(90);
         });
     }
 }
@@ -377,5 +403,6 @@ export class LD47 extends Game
 
         collisionMatrix.addCollision(Layers.TRAIN, Layers.TRAIN);
         collisionMatrix.addCollision(Layers.MOUSE_COLL, Layers.BUTTON);
+        collisionMatrix.addCollision(Layers.TRAIN, Layers.BUTTON);
     }
 }

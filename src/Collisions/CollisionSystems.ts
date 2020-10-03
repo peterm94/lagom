@@ -292,6 +292,9 @@ export class DebugCollisionSystem extends GlobalSystem
             const context = (canvas as HTMLCanvasElement).getContext("2d");
             if (context !== null)
             {
+                context.fillStyle = "#FFFFFF";
+                context.fillRect(0, 0, context.canvas.width, context.canvas.height);
+                context.beginPath();
                 this.system.detectSystem.draw(context);
                 context.stroke();
             }
