@@ -65,11 +65,10 @@ class Junction implements Edge
         }
     }
 }
-
 enum Layers
 {
-    TRAIN,
-    TRACK
+    TRACK,
+    TRAIN
 }
 
 class Destination extends Component
@@ -93,7 +92,7 @@ class Train extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new Sprite(trains.texture(3, 0)));
+        this.addComponent(new Sprite(trains.texture(3, 0), {xAnchor: 0.5, yAnchor: 0.5}));
     }
 }
 
@@ -195,8 +194,8 @@ class TrainsScene extends Scene
     {
         super.onAdded();
 
-        this.addEntity(new Train("train", 0, 0));
-        this.addEntity(new Track("track", 250, 250));
+        this.addEntity(new Train("train", 0, 0, Layers.TRAIN));
+        this.addEntity(new Track("track", 250, 250, Layers.TRACK));
 
         this.addSystem(new TrainMover());
     }
