@@ -30,7 +30,7 @@ export class TrackBuilder
                                   controlPoint[0], controlPoint[1],
                                   end[0], end[1]);
 
-        const lut = bezier.getLUT(20);
+        const lut = bezier.getLUT(10);
 
         for (const point of lut)
         {
