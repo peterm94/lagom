@@ -16,6 +16,7 @@ import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
 import {LagomType} from "../../ECS/LifecycleObject";
 import {Timer, TimerSystem} from "../../Common/Timer";
+import {TrackBuilder} from "./TrackBuilder";
 
 const Mouse = require('pixi.js-mouse');
 
@@ -41,7 +42,7 @@ class Straight implements Edge
     }
 }
 
-class Junction implements Edge
+export class Junction implements Edge
 {
     constructor(readonly controlEdge: Node, readonly switchEdge: Node[], public currActive = 0)
     {
@@ -65,7 +66,7 @@ interface Edge
     next(previous: Node): Node;
 }
 
-class Node
+export class Node
 {
     edge: Edge = new Straight(this, this);
 
@@ -258,38 +259,42 @@ class Track extends Entity
     {
         super.onAdded();
 
+        // const trackBuilder = new TrackBuilder(0, 0);
+        // trackBuilder.addBezier(trackBuilder.getTrackEnd(), [0, 100], [100, 100])
+        // trackBuilder.getTrack();
+
         const points: number[][] = [];
 
-        const radius = 100;
+        // points.push(...TrackBuilder.makeTurn(10, 100, 0, 90));
 
-        for (let i = 0; i < 90; i += 1)
-        {
-            const gx = Math.sin(MathUtil.degToRad(i)) * radius;
-            const gy = Math.cos(MathUtil.degToRad(i)) * radius;
-            points.push([gx, gy]);
-        }
-
-
-        points.push([220, 0]);
-
-        const nodes = this.makeStraightTrack(points);
-
+        // This is a circle.
+        points.push(...TrackBuilder.addXBezier([0, 0], [100, 100]));
+        points.push(...TrackBuilder.addYBezier([100, 100], [200, 0]));
 
         // FORK
         // branch 1
         const points1: number[][] = [];
-        points1.push([240, -10]);
-        points1.push([340, -10]);
+        points1.push(...TrackBuilder.addXBezier([200, 0], [300, -50]));
+        points1.push(...TrackBuilder.addYBezier([300, -50], [400, 0]));
+        points1.push([400, 50]);
 
-        const nodes1 = this.makeStraightTrack(points1);
-
+        // Uncomment this to see the track disappear.
+        // points1.push(...TrackBuilder.addXBezier([400, 50], [300, 100]))
 
         // branch 2
         const points2: number[][] = [];
-        points2.push([240, 50]);
-        points2.push([340, 50]);
 
+        points2.push(...TrackBuilder.addXBezier([200, 0], [100, -100]));
+        points2.push(...TrackBuilder.addYBezier([100, -100], [0, 0]));
+
+        // points.push([220, 0]);
+
+        const nodes = this.makeStraightTrack(points);
+        const nodes1 = this.makeStraightTrack(points1);
         const nodes2 = this.makeStraightTrack(points2);
+
+        // Link the circle back up
+        nodes2[nodes2.length - 1].edge = new Straight(nodes2[nodes2.length - 1], nodes[0]);
 
         // link it
         nodes[nodes.length - 1].edge = new Junction(nodes[nodes.length - 1], [nodes1[0], nodes2[0]], 0);
