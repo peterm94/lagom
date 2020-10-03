@@ -11,7 +11,7 @@ import * as PIXI from "pixi.js";
 import {Log, MathUtil} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
-import {CollisionSystem, DebugCollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
+import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
 import {LagomType} from "../../ECS/LifecycleObject";
@@ -192,11 +192,23 @@ class JunctionButton extends Entity
 
 class Train extends Entity
 {
+    private carriages: Entity[] = [];
+
+    constructor(x: number, y: number, readonly carriage: number = 0, readonly front: boolean)
+    {
+        super("train", x, y, Layers.TRAIN);
+    }
+
     onAdded(): void
     {
         super.onAdded();
 
-        this.addComponent(new Sprite(trains.texture(3, 0), {xAnchor: 0.5, yAnchor: 0.5}));
+        if (this.carriage !== 0)
+        {
+            this.carriages.push(this.scene.addEntity(new Train(this.transform.x - 35,
+                                                               this.transform.y, this.carriage - 1, false)));
+        }
+        this.addComponent(new Sprite(trains.texture(3, this.front ? 0 : 1), {xAnchor: 0.5, yAnchor: 0.5}));
     }
 }
 
@@ -284,7 +296,6 @@ class Track extends Entity
 
         this.addChild(new JunctionButton(nodes[nodes.length - 1].edge as Junction));
 
-
         points1.reverse().push(points[points.length - 1]);
         points1.reverse();
         points2.reverse().push(points[points.length - 1]);
@@ -295,7 +306,8 @@ class Track extends Entity
         this.addComponent(new Rope(track.textureFromIndex(0), points2));
 
 
-        this.getScene().getEntityWithName("train")?.addComponent(new Destination(nodes[0], nodes[0].edge));
+        this.getScene().entities.filter(x => x.name === "train")
+            .forEach(x => x.addComponent(new Destination(nodes[0], nodes[0].edge)));
     }
 }
 
@@ -344,7 +356,7 @@ class TrainsScene extends Scene
 
         this.addSystem(new JunctionSwitcher());
 
-        this.addEntity(new Train("train", 0, 0, Layers.TRAIN));
+        this.addEntity(new Train(150, 350, 4, true));
         this.addEntity(new Track("track", 250, 250, Layers.TRACK));
         this.addSystem(new TrainMover());
     }
