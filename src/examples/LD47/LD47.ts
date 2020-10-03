@@ -11,7 +11,7 @@ import * as PIXI from "pixi.js";
 import {MathUtil} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
-import {CollisionSystem, DebugCollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
+import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
 import {LagomType} from "../../ECS/LifecycleObject";
@@ -22,7 +22,16 @@ const Mouse = require('pixi.js-mouse');
 const collisionMatrix = new CollisionMatrix();
 
 const trains = new SpriteSheet(trainsheet, 16, 32);
-const track = new SpriteSheet(tracksheet, 3, 8);
+let track = new SpriteSheet(tracksheet, 3, 8);
+
+enum Layers
+{
+    TRACK,
+    TRAIN,
+    GOAL,
+    MOUSE_COLL,
+    BUTTON
+}
 
 
 class Straight implements Edge
@@ -38,6 +47,33 @@ class Straight implements Edge
             return this.n2;
         }
         return this.n1;
+    }
+}
+
+class Goal extends Entity
+{
+    onAdded(): void
+    {
+        super.onAdded();
+        this.addComponent(new Sprite(trains.texture(0, 0, 16, 16), {xAnchor: 0.5, yAnchor: 0.5}));
+
+        const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
+        if (sys !== null)
+        {
+            const coll = this.addComponent(new CircleCollider(sys, {layer: Layers.GOAL, radius: 8, xOff: 8, yOff: 8}));
+
+            coll.onTriggerEnter.register((caller, data)=> {
+                // add a point to something
+
+                // spawn a new one
+                const track = caller.getScene().getEntityWithName<Track>("track");
+                if (track !== null) {
+                    track.spawnGoal();
+                }
+
+                caller.getEntity().destroy();
+            });
+        }
     }
 }
 
@@ -72,14 +108,6 @@ class Node
     constructor(readonly x: number, readonly y: number)
     {
     }
-}
-
-enum Layers
-{
-    TRACK,
-    TRAIN,
-    BUTTON,
-    MOUSE_COLL
 }
 
 class Destination extends Component
@@ -261,6 +289,8 @@ class Rope extends PIXIComponent<PIXI.SimpleRope>
 
 class Track extends Entity
 {
+    allPoints: number[][] = [];
+
     private makeStraightTrack(points: number[][]): Node[]
     {
         const nodes: Node[] = [];
@@ -331,9 +361,17 @@ class Track extends Entity
         this.addComponent(new Rope(track.textureFromIndex(0), points1));
         this.addComponent(new Rope(track.textureFromIndex(0), points2));
 
-
         this.getScene().entities.filter(x => x.name === "train")
             .forEach(x => x.addComponent(new Destination(nodes[0], nodes[0].edge)));
+
+        this.allPoints = this.allPoints.concat(points).concat(points1).concat(points2);
+        this.spawnGoal();
+    }
+
+    spawnGoal()
+    {
+        const point = this.allPoints[MathUtil.randomRange(0, this.allPoints.length)];
+        this.addChild(new Goal("goal", point[0], point[1]));
     }
 }
 
@@ -385,6 +423,8 @@ class TrainsScene extends Scene
         this.addEntity(new Train(150, 350, 4, true));
         this.addEntity(new Track("track", 250, 250, Layers.TRACK));
         this.addSystem(new TrainMover());
+
+        this.addEntity(new Goal("goal", 10, 10));
     }
 }
 
@@ -404,5 +444,6 @@ export class LD47 extends Game
         collisionMatrix.addCollision(Layers.TRAIN, Layers.TRAIN);
         collisionMatrix.addCollision(Layers.MOUSE_COLL, Layers.BUTTON);
         collisionMatrix.addCollision(Layers.TRAIN, Layers.BUTTON);
+        collisionMatrix.addCollision(Layers.TRAIN, Layers.GOAL);
     }
 }
