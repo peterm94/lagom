@@ -48,7 +48,7 @@ class Rope extends PIXIComponent<PIXI.SimpleRope>
 {
     constructor(texture: PIXI.Texture, points: number[][])
     {
-        super(new PIXI.SimpleRope(texture, Rope.convertPoints(points)));
+        super(new PIXI.SimpleRope(texture, Rope.convertPoints(points), 1));
     }
 
     private static convertPoints(points: number[][]): PIXI.Point[]

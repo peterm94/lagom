@@ -39,7 +39,7 @@ export class Game
     readonly renderer: PIXI.Renderer;
 
     // PIXI interaction manager
-    readonly manager: PIXI.interaction.InteractionManager;
+    readonly manager: PIXI.InteractionManager;
 
     // Currently loaded scene.
     currentScene!: Scene;
@@ -117,7 +117,7 @@ export class Game
     {
         // Set it up in the page
         this.renderer = new PIXI.Renderer(options);
-        this.manager = new PIXI.interaction.InteractionManager(this.renderer);
+        this.manager = new PIXI.InteractionManager(this.renderer);
     }
 
     /**
