@@ -5,14 +5,14 @@ import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import {RenderRect} from "../../Common/PIXIComponents";
 import {Component, PIXIComponent} from "../../ECS/Component";
 import {System} from "../../ECS/System";
-import trackSheet from './Art/track.png';
+import trackSheet from './Art/track3.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {MathUtil} from "../../Common/Util";
 
 const collisionMatrix = new CollisionMatrix();
 
-const sprites = new SpriteSheet(trackSheet, 8, 8);
+const sprites = new SpriteSheet(trackSheet, 3, 8);
 
 enum Layers
 {
@@ -111,7 +111,7 @@ class TrainsScene extends Scene
         super.onAdded();
 
         this.addEntity(new Train("train", 10, 10));
-        this.addEntity(new Track("track", 300, 300));
+        this.addEntity(new Track("track", 100, 100));
     }
 }
 
@@ -120,9 +120,9 @@ export class LD47 extends Game
     constructor()
     {
         super({
-                  width: 1280,
-                  height: 720,
-                  resolution: 1,
+                  width: 320,
+                  height: 180,
+                  resolution: 4,
                   backgroundColor: 0x200140
               });
 
