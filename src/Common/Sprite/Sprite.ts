@@ -32,6 +32,7 @@ export class Sprite extends PIXIComponent<PIXI.Sprite>
         if (config.yScale !== undefined) this.pixiObj.scale.y = config.yScale;
         if (config.rotation !== undefined) this.pixiObj.rotation = config.rotation;
         if (config.alpha !== undefined) this.pixiObj.alpha = config.alpha;
+        if (config.filters !== undefined) this.pixiObj.filters = config.filters;
     }
 }
 
@@ -56,4 +57,5 @@ export interface SpriteConfig
     rotation?: number;
     /** The opacity of the sprite. 0 = transparent, 100 = opaque. */
     alpha?: number;
+    filters?: PIXI.Filter[];
 }

@@ -4,28 +4,29 @@ import {Entity} from "../../ECS/Entity";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
 import {Component, PIXIComponent} from "../../ECS/Component";
 import {System} from "../../ECS/System";
-import spritesheet from './Art/spritesheet.png';
+import spritesheet from './Art/train1.png';
 import tracksheet from './Art/track.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {MathUtil} from "../../Common/Util";
-import {Sprite} from "../../Common/Sprite/Sprite";
+import {Sprite, SpriteConfig} from "../../Common/Sprite/Sprite";
+import {MultiColorReplaceFilter} from '@pixi/filter-multi-color-replace';
 
 const collisionMatrix = new CollisionMatrix();
 
-const sprites = new SpriteSheet(spritesheet, 16, 16);
+const sprites = new SpriteSheet(spritesheet, 14, 30);
 const track = new SpriteSheet(tracksheet, 16, 16);
 
 
-class DiGraph
-{
-    readonly nodes: Node[] = [];
-    readonly edges: [Node, Node] = [];
-
-    addNode(node: Node) {
-
-    };
-}
+// class DiGraph
+// {
+//     readonly nodes: Node[] = [];
+//     readonly edges: [Node, Node] = [];
+//
+//     addNode(node: Node) {
+//
+//     };
+// }
 
 enum Layers
 {
@@ -48,7 +49,10 @@ class Train extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new Sprite(sprites.texture(1, 0, 32, 16)));
+        const filter = new MultiColorReplaceFilter([[0xeeeeee, 0xf48fb1], [0xbdbdbd, 0xec407a]]);
+
+        this.addComponent(new Sprite(sprites.texture(0, 0), {filters: [filter]}));
+
         this.addComponent(new Destination(300, 300));
     }
 }
