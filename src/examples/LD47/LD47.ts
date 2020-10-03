@@ -2,22 +2,43 @@ import {Game} from "../../ECS/Game";
 import {Scene} from "../../ECS/Scene";
 import {Entity} from "../../ECS/Entity";
 import {CollisionMatrix} from "../../Collisions/CollisionMatrix";
-import {RenderRect} from "../../Common/PIXIComponents";
 import {Component, PIXIComponent} from "../../ECS/Component";
 import {System} from "../../ECS/System";
-import trackSheet from './Art/track3.png';
+import spritesheet from './Art/spritesheet.png';
+import tracksheet from './Art/track.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {MathUtil} from "../../Common/Util";
+import {Sprite} from "../../Common/Sprite/Sprite";
 
 const collisionMatrix = new CollisionMatrix();
 
-const sprites = new SpriteSheet(trackSheet, 3, 8);
+const sprites = new SpriteSheet(spritesheet, 16, 16);
+const track = new SpriteSheet(tracksheet, 16, 16);
+
+
+class DiGraph
+{
+    readonly nodes: Node[] = [];
+    readonly edges: [Node, Node] = [];
+
+    addNode(node: Node) {
+
+    };
+}
 
 enum Layers
 {
     TRAIN,
     TRACK
+}
+
+class Destination extends Component
+{
+    constructor(readonly x: number, readonly y: number)
+    {
+        super();
+    }
 }
 
 class Train extends Entity
@@ -27,17 +48,11 @@ class Train extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new RenderRect(0, 0, 10, 10));
+        this.addComponent(new Sprite(sprites.texture(1, 0, 32, 16)));
+        this.addComponent(new Destination(300, 300));
     }
 }
 
-class Node extends Component
-{
-    constructor(readonly x: number, readonly y: number)
-    {
-        super();
-    }
-}
 
 class TrackRender extends Component
 {
@@ -70,10 +85,6 @@ class Track extends Entity
         super.onAdded();
 
         this.addComponent(new TrackRender());
-        this.addComponent(new Node(10, 10));
-        this.addComponent(new Node(20, 50));
-        this.addComponent(new Node(50, 80));
-        this.addComponent(new Node(30, 50));
 
         const points = [];
 
@@ -85,21 +96,27 @@ class Track extends Entity
             points.push([x, y]);
         }
 
-        this.addComponent(new Rope(sprites.textureFromIndex(0), points));
+        this.addComponent(new Rope(track.textureFromIndex(0), points));
     }
 }
 
 
-class TrackRenderSystem extends System
+class TrainMover extends System
 {
-    types = () => [TrackRender];
+    readonly speed = 1;
+
+    types = () => [Destination];
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity) => {
+        this.runOnEntities((entity: Entity, destination: Destination) => {
 
-            const nodes = entity.getComponentsOfType<Node>(Node);
+            const targetDir = MathUtil.pointDirection(entity.transform.x, entity.transform.y,
+                                                      destination.x, destination.y);
+            const movecomp = MathUtil.lengthDirXY(100 * (delta / 1000), -targetDir);
 
+            entity.transform.x += movecomp.x;
+            entity.transform.y += movecomp.y;
         });
     }
 }
@@ -111,7 +128,9 @@ class TrainsScene extends Scene
         super.onAdded();
 
         this.addEntity(new Train("train", 10, 10));
-        this.addEntity(new Track("track", 100, 100));
+        this.addEntity(new Track("track", 300, 300));
+
+        this.addSystem(new TrainMover());
     }
 }
 
@@ -120,10 +139,10 @@ export class LD47 extends Game
     constructor()
     {
         super({
-                  width: 320,
-                  height: 180,
-                  resolution: 4,
-                  backgroundColor: 0x200140
+                  width: 1280,
+                  height: 720,
+                  resolution: 1,
+                  backgroundColor: 0x90d1c7
               });
 
         this.setScene(new TrainsScene(this));
