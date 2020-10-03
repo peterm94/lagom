@@ -206,8 +206,8 @@ export class LD47 extends Game
     constructor()
     {
         super({
-                  width: 640,
-                  height: 360,
+                  width: 920,
+                  height: 500,
                   resolution: 2,
                   backgroundColor: 0x263238
               });
