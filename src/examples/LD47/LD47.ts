@@ -16,6 +16,7 @@ import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
 import {LagomType} from "../../ECS/LifecycleObject";
 import {Timer, TimerSystem} from "../../Common/Timer";
+import {Diagnostics} from "../../Common/Debug";
 
 const Mouse = require('pixi.js-mouse');
 
@@ -52,28 +53,42 @@ class Straight implements Edge
 
 class Goal extends Entity
 {
+    constructor(x: number, y: number, readonly trainId: number)
+    {
+        super("goal", x, y);
+    }
+
     onAdded(): void
     {
         super.onAdded();
+
+        // TODO real sprite, pick colour based on trainId
         this.addComponent(new Sprite(trains.texture(0, 0, 16, 16), {xAnchor: 0.5, yAnchor: 0.5}));
 
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
-        if (sys !== null)
-        {
-            const coll = this.addComponent(new CircleCollider(sys, {layer: Layers.GOAL, radius: 8, xOff: 8, yOff: 8}));
+        if (sys === null) return;
 
-            coll.onTriggerEnter.register((caller, data)=> {
-                // add a point to something
+        const coll = this.addComponent(new CircleCollider(sys, {layer: Layers.GOAL, radius: 8, xOff: 8, yOff: 8}));
 
-                // spawn a new one
-                const track = caller.getScene().getEntityWithName<Track>("track");
-                if (track !== null) {
-                    track.spawnGoal();
-                }
+        coll.onTriggerEnter.register((caller, data) => {
+            if (data.other.layer !== Layers.TRAIN) return;
 
-                caller.getEntity().destroy();
-            });
-        }
+            // check that the train is the right one
+            const trainId = (data.other.parent as Train).trainId;
+            if (trainId != this.trainId) return;
+
+            // TODO add a point to something
+
+            const track = caller.getScene().getEntityWithName<Track>("track");
+
+            if (track !== null)
+            {
+                track.spawnGoal(trainId);
+            }
+
+            // destroy this goal
+            caller.getEntity().destroy();
+        });
     }
 }
 
@@ -237,9 +252,7 @@ class JunctionButton extends Entity
 
 class Train extends Entity
 {
-    private carriages: Entity[] = [];
-
-    constructor(x: number, y: number, readonly carriage: number = 0, readonly front: boolean)
+    constructor(x: number, y: number, readonly trainId: number, readonly carriage: number = 0, readonly front: boolean)
     {
         super("train", x, y, Layers.TRAIN);
     }
@@ -250,10 +263,11 @@ class Train extends Entity
 
         if (this.carriage !== 0)
         {
-            this.carriages.push(this.scene.addEntity(new Train(this.transform.x - 35,
-                                                               this.transform.y, this.carriage - 1, false)));
+            this.scene.addEntity(new Train(this.transform.x - 35,
+                                           this.transform.y, this.trainId, this.carriage - 1,
+                                           false));
         }
-        this.addComponent(new Sprite(trains.texture(3, this.front ? 0 : 1), {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new Sprite(trains.texture(this.trainId, this.front ? 0 : 1), {xAnchor: 0.5, yAnchor: 0.5}));
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
 
         if (sys !== null)
@@ -361,17 +375,17 @@ class Track extends Entity
         this.addComponent(new Rope(track.textureFromIndex(0), points1));
         this.addComponent(new Rope(track.textureFromIndex(0), points2));
 
+        this.allPoints = this.allPoints.concat(points).concat(points1).concat(points2);
+
         this.getScene().entities.filter(x => x.name === "train")
             .forEach(x => x.addComponent(new Destination(nodes[0], nodes[0].edge)));
-
-        this.allPoints = this.allPoints.concat(points).concat(points1).concat(points2);
-        this.spawnGoal();
+        this.spawnGoal(0);
     }
 
-    spawnGoal()
+    spawnGoal(trainId: number): void
     {
         const point = this.allPoints[MathUtil.randomRange(0, this.allPoints.length)];
-        this.addChild(new Goal("goal", point[0], point[1]));
+        this.addChild(new Goal(point[0], point[1], trainId));
     }
 }
 
@@ -420,11 +434,11 @@ class TrainsScene extends Scene
 
         this.addSystem(new JunctionSwitcher());
 
-        this.addEntity(new Train(150, 350, 4, true));
+        this.addEntity(new Train(150, 350, 0, 4, true));
         this.addEntity(new Track("track", 250, 250, Layers.TRACK));
         this.addSystem(new TrainMover());
 
-        this.addEntity(new Goal("goal", 10, 10));
+        this.addEntity(new Diagnostics("white"));
     }
 }
 
