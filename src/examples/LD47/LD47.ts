@@ -8,8 +8,16 @@ import trainsheet from './Art/train1.png';
 import tracksheet from './Art/track3.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
-import {MathUtil} from "../../Common/Util";
+import {Log, MathUtil} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
+import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
+import {CollisionSystem, DebugCollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
+import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
+import {GlobalSystem} from "../../ECS/GlobalSystem";
+import {LagomType} from "../../ECS/LifecycleObject";
+import {Timer, TimerSystem} from "../../Common/Timer";
+
+const Mouse = require('pixi.js-mouse');
 
 const collisionMatrix = new CollisionMatrix();
 
@@ -69,7 +77,9 @@ class Node
 enum Layers
 {
     TRACK,
-    TRAIN
+    TRAIN,
+    BUTTON,
+    MOUSE_COLL
 }
 
 class Destination extends Component
@@ -86,9 +96,102 @@ class Destination extends Component
     }
 }
 
+class MouseColl extends Entity
+{
+    onAdded(): void
+    {
+        super.onAdded();
+
+        const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
+        if (sys !== null)
+        {
+            this.addComponent(new CircleCollider(sys, {layer: Layers.MOUSE_COLL, radius: 5}));
+        }
+        this.addComponent(new Timer(60, null, false)).onTrigger.register(caller => {
+            caller.getEntity().destroy();
+        });
+    }
+}
+
+class MouseEventSystem extends GlobalSystem
+{
+    types(): LagomType<Component>[]
+    {
+        return [];
+    }
+
+    update(delta: number): void
+    {
+        if (Mouse.isButtonPressed(0))
+        {
+            const where = this.scene.camera.viewToWorld(Mouse.getPosX(), Mouse.getPosY());
+            this.getScene().addEntity(new MouseColl("mouse", where.x, where.y));
+        }
+    }
+}
+
+class SwitchJunction extends Component
+{
+}
+
+class JunctionHolder extends Component
+{
+    constructor(readonly junction: Junction)
+    {
+        super();
+    }
+}
+
+class JunctionSwitcher extends System
+{
+    types(): LagomType<Component>[]
+    {
+        return [JunctionHolder, SwitchJunction, TextDisp];
+    }
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, junctionHolder: JunctionHolder, switchJunc: SwitchJunction,
+                            txt: TextDisp) => {
+            junctionHolder.junction.currActive = junctionHolder.junction.currActive === 1 ? 0 : 1;
+            txt.pixiObj.text = junctionHolder.junction.currActive.toString();
+            switchJunc.destroy();
+        });
+    }
+}
+
+class JunctionButton extends Entity
+{
+    constructor(readonly junction: Junction)
+    {
+        super("junction", -1000, -1000);
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+        if (this.parent !== null)
+        {
+            this.transform.x = this.junction.controlEdge.x - this.parent.transform.x;
+            this.transform.y = this.junction.controlEdge.y - this.parent.transform.y;
+        }
+        this.addComponent(new JunctionHolder(this.junction));
+        this.addComponent(new RenderRect(0, 0, 50, 50, 0x0));
+        this.addComponent(new TextDisp(0, 0, "0", new PIXI.TextStyle({fill: 0xFFFFFF})));
+        const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
+        if (sys !== null)
+        {
+            const coll = this.addComponent(new RectCollider(sys, {width: 50, height: 50, layer: Layers.BUTTON}));
+            coll.onTriggerEnter.register(caller => {
+                caller.getEntity().addComponent(new SwitchJunction());
+                Log.info("switching");
+            });
+        }
+    }
+}
+
 class Train extends Entity
 {
-
     onAdded(): void
     {
         super.onAdded();
@@ -98,11 +201,7 @@ class Train extends Entity
 }
 
 
-class TrackRender extends Component
-{
-}
-
-
+// TODO move this to core
 class Rope extends PIXIComponent<PIXI.SimpleRope>
 {
     constructor(texture: PIXI.Texture, points: number[][])
@@ -124,7 +223,7 @@ class Rope extends PIXIComponent<PIXI.SimpleRope>
 
 class Track extends Entity
 {
-    makeStraightTrack(points: number[][]): Node[]
+    private makeStraightTrack(points: number[][]): Node[]
     {
         const nodes: Node[] = [];
         points.forEach(x => nodes.push(new Node(x[0] + this.transform.x, x[1] + this.transform.y)));
@@ -146,8 +245,6 @@ class Track extends Entity
     onAdded(): void
     {
         super.onAdded();
-
-        this.addComponent(new TrackRender());
 
         const points: number[][] = [];
 
@@ -184,6 +281,8 @@ class Track extends Entity
 
         // link it
         nodes[nodes.length - 1].edge = new Junction(nodes[nodes.length - 1], [nodes1[0], nodes2[0]], 0);
+
+        this.addChild(new JunctionButton(nodes[nodes.length - 1].edge as Junction));
 
 
         points1.reverse().push(points[points.length - 1]);
@@ -239,9 +338,14 @@ class TrainsScene extends Scene
     {
         super.onAdded();
 
+        this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
+        this.addGlobalSystem(new MouseEventSystem());
+        this.addGlobalSystem(new TimerSystem());
+
+        this.addSystem(new JunctionSwitcher());
+
         this.addEntity(new Train("train", 0, 0, Layers.TRAIN));
         this.addEntity(new Track("track", 250, 250, Layers.TRACK));
-
         this.addSystem(new TrainMover());
     }
 }
@@ -260,5 +364,6 @@ export class LD47 extends Game
         this.setScene(new TrainsScene(this));
 
         collisionMatrix.addCollision(Layers.TRAIN, Layers.TRAIN);
+        collisionMatrix.addCollision(Layers.MOUSE_COLL, Layers.BUTTON);
     }
 }
