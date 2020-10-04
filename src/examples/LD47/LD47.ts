@@ -442,9 +442,20 @@ class ScreenCard extends Entity
 
         this.addComponent(new Sprite(this.texture));
 
-        this.addComponent(new Timer(500, null)).onTrigger.register(() => {
-            this.addComponent(new ClickAction(this.clickAction));
-        });
+        // Game reload. Skip to gameplay.
+        if (!TrainsScene.firstLoad && this.clickAction === 0)
+        {
+            const action = this.addComponent(new ClickAction(this.clickAction));
+            action.onAction();
+        }
+        else
+        {
+            TrainsScene.firstLoad = false;
+
+            this.addComponent(new Timer(500, null)).onTrigger.register(() => {
+                this.addComponent(new ClickAction(this.clickAction));
+            });
+        }
     }
 }
 
@@ -860,6 +871,8 @@ class GameManager extends Entity
 
 class TrainsScene extends Scene
 {
+    static firstLoad = true;
+
     onAdded(): void
     {
         super.onAdded();
