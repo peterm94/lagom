@@ -99,7 +99,7 @@ export class SpriteSheet
 
         for (let i = start; i <= end; i++)
         {
-            textures.push(this.texture(i, row, width, height))
+            textures.push(this.texture(i, row, width, height));
         }
 
         return textures;

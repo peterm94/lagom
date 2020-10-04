@@ -12,8 +12,8 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {Log, LogLevel, MathUtil, Util} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
-import {RenderCircle, RenderRect, TextDisp} from "../../Common/PIXIComponents";
-import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
+import {PIXIGraphicsComponent, TextDisp} from "../../Common/PIXIComponents";
+import {CollisionSystem, DebugCollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, Collider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
 import {LagomType} from "../../ECS/LifecycleObject";
@@ -33,8 +33,6 @@ const collisionMatrix = new CollisionMatrix();
 
 const trains = new SpriteSheet(trainsheet, 16, 32);
 const track = new SpriteSheet(tracksheet, 3, 8);
-const title = new SpriteSheet(titleScreen, 860, 460);
-const gameover = new SpriteSheet(gameoverScreen, 860, 460);
 
 enum Layers
 {
@@ -257,6 +255,32 @@ class DenySwitch extends Component
 {
 }
 
+class NicerRenderRect extends PIXIGraphicsComponent
+{
+    /**
+     * Create a new rectangle.
+     *
+     * @param xOff Positional X offset.
+     * @param yOff Positional Y offset.
+     * @param width Width of the rectangle.
+     * @param height Height of the rectangle.
+     * @param fillColour The inner fill colour. Null for transparent.
+     * @param lineStyle Custom line styling.
+     */
+    constructor(xOff: number,
+                yOff: number,
+                width: number,
+                height: number,
+                fillColour: number | null = PIXIGraphicsComponent.defaultFill,
+                lineStyle: { width: number; color: number; alpha: number })
+    {
+        super(fillColour, lineStyle.color);
+        this.pixiObj.lineStyle(lineStyle.width, lineStyle.color, lineStyle.alpha);
+        this.pixiObj.drawRect(xOff, yOff, width, height);
+    }
+}
+
+
 export class JunctionButton extends Entity
 {
     constructor(readonly trackGraph: TrackGraph, readonly junction: Node,
@@ -275,9 +299,7 @@ export class JunctionButton extends Entity
             this.transform.x = this.junction.x - this.parent.transform.x - 25 + this.xOffset;
             this.transform.y = this.junction.y - this.parent.transform.y - 25 + this.yOffset;
         }
-        // this.addComponent(new JunctionHolder(this.junction));
-        this.addComponent(new RenderRect(0, 0, 50, 50, null, 0x0));
-        // this.addComponent(new TextDisp(0, 0, "0", new PIXI.TextStyle({fill: 0xFFFFFF})));
+        this.addComponent(new NicerRenderRect(0, 0, 50, 50, null, {color: 0x0, width: 2, alpha: 0.3}));
         this.addComponent(new JunctionHolder(this.trackGraph, this.junction));
 
         const onTexture = () => trains.textureFromPoints(4 * 16, 2 * 16, 16, 16);
@@ -296,7 +318,8 @@ export class JunctionButton extends Entity
         if (sys !== null)
         {
             const buttonColl = this.addComponent(new RectCollider(sys, {width: 50, height: 50, layer: Layers.BUTTON}));
-            const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: 25, yOff: 25, radius: 5, layer: Layers.JUNCTION}));
+            const junctionColl = this.addComponent(
+                new CircleCollider(sys, {xOff: 25, yOff: 25, radius: 10, layer: Layers.JUNCTION}));
 
             buttonColl.onTriggerEnter.register((caller, data) => {
                 if (data.other.layer === Layers.MOUSE_COLL &&
@@ -518,7 +541,8 @@ class Train extends Entity
                 }
 
                 caller.getEntity().addComponent(new Timer(4000, null)).onTrigger.register(() => {
-                    caller.getScene().addEntity(new ScreenCard(gameover.textureFromIndex(0), 1, Layers.END_SCREEN));
+                    caller.getScene()
+                          .addEntity(new ScreenCard(PIXI.Texture.from(gameoverScreen), 1, Layers.END_SCREEN));
                 });
             }
         });
@@ -840,7 +864,8 @@ class TrainsScene extends Scene
     {
         super.onAdded();
 
-        this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
+        const col = this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
+        this.addGlobalSystem(new DebugCollisionSystem(col));
         this.addGlobalSystem(new MouseEventSystem());
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new Scorer());
@@ -859,7 +884,7 @@ class TrainsScene extends Scene
 
         this.addEntity(new Track("track", 220, 230, Layers.TRACK));
 
-        this.addGUIEntity(new ScreenCard(title.textureFromIndex(0), 0));
+        this.addGUIEntity(new ScreenCard(PIXI.Texture.from(titleScreen), 0));
 
         this.addEntity(new Diagnostics("white"));
     }
@@ -885,7 +910,6 @@ export class LD47 extends Game
 
         collisionMatrix.addCollision(Layers.TRAIN, Layers.TRAIN);
         collisionMatrix.addCollision(Layers.MOUSE_COLL, Layers.BUTTON);
-        collisionMatrix.addCollision(Layers.TRAIN, Layers.BUTTON);
         collisionMatrix.addCollision(Layers.TRAIN, Layers.GOAL);
         collisionMatrix.addCollision(Layers.TRAIN, Layers.JUNCTION);
 
