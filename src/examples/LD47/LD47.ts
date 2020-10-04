@@ -480,10 +480,6 @@ export class Track extends Entity
         this.allPoints = trackBuilder.getAllPoints();
 
         // this.allPoints.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
-
-        this.getScene().entities.filter(x => x.name === "train")
-            .forEach(x => x.addComponent(new Destination(this.trackGraph, blNodes[1], blNodes[0])));
-        this.spawnGoal(0);
     }
 
     spawnGoal(trainId: number): void
