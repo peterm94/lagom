@@ -89,10 +89,19 @@ export class TrackBuilder
         return nodes;
     };
 
-    public addJunction = (controlNode: Node, switch1: Node, switch2: Node) => {
+    public addJunction = (controlNode: Node, switch1: Node, switch2: Node,
+                          xOffset = 0, yOffset = 0,
+                          j0pos: { x: number; y: number; rot: number } = {x: 0, y: 0, rot: 0},
+                          j1pos: { x: number; y: number; rot: number } = {x: 30, y: 0, rot: 20}) => {
+
         this.graph.createJunction(controlNode, [switch1, switch2]);
-        this.entity.addChild(new JunctionButton(this.graph, controlNode, 0, 0, {x: 0, y: 0, rot: 0},
-                                                {x: 30, y: 0, rot: 20}));
+
+        this.entity.addChild(new JunctionButton(this.graph,
+                                                controlNode,
+                                                xOffset,
+                                                yOffset,
+                                                j0pos,
+                                                j1pos));
     };
 
     // public createJunctionHere = (bezier1: () => ) => {
