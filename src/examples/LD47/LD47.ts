@@ -18,7 +18,7 @@ import {LagomType} from "../../ECS/LifecycleObject";
 import {Timer, TimerSystem} from "../../Common/Timer";
 import {TrackBuilder} from "./TrackBuilder";
 import {Diagnostics} from "../../Common/Debug";
-import {Node, TrackGraph} from "./TrackGraph";
+import {Node, Straight, TrackGraph} from "./TrackGraph";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
 import {ScreenShake, ScreenShaker} from "../../Common/Screenshake";
@@ -522,7 +522,7 @@ export class Track extends Entity
 
 class TrainMover extends System
 {
-    readonly speed = 3;
+    readonly speed = 2;
 
     types = () => [Destination];
 
@@ -620,19 +620,22 @@ class GameManager extends Entity
 
         if (track === null) return;
 
-        const train1 = this.getScene().addEntity(new Train(track.trackGraph.edges[0].n1.x,
-                                                           track.trackGraph.edges[0].n1.y, 0, 0, true));
-        train1.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[0].n1,
-                                            track.trackGraph.edges[0].n2));
-
-        const train2 = this.getScene().addEntity(new Train(track.trackGraph.edges[30].n1.x,
-                                                           track.trackGraph.edges[30].n1.y, 1, 0, true));
-        train2.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[30].n1,
-                                            track.trackGraph.edges[30].n2));
+        this.spawnTrain(track.trackGraph, 0, track.trackGraph.edges[0]);
+        this.spawnTrain(track.trackGraph, 1, track.trackGraph.edges[30]);
+        this.spawnTrain(track.trackGraph, 2, track.trackGraph.edges[60]);
+        this.spawnTrain(track.trackGraph, 3, track.trackGraph.edges[90]);
 
         this.trackGraph = track.trackGraph;
         this.spawnGoal(0);
         this.spawnGoal(1);
+        this.spawnGoal(2);
+        this.spawnGoal(3);
+    }
+
+    spawnTrain(graph: TrackGraph, trainId: number, edge: Straight)
+    {
+        const train = this.getScene().addEntity(new Train(edge.n1.x, edge.n1.y, trainId, 0, true));
+        train.addComponent(new Destination(graph, edge.n1, edge.n2));
     }
 
     spawnGoal(trainId: number): void
