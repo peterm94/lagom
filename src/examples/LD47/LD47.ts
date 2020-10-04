@@ -36,13 +36,14 @@ enum Layers
     TRACK,
     TRAIN,
     GOAL,
-    MOUSE_COLL
+    MOUSE_COLL,
+    SCORE_DISP
 }
 
 
 class AddScore extends Component
 {
-    constructor(readonly trainId: number)
+    constructor(readonly trainId: number, readonly posX: number, readonly posY: number)
     {
         super();
     }
@@ -94,7 +95,7 @@ class Goal extends Entity
 
             const manager = caller.getScene().getEntityWithName("manager") as GameManager;
             if (manager === null) return;
-            manager.addComponent(new AddScore(trainId));
+            manager.addComponent(new AddScore(trainId, caller.parent.transform.x, caller.parent.transform.y));
             manager.spawnGoal(trainId);
 
             train.addCarriage(1);
@@ -189,6 +190,45 @@ class JunctionSwitcher extends System
     }
 }
 
+
+class MoveFade extends Component
+{
+    alpha = 1;
+}
+
+class PointDisp extends Entity
+{
+    constructor(x: number, y: number, readonly score: number)
+    {
+        super("pointdisp", x, y, Layers.SCORE_DISP);
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addComponent(new TextDisp(0, 0, "+" + this.score.toString(), new PIXI.TextStyle({fill:"white"})));
+        this.addComponent(new MoveFade());
+    }
+}
+
+class PointMover extends System
+{
+    types = () => [MoveFade, TextDisp];
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, moveFade: MoveFade, text: TextDisp) => {
+            entity.transform.y -= delta / 1000 * 20;
+
+            text.pixiObj.alpha = moveFade.alpha;
+
+            moveFade.alpha -= delta / 1000 * 1;
+            if (moveFade.alpha < 0) entity.destroy();
+        });
+    }
+}
+
 class Score extends Component
 {
     carriageCounts: number[] = [];
@@ -232,7 +272,6 @@ export class JunctionButton extends Entity
         // this.addComponent(new TextDisp(0, 0, "0", new PIXI.TextStyle({fill: 0xFFFFFF})));
         this.addComponent(new JunctionHolder(this.trackGraph, this.junction));
 
-        // TODO pass position + rotation info through
         const onTexture = () => trains.textureFromPoints(4 * 16, 2 * 16, 16, 16);
         const offTexture = () => trains.textureFromPoints(4 * 16, 0, 16, 16);
         const p1 = this.addChild(new Entity("indicator0", this.j0pos.x, this.j0pos.y));
@@ -499,7 +538,7 @@ export class Track extends Entity
 
         const bottomJunctionLeft = trackBuilder.addXBezier([300, 100], [200, 200], false);
 
-        trackBuilder.addJunction(bottomJunctionTop[0], bottomJunctionLeft[0],  bottomJunctionRight[0],
+        trackBuilder.addJunction(bottomJunctionTop[0], bottomJunctionLeft[0], bottomJunctionRight[0],
                                  0, 0,
                                  {x: 17, y: 50, rot: 190},
                                  {x: 48, y: 47.5, rot: 170});
@@ -627,7 +666,7 @@ class Scorer extends GlobalSystem
 
     update(delta: number): void
     {
-        this.runOnComponents((score: Score[], addScores: AddScore[]) => {
+        this.runOnComponentsWithSystem((system: Scorer, score: Score[], addScores: AddScore[]) => {
             const masterScore = score[0];
             for (const addScore of addScores)
             {
@@ -638,7 +677,10 @@ class Scorer extends GlobalSystem
                 const lowest = Math.min(...masterScore.carriageCounts);
                 const multiplier = (lowest + 1) / 10;
 
-                masterScore.score += Math.floor(masterScore.carriageCounts[addScore.trainId] * 100 * multiplier);
+                const thisScore = Math.floor(masterScore.carriageCounts[addScore.trainId] * 100 * multiplier);
+
+                system.scene.addEntity(new PointDisp(addScore.posX, addScore.posY, thisScore));
+                masterScore.score += thisScore;
 
                 addScore.destroy();
             }
@@ -722,6 +764,7 @@ class TrainsScene extends Scene
         this.addSystem(new ScoreUpdater());
         this.addSystem(new SpriteSwapper());
         this.addSystem(new RagdollSystem());
+        this.addSystem(new PointMover());
 
         this.addGUIEntity(new GameManager());
         this.addEntity(new Diagnostics("white"));
