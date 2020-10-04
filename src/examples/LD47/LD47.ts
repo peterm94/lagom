@@ -10,7 +10,7 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {MathUtil, Util} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
-import {RenderCircle, RenderRect, TextDisp} from "../../Common/PIXIComponents";
+import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
@@ -212,13 +212,19 @@ class GameManager extends Entity
 
         if (track === null) return;
 
-        // TODO this is probably fixed points, random is scary.
-        this.getScene().entities.filter(x => x.name === "train")
-            .forEach(x => x.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[0].n1,
-                                                         track.trackGraph.edges[0].n2)));
+        const train1 = this.getScene().addEntity(new Train(track.trackGraph.edges[0].n1.x,
+                                                           track.trackGraph.edges[0].n1.y, 0, 0, true));
+        train1.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[0].n1,
+                                            track.trackGraph.edges[0].n2));
+
+        const train2 = this.getScene().addEntity(new Train(track.trackGraph.edges[0].n1.x,
+                                                           track.trackGraph.edges[0].n1.y, 1, 0, true));
+        train2.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[30].n1,
+                                            track.trackGraph.edges[30].n2));
 
         this.trackGraph = track.trackGraph;
         this.spawnGoal(0);
+        this.spawnGoal(1);
     }
 
     spawnGoal(trainId: number): void
@@ -473,7 +479,8 @@ export class Track extends Entity
         const bottomJunctionLeft = trackBuilder.addXBezier([300, 100], [200, 200], false);
 
         trackBuilder.addJunction(bottomJunctionTop[0], bottomJunctionRight[0], bottomJunctionLeft[0]);
-        trackBuilder.addJunction(bottomJunctionStraightLeft[0], Util.last(bottomJunctionLeft), Util.last(bottomJunctionMid));
+        trackBuilder.addJunction(bottomJunctionStraightLeft[0], Util.last(bottomJunctionLeft),
+                                 Util.last(bottomJunctionMid));
 
         // Middle right fork
         const rightFork = trackBuilder.addXBezier([200, 0], [300, -50], false);
@@ -483,7 +490,8 @@ export class Track extends Entity
 
         const bottomFarRightJunctionLeft = trackBuilder.addYBezier([500, -50], [600, 0]);
 
-        trackBuilder.addJunction(bottomFarRightJunctionEntrance[0], Util.last(topRightJunctionEntrance), Util.last(bottomFarRightJunctionLeft));
+        trackBuilder.addJunction(bottomFarRightJunctionEntrance[0], Util.last(topRightJunctionEntrance),
+                                 Util.last(bottomFarRightJunctionLeft));
 
 
         // trackBuilder.addBezier(true,
@@ -502,7 +510,8 @@ export class Track extends Entity
 
         // const bottomFarRightJunctionRight = trackBuilder.addYBezier([500, 100], [600, 0]);
 
-        // trackBuilder.addJunction(Util.last(farRightJunctionEntrance), Util.last(bottomFarRightJunctionRight), bottomFarRightJunctionLeft[0]);
+        // trackBuilder.addJunction(Util.last(farRightJunctionEntrance), Util.last(bottomFarRightJunctionRight),
+        // bottomFarRightJunctionLeft[0]);
 
 
         // trackBuilder.addLine(500)
@@ -608,7 +617,6 @@ class TrainsScene extends Scene
 
         this.addSystem(new JunctionSwitcher());
 
-        this.addEntity(new Train(150, 350, 0, 0, true));
         this.addEntity(new Track("track", 220, 250, Layers.TRACK));
         this.addSystem(new TrainMover());
         this.addSystem(new ScoreUpdater());
