@@ -350,8 +350,8 @@ class Train extends Entity
             actualMovement += toMove;
         }
 
-        // Now that it is positioned, add a destination for it.
-        end.nextTrain.addComponent(new Destination(myDest.graph, myDest.node, myDest.previous));
+        // Now that it is positioned, reverse the current dest and add it.
+        end.nextTrain.addComponent(new Destination(myDest.graph, dest.previous, dest.node));
     }
 
     onAdded(): void
@@ -452,7 +452,8 @@ export class Track extends Entity
 
         // Right-hand loop
         const farRightJunctionLeft = trackBuilder.addXBezier([600, -100], [500, -150], false);
-        trackBuilder.addJunction(farRightJunctionEntrance[0], farRightJunctionLeft[0], Util.last(farRightJunctionRight));
+        trackBuilder.addJunction(farRightJunctionEntrance[0], farRightJunctionLeft[0],
+                                 Util.last(farRightJunctionRight));
 
         trackBuilder.addLine([500, -150], [400, -150]);
         trackBuilder.addYBezier([400, -150], [300, -100]);
@@ -584,7 +585,7 @@ class TrainsScene extends Scene
         this.addSystem(new JunctionSwitcher());
 
         this.addEntity(new Train(150, 350, 0, 0, true));
-        this.addEntity(new Track("track", 250, 250, Layers.TRACK));
+        this.addEntity(new Track("track", 220, 250, Layers.TRACK));
         this.addSystem(new TrainMover());
         this.addSystem(new ScoreUpdater());
         this.addSystem(new SpriteSwapper());
@@ -600,9 +601,9 @@ export class LD47 extends Game
     constructor()
     {
         super({
-                  width: 920,
-                  height: 500,
-                  resolution: 2,
+                  width: 853,
+                  height: 480,
+                  resolution: 1.5,
                   backgroundColor: 0x263238
               });
 
