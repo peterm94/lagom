@@ -505,7 +505,7 @@ class Train extends Entity
             // GAME OVER BUDDY
             if (data.other.layer === Layers.TRAIN)
             {
-                caller.getEntity().addComponent(new ScreenShake(1, 4000));
+                caller.getEntity().addComponent(new ScreenShake(1, 750));
 
                 // ragtrain time
                 const allTrains = caller.getScene().entities.filter(x => x.name === "train");
@@ -517,7 +517,7 @@ class Train extends Entity
                     train.addComponent(new Ragdoll());
                 }
 
-                caller.getEntity().addComponent(new Timer(5000, null)).onTrigger.register(() => {
+                caller.getEntity().addComponent(new Timer(4000, null)).onTrigger.register(() => {
                     caller.getScene().addGUIEntity(new ScreenCard(gameover.textureFromIndex(0), 1, Layers.END_SCREEN));
                 });
             }
