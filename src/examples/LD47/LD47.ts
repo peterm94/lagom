@@ -12,13 +12,13 @@ import {MathUtil, Util} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
-import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
+import {CircleCollider, Collider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
 import {LagomType} from "../../ECS/LifecycleObject";
 import {Timer, TimerSystem} from "../../Common/Timer";
 import {TrackBuilder} from "./TrackBuilder";
 import {Diagnostics} from "../../Common/Debug";
-import {Node, TrackGraph} from "./TrackGraph";
+import {Node, Straight, TrackGraph} from "./TrackGraph";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
 import {ScreenShake, ScreenShaker} from "../../Common/Screenshake";
@@ -193,55 +193,6 @@ class Score extends Component
     }
 }
 
-class GameManager extends Entity
-{
-    trackGraph: TrackGraph | null = null;
-
-    constructor()
-    {
-        super("manager", 100, 100);
-    }
-
-    onAdded(): void
-    {
-        super.onAdded();
-
-        this.addComponent(new Score(0));
-        this.addComponent(new TextDisp(0, 0, "", new PIXI.TextStyle({fontSize: 24, fill: "white"})));
-
-        const track = this.getScene().getEntityWithName("track") as Track;
-
-        if (track === null) return;
-
-        const train1 = this.getScene().addEntity(new Train(track.trackGraph.edges[0].n1.x,
-                                                           track.trackGraph.edges[0].n1.y, 0, 0, true));
-        train1.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[0].n1,
-                                            track.trackGraph.edges[0].n2));
-
-        const train2 = this.getScene().addEntity(new Train(track.trackGraph.edges[30].n1.x,
-                                                           track.trackGraph.edges[30].n1.y, 1, 0, true));
-        train2.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[30].n1,
-                                            track.trackGraph.edges[30].n2));
-
-        this.trackGraph = track.trackGraph;
-        this.spawnGoal(0);
-        this.spawnGoal(1);
-    }
-
-    spawnGoal(trainId: number): void
-    {
-        if (this.trackGraph === null) return;
-        const point = this.trackGraph.nodes[MathUtil.randomRange(0, this.trackGraph.nodes.length)];
-        let nextPoint = this.trackGraph.edges.find(x => x.n1 === point)?.n2;
-        if (nextPoint === undefined) nextPoint = this.trackGraph.edges.find(x => x.n2 === point)?.n1;
-        if (nextPoint === undefined) return;
-
-        const dir = MathUtil.pointDirection(point.x, point.y, nextPoint.x, nextPoint.y);
-        const goal = this.scene.addEntity(new Goal(point.x, point.y, trainId));
-        goal.transform.rotation = -dir;
-    }
-}
-
 class DenySwitch extends Component
 {
 }
@@ -304,6 +255,35 @@ export class JunctionButton extends Entity
                 }
             });
         }
+    }
+}
+
+class Ragdoll extends Component
+{
+    readonly drag = 0.4;
+    readonly angDrag = 0.31;
+    readonly dir = MathUtil.degToRad(MathUtil.randomRange(0, 360));
+    velocity = MathUtil.randomRange(1, 5) / 3;
+    angVelocity = MathUtil.randomRange(1, 5) / 100 * Util.choose(-1, 1);
+}
+
+class RagdollSystem extends System
+{
+    types = () => [Ragdoll];
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, props: Ragdoll) => {
+            // dampen for this frame
+            props.velocity -= props.velocity * props.drag * (delta / 1000);
+            props.angVelocity -= props.angVelocity * props.angDrag * (delta / 1000);
+
+            const move = MathUtil.lengthDirXY(props.velocity, props.dir);
+
+            entity.transform.x += move.x;
+            entity.transform.y += move.y;
+            entity.transform.rotation += props.angVelocity;
+        });
     }
 }
 
@@ -388,6 +368,16 @@ class Train extends Entity
             if (data.other.layer === Layers.TRAIN)
             {
                 caller.getEntity().addComponent(new ScreenShake(1, 1000));
+
+                // ragtrain time
+                const allTrains = caller.getScene().entities.filter(x => x.name === "train");
+                for (const train of allTrains)
+                {
+                    // We aren't going anywhere sensible any more
+                    train.getComponent<Destination>(Destination)?.destroy();
+                    train.getComponent<Collider>(Collider)?.destroy();
+                    train.addComponent(new Ragdoll());
+                }
             }
         });
     }
@@ -634,6 +624,59 @@ class Scorer extends GlobalSystem
     }
 }
 
+
+class GameManager extends Entity
+{
+    trackGraph: TrackGraph | null = null;
+
+    constructor()
+    {
+        super("manager", 100, 100);
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addComponent(new Score(0));
+        this.addComponent(new TextDisp(0, 0, "", new PIXI.TextStyle({fontSize: 24, fill: "white"})));
+
+        const track = this.getScene().getEntityWithName("track") as Track;
+
+        if (track === null) return;
+
+        this.spawnTrain(track.trackGraph, 0, track.trackGraph.edges[0]);
+        this.spawnTrain(track.trackGraph, 1, track.trackGraph.edges[30]);
+        this.spawnTrain(track.trackGraph, 2, track.trackGraph.edges[60]);
+        this.spawnTrain(track.trackGraph, 3, track.trackGraph.edges[90]);
+
+        this.trackGraph = track.trackGraph;
+        this.spawnGoal(0);
+        this.spawnGoal(1);
+        this.spawnGoal(2);
+        this.spawnGoal(3);
+    }
+
+    spawnTrain(graph: TrackGraph, trainId: number, edge: Straight)
+    {
+        const train = this.getScene().addEntity(new Train(edge.n1.x, edge.n1.y, trainId, 0, true));
+        train.addComponent(new Destination(graph, edge.n1, edge.n2));
+    }
+
+    spawnGoal(trainId: number): void
+    {
+        if (this.trackGraph === null) return;
+        const point = this.trackGraph.nodes[MathUtil.randomRange(0, this.trackGraph.nodes.length)];
+        let nextPoint = this.trackGraph.edges.find(x => x.n1 === point)?.n2;
+        if (nextPoint === undefined) nextPoint = this.trackGraph.edges.find(x => x.n2 === point)?.n1;
+        if (nextPoint === undefined) return;
+
+        const dir = MathUtil.pointDirection(point.x, point.y, nextPoint.x, nextPoint.y);
+        const goal = this.scene.addEntity(new Goal(point.x, point.y, trainId));
+        goal.transform.rotation = -dir;
+    }
+}
+
 class TrainsScene extends Scene
 {
     onAdded(): void
@@ -653,6 +696,7 @@ class TrainsScene extends Scene
         this.addSystem(new TrainMover());
         this.addSystem(new ScoreUpdater());
         this.addSystem(new SpriteSwapper());
+        this.addSystem(new RagdollSystem());
 
         this.addGUIEntity(new GameManager());
         this.addEntity(new Diagnostics("white"));

@@ -8,7 +8,7 @@ export class Node
     }
 }
 
-class Straight
+export class Straight
 {
     constructor(readonly n1: Node, readonly n2: Node)
     {
