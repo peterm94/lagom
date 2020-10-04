@@ -351,10 +351,10 @@ export class Track extends Entity
         this.trackGraph.createJunction(nodes[nodes.length - 1], [nodes1[0], nodes2[0]]);
 
         // junction in to the bottom of the circle
-        this.trackGraph.createJunction(nodes[10], [nodes[11], nodes1[nodes1.length - 1]]);
+        this.trackGraph.createJunction(nodes[25], [nodes[11], nodes1[nodes1.length - 1]]);
 
         this.addChild(new JunctionButton(this.trackGraph, nodes[nodes.length - 1]));
-        this.addChild(new JunctionButton(this.trackGraph, nodes[10]));
+        this.addChild(new JunctionButton(this.trackGraph, nodes[25]));
 
         this.allPoints = this.allPoints.concat(points).concat(points1).concat(points2);
         this.getScene().entities.filter(x => x.name === "train")
