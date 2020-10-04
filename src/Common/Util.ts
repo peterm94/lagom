@@ -231,7 +231,7 @@ export class Util
 /**
  * Logging level of the system.
  */
-enum LogLevel
+export enum LogLevel
 {
     NONE,
     ERROR,
