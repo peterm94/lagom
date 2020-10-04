@@ -6,6 +6,8 @@ import {Component, PIXIComponent} from "../../ECS/Component";
 import {System} from "../../ECS/System";
 import trainsheet from './Art/train1.png';
 import tracksheet from './Art/track3.png';
+import titleScreen from './Art/startScreen.png';
+import gameoverScreen from './Art/gameOver2.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {MathUtil, Util} from "../../Common/Util";
@@ -31,6 +33,8 @@ const collisionMatrix = new CollisionMatrix();
 
 const trains = new SpriteSheet(trainsheet, 16, 32);
 const track = new SpriteSheet(tracksheet, 3, 8);
+const title = new SpriteSheet(titleScreen, 860, 460);
+const gameover = new SpriteSheet(gameoverScreen, 860, 460);
 
 enum Layers
 {
@@ -400,7 +404,7 @@ class ScreenCard extends Entity
 {
     constructor(readonly texture: PIXI.Texture, readonly clickAction: number, layer: number = 0)
     {
-        super("card", 0, 0, layer);
+        super("card", -4, 0, layer);
     }
 
     onAdded(): void
@@ -508,7 +512,7 @@ class Train extends Entity
                 }
 
                 caller.getEntity().addComponent(new Timer(5000, null)).onTrigger.register(() => {
-                    caller.getScene().addGUIEntity(new ScreenCard(trains.textureFromIndex(0), 1, Layers.END_SCREEN));
+                    caller.getScene().addGUIEntity(new ScreenCard(gameover.textureFromIndex(0), 1, Layers.END_SCREEN));
                 });
             }
         });
@@ -849,8 +853,7 @@ class TrainsScene extends Scene
 
         this.addEntity(new Track("track", 220, 230, Layers.TRACK));
 
-        // TODO put the title texture here
-        this.addGUIEntity(new ScreenCard(trains.textureFromIndex(4), 0));
+        this.addGUIEntity(new ScreenCard(title.textureFromIndex(0), 0));
 
         this.addEntity(new Diagnostics("white"));
     }
