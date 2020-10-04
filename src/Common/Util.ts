@@ -216,6 +216,16 @@ export class Util
     {
         return options[MathUtil.randomRange(0, options.length)];
     }
+
+    /**
+     * Returns the last element from a given array without removing it.
+     * @param arr The array.
+     * @returns The last element of the array.
+     */
+    static last<T>(arr: T[]): T
+    {
+        return arr[arr.length -1];
+    }
 }
 
 /**

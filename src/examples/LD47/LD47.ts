@@ -8,9 +8,9 @@ import trainsheet from './Art/train1.png';
 import tracksheet from './Art/track3.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
-import {MathUtil} from "../../Common/Util";
+import {MathUtil, Util} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
-import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
+import {RenderCircle, RenderRect, TextDisp} from "../../Common/PIXIComponents";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
@@ -176,7 +176,7 @@ class DenySwitch extends Component
 {
 }
 
-class JunctionButton extends Entity
+export class JunctionButton extends Entity
 {
     constructor(readonly trackGraph: TrackGraph, readonly junction: Node)
     {
@@ -289,7 +289,7 @@ class Destination extends Component
 
 export class Track extends Entity
 {
-    readonly trackGraph = new TrackGraph();
+    trackGraph = new TrackGraph();
     allPoints: number[][] = [];
 
     onAdded(): void
@@ -298,67 +298,49 @@ export class Track extends Entity
 
         const trackBuilder = new TrackBuilder(track, this);
 
-        // circle half
-        const points: number[][] = [];
-        points.push(...trackBuilder.addXBezier([0, 0], [100, 100]));
-        points.push(...trackBuilder.addYBezier([100, 100], [200, 0]));
-        // this.addComponent(new Rope(track.textureFromIndex(0), points));
-        points.pop();
+        // Bottom circle half
+        const blNodes = trackBuilder.addXBezier([0, 0], [100, 100]);
+        const bottomJunction = Util.last(blNodes);
 
-        // other circle half
-        const points2: number[][] = [];
-        points2.push(...trackBuilder.addXBezier([200, 0], [100, -100]));
-        points2.push(...trackBuilder.addYBezier([100, -100], [0, 0]));
-        // this.addComponent(new Rope(track.textureFromIndex(0), points2));
-        points2.pop();
+        const brNodes = trackBuilder.addYBezier([100, 100], [200, 0], true);
+        const middleJunction = Util.last(brNodes);
 
-        const nodes = points.map(x => new Node(x[0] + this.transform.x, x[1] + this.transform.y));
-        const nodes2 = points2.map(x => new Node(x[0] + this.transform.x, x[1] + this.transform.y));
-        this.trackGraph.addSequence(nodes);
-        this.trackGraph.addSequence(nodes2);
+        // Top circle half
+        const trNodes = trackBuilder.addXBezier([200, 0], [100, -100], true);
+        const tlNodes = trackBuilder.addYBezier([100, -100], [0, 0], true);
 
-        // connect circle at both joins
-        this.trackGraph.connect(nodes[0], nodes2[nodes2.length - 1]);
-        this.trackGraph.connect(nodes2[0], nodes[nodes.length - 1]);
+        // Link the circle up
+        trackBuilder.getTrackGraph().connect(blNodes[0], Util.last(tlNodes));
 
+        // Top circle junction
+        const cubic = trackBuilder.addBezier(false,
+                                             [100, -100],
+                                             [300, -200],
+                                             [175, -100],
+                                             [225, -200]);
 
-        // FORK
-        // branch 1
-        const points1: number[][] = [];
-        points1.push(...trackBuilder.addXBezier([200, 0], [300, -50]));
-        points1.push(...trackBuilder.addYBezier([300, -50], [400, 0]));
-        points1.push(...trackBuilder.addLine([400, 0], [400, 50]));
-        points1.push(...trackBuilder.addXBezier([400, 50], [300, 100]));
-        points1.push(...trackBuilder.addLine([300, 100], [100, 100]));
-        // points1.push([100, 100]);
+        trackBuilder.addJunction(tlNodes[0], Util.last(trNodes), cubic[0]);
 
-        // this.addComponent(new Rope(track.textureFromIndex(0), points1));
+        // Middle right fork
+        const rightFork = trackBuilder.addXBezier([200, 0], [300, -50], false);
 
-        points1.pop();
-        points1.reverse();
-        points1.pop();
-        points1.reverse();
+        trackBuilder.addJunction(middleJunction, rightFork[0], trNodes[0]);
 
-        const nodes1 = points1.map(x => new Node(x[0] + this.transform.x, x[1] + this.transform.y));
+        trackBuilder.addYBezier([300, -50], [400, 0], true);
+        trackBuilder.addLine([400, 0], [400, 50], true);
+        trackBuilder.addXBezier([400, 50], [300, 100], true);
+        const rightForkReentry = trackBuilder.addLine([300, 100], [100, 100], true);
 
-        // points.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
-        // points1.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 4, null, 0xFF0000)));
-        // points2.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 3, null, 0x0000FF)));
+        // Re-connect the middle-right fork at the bottom with a junction.
+        trackBuilder.addJunction(bottomJunction, brNodes[0], Util.last(rightForkReentry));
 
-        this.trackGraph.addSequence(nodes1);
+        this.trackGraph = trackBuilder.getTrackGraph();
+        this.allPoints = trackBuilder.getAllPoints();
 
-        // junction connect to the circle
-        this.trackGraph.createJunction(nodes[nodes.length - 1], [nodes1[0], nodes2[0]]);
+        this.allPoints.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
 
-        // junction in to the bottom of the circle
-        this.trackGraph.createJunction(nodes[25], [nodes[11], nodes1[nodes1.length - 1]]);
-
-        this.addChild(new JunctionButton(this.trackGraph, nodes[nodes.length - 1]));
-        this.addChild(new JunctionButton(this.trackGraph, nodes[25]));
-
-        this.allPoints = this.allPoints.concat(points).concat(points1).concat(points2);
         this.getScene().entities.filter(x => x.name === "train")
-            .forEach(x => x.addComponent(new Destination(this.trackGraph, nodes[1], nodes[0])));
+            .forEach(x => x.addComponent(new Destination(this.trackGraph, blNodes[1], blNodes[0])));
         this.spawnGoal(0);
     }
 
@@ -372,7 +354,7 @@ export class Track extends Entity
 
 class TrainMover extends System
 {
-    readonly speed = 1;
+    readonly speed = 3;
 
     types = () => [Destination];
 
@@ -385,7 +367,7 @@ class TrainMover extends System
             const targetDistance = MathUtil.pointDistance(entity.transform.x, entity.transform.y,
                                                           destination.node.x, destination.node.y);
 
-            const moveAmt = 100 * (delta / 1000);
+            const moveAmt = this.speed * 100 * (delta / 1000);
 
             // close enough
             if (moveAmt > targetDistance)
