@@ -510,7 +510,7 @@ export class Track extends Entity
         this.trackGraph = trackBuilder.getTrackGraph();
         this.allPoints = trackBuilder.getAllPoints();
 
-        this.allPoints.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
+        // this.allPoints.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
     }
 }
 
