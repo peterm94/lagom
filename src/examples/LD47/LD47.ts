@@ -22,6 +22,8 @@ import {Node, Straight, TrackGraph} from "./TrackGraph";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
 import {ScreenShake, ScreenShaker} from "../../Common/Screenshake";
+import {AudioAtlas} from "../../Audio/AudioAtlas";
+import {SoundManager} from "./SoundManager";
 
 const Mouse = require('pixi.js-mouse');
 
@@ -843,6 +845,7 @@ class TrainsScene extends Scene
         this.addSystem(new SpriteSwapper());
         this.addSystem(new RagdollSystem());
         this.addSystem(new PointMover());
+        this.addEntity(new SoundManager());
 
         this.addEntity(new Track("track", 220, 230, Layers.TRACK));
 
@@ -856,6 +859,10 @@ class TrainsScene extends Scene
 
 export class LD47 extends Game
 {
+    static muted = false;
+    static musicPlaying = false;
+    static audioAtlas: AudioAtlas = new AudioAtlas();
+
     constructor()
     {
         super({
@@ -865,11 +872,13 @@ export class LD47 extends Game
                   backgroundColor: 0x263238
               });
 
-        this.setScene(new TrainsScene(this));
-
         collisionMatrix.addCollision(Layers.TRAIN, Layers.TRAIN);
         collisionMatrix.addCollision(Layers.MOUSE_COLL, Layers.BUTTON);
         collisionMatrix.addCollision(Layers.TRAIN, Layers.BUTTON);
         collisionMatrix.addCollision(Layers.TRAIN, Layers.GOAL);
+
+        // TODO load sounds
+
+        this.setScene(new TrainsScene(this));
     }
 }
