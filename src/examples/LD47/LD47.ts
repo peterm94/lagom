@@ -759,7 +759,7 @@ class TrainsScene extends Scene
 
         this.addSystem(new JunctionSwitcher());
 
-        this.addEntity(new Track("track", 220, 250, Layers.TRACK));
+        this.addEntity(new Track("track", 220, 230, Layers.TRACK));
         this.addSystem(new TrainMover());
         this.addSystem(new ScoreUpdater());
         this.addSystem(new SpriteSwapper());
@@ -778,7 +778,7 @@ export class LD47 extends Game
     {
         super({
                   width: 853,
-                  height: 480,
+                  height: 460,
                   resolution: 1.5,
                   backgroundColor: 0x263238
               });
