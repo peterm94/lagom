@@ -64,19 +64,20 @@ class Goal extends Entity
 {
     constructor(x: number, y: number, readonly trainId: number)
     {
-        super("goal", x, y);
+        super("goal", x, y, Layers.GOAL);
     }
 
     onAdded(): void
     {
         super.onAdded();
 
-        this.addComponent(new Sprite(trains.texture(this.trainId, 1), {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new Sprite(trains.texture(this.trainId, 1),
+                                     {xAnchor: 0.5, yAnchor: 0.5, rotation: MathUtil.degToRad(90)}));
 
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
         if (sys === null) return;
 
-        const coll = this.addComponent(new CircleCollider(sys, {layer: Layers.GOAL, radius: 8, xOff: 8, yOff: 8}));
+        const coll = this.addComponent(new CircleCollider(sys, {layer: Layers.GOAL, radius: 4}));
 
         coll.onTriggerEnter.register((caller, data) => {
             if (data.other.layer !== Layers.TRAIN) return;
@@ -226,10 +227,11 @@ class GameManager extends Entity
         const point = this.trackGraph.nodes[MathUtil.randomRange(0, this.trackGraph.nodes.length)];
         let nextPoint = this.trackGraph.edges.find(x => x.n1 === point)?.n2;
         if (nextPoint === undefined) nextPoint = this.trackGraph.edges.find(x => x.n2 === point)?.n1;
-        if (nextPoint === undefined) nextPoint = point;
+        if (nextPoint === undefined) return;
+
         const dir = MathUtil.pointDirection(point.x, point.y, nextPoint.x, nextPoint.y);
-        const goal = this.addChild(new Goal(point.x - this.transform.x, point.y - this.transform.y, trainId));
-        goal.transform.rotation = dir + MathUtil.degToRad(90);
+        const goal = this.scene.addEntity(new Goal(point.x, point.y, trainId));
+        goal.transform.rotation = -dir;
     }
 }
 
