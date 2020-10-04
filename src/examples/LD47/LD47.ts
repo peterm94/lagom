@@ -10,7 +10,7 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {MathUtil, Util} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
-import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
+import {RenderCircle, RenderRect, TextDisp} from "../../Common/PIXIComponents";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, Collider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
@@ -40,7 +40,8 @@ enum Layers
     GOAL,
     MOUSE_COLL,
     END_SCREEN,
-    SCORE_DISP
+    SCORE_DISP,
+    JUNCTION
 }
 
 
@@ -290,19 +291,34 @@ export class JunctionButton extends Entity
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
         if (sys !== null)
         {
-            const coll = this.addComponent(new RectCollider(sys, {width: 50, height: 50, layer: Layers.BUTTON}));
-            coll.onTriggerEnter.register((caller, data) => {
+            const buttonColl = this.addComponent(new RectCollider(sys, {width: 50, height: 50, layer: Layers.BUTTON}));
+            const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: 0, yOff: 0, radius: 50, layer: Layers.JUNCTION}));
+
+            let junctionOffsetX = 0;
+            let junctionOffsetY = 0;
+            if (this.parent !== null)
+            {
+                junctionOffsetX = this.junction.x - this.transform.x;
+                junctionOffsetY = this.junction.y - this.transform.y;
+            }
+
+            // const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: junctionOffsetX, yOff: junctionOffsetY, radius: 5, layer: Layers.JUNCTION}));
+            this.addComponent(new RenderCircle(junctionOffsetX, junctionOffsetY, 5));
+            buttonColl.onTriggerEnter.register((caller, data) => {
                 if (data.other.layer === Layers.MOUSE_COLL &&
                     caller.getEntity().getComponent<DenySwitch>(DenySwitch) === null)
                 {
                     caller.getEntity().addComponent(new SwitchJunction());
                 }
-                else if (data.other.layer === Layers.TRAIN)
+            });
+
+            junctionColl.onTriggerEnter.register((caller, data) => {
+                if (data.other.layer === Layers.TRAIN)
                 {
                     caller.getEntity().addComponent(new DenySwitch());
                 }
             });
-            coll.onTriggerExit.register((caller, other) => {
+            junctionColl.onTriggerExit.register((caller, other) => {
                 if (other.layer === Layers.TRAIN)
                 {
                     caller.getEntity().getComponent<DenySwitch>(DenySwitch)?.destroy();
@@ -876,6 +892,8 @@ export class LD47 extends Game
         collisionMatrix.addCollision(Layers.MOUSE_COLL, Layers.BUTTON);
         collisionMatrix.addCollision(Layers.TRAIN, Layers.BUTTON);
         collisionMatrix.addCollision(Layers.TRAIN, Layers.GOAL);
+        collisionMatrix.addCollision(Layers.TRAIN, Layers.JUNCTION);
+
 
         const music = LD47.audioAtlas.load("music", require("./Sound/music.mp3"));
         music.loop(true);
