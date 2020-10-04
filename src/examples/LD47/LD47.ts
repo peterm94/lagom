@@ -43,6 +43,23 @@ class AddScore extends Component
 {
 }
 
+class Destination extends Component
+{
+    constructor(readonly graph: TrackGraph, public node: Node, public  previous: Node)
+    {
+        super();
+    }
+
+    next(): Node
+    {
+        const nextNode = this.graph.next(this.previous, this.node);
+        this.previous = this.node;
+        this.node = nextNode;
+        return nextNode;
+    }
+}
+
+
 class Goal extends Entity
 {
     constructor(x: number, y: number, readonly trainId: number)
@@ -66,17 +83,16 @@ class Goal extends Entity
             if (data.other.layer !== Layers.TRAIN) return;
 
             // check that the train is the right one
-            const trainId = (data.other.parent as Train).trainId;
+            const train = (data.other.parent as Train);
+            const trainId = train.trainId;
             if (trainId !== this.trainId) return;
 
-            caller.getScene().getEntityWithName("manager")?.addComponent(new AddScore());
+            const manager = caller.getScene().getEntityWithName("manager") as GameManager;
+            if (manager === null) return;
+            manager.addComponent(new AddScore());
+            manager.spawnGoal(trainId);
 
-            const track = caller.getScene().getEntityWithName<Track>("track");
-
-            if (track !== null)
-            {
-                track.spawnGoal(trainId);
-            }
+            train.addCarriage(1);
 
             // destroy this goal
             caller.getEntity().destroy();
@@ -178,6 +194,8 @@ class Score extends Component
 
 class GameManager extends Entity
 {
+    trackGraph: TrackGraph | null = null;
+
     constructor()
     {
         super("manager", 100, 100);
@@ -189,6 +207,26 @@ class GameManager extends Entity
 
         this.addComponent(new Score(0));
         this.addComponent(new TextDisp(0, 0, "", new PIXI.TextStyle({fontSize: 24, fill: "white"})));
+
+        const track = this.getScene().getEntityWithName("track") as Track;
+
+        if (track === null) return;
+
+        // TODO this is probably fixed points, random is scary.
+        this.getScene().entities.filter(x => x.name === "train")
+            .forEach(x => x.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[0].n1,
+                                                         track.trackGraph.edges[0].n2)));
+
+        this.trackGraph = track.trackGraph;
+        this.spawnGoal(0);
+    }
+
+    spawnGoal(trainId: number): void
+    {
+        // TODO random until we don't spawn on top of a train :D
+        if (this.trackGraph === null) return;
+        const point = this.trackGraph.nodes[MathUtil.randomRange(0, this.trackGraph.nodes.length)];
+        this.addChild(new Goal(point.x - this.transform.x, point.y - this.transform.y, trainId));
     }
 }
 
@@ -259,9 +297,61 @@ export class JunctionButton extends Entity
 
 class Train extends Entity
 {
+    nextTrain: Train | null = null;
+
     constructor(x: number, y: number, readonly trainId: number, readonly carriage: number = 0, readonly front: boolean)
     {
         super("train", x, y, Layers.TRAIN);
+    }
+
+    getNextTrain(): Train
+    {
+        return this.nextTrain === null ? this : this.nextTrain.getNextTrain();
+    }
+
+    addCarriage(carriage = 0): void
+    {
+        const end = this.getNextTrain();
+
+        end.nextTrain = this.scene.addEntity(new Train(end.transform.x,
+                                                       end.transform.y, end.trainId, carriage - 1,
+                                                       false));
+        end.nextTrain.transform.rotation = end.transform.rotation;
+
+        // Need to position it correctly and set up the movement. This is kinda hard. We can do what TrainMover
+        // does.. but backwards. Will always be on the track, be always perfect.
+        const myDest = end.getComponent<Destination>(Destination);
+        if (myDest === null) return;
+
+        // We want to go backwards!
+        const dest = new Destination(myDest.graph, myDest.previous, myDest.node);
+
+        // Train spacing
+        const moveAmt = 35;
+        let actualMovement = 0;
+
+        while (actualMovement < moveAmt)
+        {
+            const targetDir = MathUtil.pointDirection(end.nextTrain.transform.x, end.nextTrain.transform.y, dest.node.x,
+                                                      dest.node.y);
+            const targetDist = MathUtil.pointDistance(end.nextTrain.transform.x, end.nextTrain.transform.y, dest.node.x,
+                                                      dest.node.y);
+            let toMove = moveAmt - actualMovement;
+            if (toMove > targetDist)
+            {
+                toMove = targetDist;
+                dest.next();
+            }
+
+            const moveComp = MathUtil.lengthDirXY(toMove, -targetDir);
+            end.nextTrain.transform.x += moveComp.x;
+            end.nextTrain.transform.y += moveComp.y;
+            end.nextTrain.transform.rotation = -targetDir + MathUtil.degToRad(90);
+            actualMovement += toMove;
+        }
+
+        // Now that it is positioned, add a destination for it.
+        end.nextTrain.addComponent(new Destination(myDest.graph, myDest.node, myDest.previous));
     }
 
     onAdded(): void
@@ -270,10 +360,9 @@ class Train extends Entity
 
         if (this.carriage !== 0)
         {
-            this.scene.addEntity(new Train(this.transform.x - 35,
-                                           this.transform.y, this.trainId, this.carriage - 1,
-                                           false));
+            this.addCarriage(this.carriage);
         }
+
         this.addComponent(new Sprite(trains.texture(this.trainId, this.front ? 0 : 1), {xAnchor: 0.5, yAnchor: 0.5}));
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
 
@@ -305,22 +394,6 @@ export class Rope extends PIXIComponent<PIXI.SimpleRope>
         }
 
         return pixiPoints;
-    }
-}
-
-class Destination extends Component
-{
-    constructor(readonly graph: TrackGraph, public node: Node, public  previous: Node)
-    {
-        super();
-    }
-
-    next(): Node
-    {
-        const nextNode = this.graph.next(this.previous, this.node);
-        this.previous = this.node;
-        this.node = nextNode;
-        return nextNode;
     }
 }
 
@@ -375,16 +448,6 @@ export class Track extends Entity
         this.allPoints = trackBuilder.getAllPoints();
 
         this.allPoints.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
-
-        this.getScene().entities.filter(x => x.name === "train")
-            .forEach(x => x.addComponent(new Destination(this.trackGraph, blNodes[1], blNodes[0])));
-        this.spawnGoal(0);
-    }
-
-    spawnGoal(trainId: number): void
-    {
-        const point = this.allPoints[MathUtil.randomRange(0, this.allPoints.length)];
-        this.addChild(new Goal(point[0], point[1], trainId));
     }
 }
 
@@ -482,7 +545,7 @@ class TrainsScene extends Scene
 
         this.addSystem(new JunctionSwitcher());
 
-        this.addEntity(new Train(150, 350, 0, 4, true));
+        this.addEntity(new Train(150, 350, 0, 0, true));
         this.addEntity(new Track("track", 250, 250, Layers.TRACK));
         this.addSystem(new TrainMover());
         this.addSystem(new ScoreUpdater());
