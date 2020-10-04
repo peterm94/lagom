@@ -10,7 +10,7 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {MathUtil, Util} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
-import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
+import {RenderCircle, RenderRect, TextDisp} from "../../Common/PIXIComponents";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
@@ -43,6 +43,23 @@ class AddScore extends Component
 {
 }
 
+class Destination extends Component
+{
+    constructor(readonly graph: TrackGraph, public node: Node, public  previous: Node)
+    {
+        super();
+    }
+
+    next(): Node
+    {
+        const nextNode = this.graph.next(this.previous, this.node);
+        this.previous = this.node;
+        this.node = nextNode;
+        return nextNode;
+    }
+}
+
+
 class Goal extends Entity
 {
     constructor(x: number, y: number, readonly trainId: number)
@@ -54,8 +71,7 @@ class Goal extends Entity
     {
         super.onAdded();
 
-        // TODO real sprite, pick colour based on trainId
-        this.addComponent(new Sprite(trains.texture(0, 0, 16, 16), {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new Sprite(trains.texture(this.trainId, 1), {xAnchor: 0.5, yAnchor: 0.5}));
 
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
         if (sys === null) return;
@@ -66,17 +82,16 @@ class Goal extends Entity
             if (data.other.layer !== Layers.TRAIN) return;
 
             // check that the train is the right one
-            const trainId = (data.other.parent as Train).trainId;
+            const train = (data.other.parent as Train);
+            const trainId = train.trainId;
             if (trainId !== this.trainId) return;
 
-            caller.getScene().getEntityWithName("manager")?.addComponent(new AddScore());
+            const manager = caller.getScene().getEntityWithName("manager") as GameManager;
+            if (manager === null) return;
+            manager.addComponent(new AddScore());
+            manager.spawnGoal(trainId);
 
-            const track = caller.getScene().getEntityWithName<Track>("track");
-
-            if (track !== null)
-            {
-                track.spawnGoal(trainId);
-            }
+            train.addCarriage(1);
 
             // destroy this goal
             caller.getEntity().destroy();
@@ -178,6 +193,8 @@ class Score extends Component
 
 class GameManager extends Entity
 {
+    trackGraph: TrackGraph | null = null;
+
     constructor()
     {
         super("manager", 100, 100);
@@ -189,6 +206,30 @@ class GameManager extends Entity
 
         this.addComponent(new Score(0));
         this.addComponent(new TextDisp(0, 0, "", new PIXI.TextStyle({fontSize: 24, fill: "white"})));
+
+        const track = this.getScene().getEntityWithName("track") as Track;
+
+        if (track === null) return;
+
+        // TODO this is probably fixed points, random is scary.
+        this.getScene().entities.filter(x => x.name === "train")
+            .forEach(x => x.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[0].n1,
+                                                         track.trackGraph.edges[0].n2)));
+
+        this.trackGraph = track.trackGraph;
+        this.spawnGoal(0);
+    }
+
+    spawnGoal(trainId: number): void
+    {
+        if (this.trackGraph === null) return;
+        const point = this.trackGraph.nodes[MathUtil.randomRange(0, this.trackGraph.nodes.length)];
+        let nextPoint = this.trackGraph.edges.find(x => x.n1 === point)?.n2;
+        if (nextPoint === undefined) nextPoint = this.trackGraph.edges.find(x => x.n2 === point)?.n1;
+        if (nextPoint === undefined) nextPoint = point;
+        const dir = MathUtil.pointDirection(point.x, point.y, nextPoint.x, nextPoint.y);
+        const goal = this.addChild(new Goal(point.x - this.transform.x, point.y - this.transform.y, trainId));
+        goal.transform.rotation = dir + MathUtil.degToRad(90);
     }
 }
 
@@ -259,9 +300,61 @@ export class JunctionButton extends Entity
 
 class Train extends Entity
 {
+    nextTrain: Train | null = null;
+
     constructor(x: number, y: number, readonly trainId: number, readonly carriage: number = 0, readonly front: boolean)
     {
         super("train", x, y, Layers.TRAIN);
+    }
+
+    getNextTrain(): Train
+    {
+        return this.nextTrain === null ? this : this.nextTrain.getNextTrain();
+    }
+
+    addCarriage(carriage = 0): void
+    {
+        const end = this.getNextTrain();
+
+        end.nextTrain = this.scene.addEntity(new Train(end.transform.x,
+                                                       end.transform.y, end.trainId, carriage - 1,
+                                                       false));
+        end.nextTrain.transform.rotation = end.transform.rotation;
+
+        // Need to position it correctly and set up the movement. This is kinda hard. We can do what TrainMover
+        // does.. but backwards. Will always be on the track, be always perfect.
+        const myDest = end.getComponent<Destination>(Destination);
+        if (myDest === null) return;
+
+        // We want to go backwards!
+        const dest = new Destination(myDest.graph, myDest.previous, myDest.node);
+
+        // Train spacing
+        const moveAmt = 35;
+        let actualMovement = 0;
+
+        while (actualMovement < moveAmt)
+        {
+            const targetDir = MathUtil.pointDirection(end.nextTrain.transform.x, end.nextTrain.transform.y, dest.node.x,
+                                                      dest.node.y);
+            const targetDist = MathUtil.pointDistance(end.nextTrain.transform.x, end.nextTrain.transform.y, dest.node.x,
+                                                      dest.node.y);
+            let toMove = moveAmt - actualMovement;
+            if (toMove > targetDist)
+            {
+                toMove = targetDist;
+                dest.next();
+            }
+
+            const moveComp = MathUtil.lengthDirXY(toMove, -targetDir);
+            end.nextTrain.transform.x += moveComp.x;
+            end.nextTrain.transform.y += moveComp.y;
+            end.nextTrain.transform.rotation = -targetDir + MathUtil.degToRad(90);
+            actualMovement += toMove;
+        }
+
+        // Now that it is positioned, reverse the current dest and add it.
+        end.nextTrain.addComponent(new Destination(myDest.graph, dest.previous, dest.node));
     }
 
     onAdded(): void
@@ -270,10 +363,9 @@ class Train extends Entity
 
         if (this.carriage !== 0)
         {
-            this.scene.addEntity(new Train(this.transform.x - 35,
-                                           this.transform.y, this.trainId, this.carriage - 1,
-                                           false));
+            this.addCarriage(this.carriage);
         }
+
         this.addComponent(new Sprite(trains.texture(this.trainId, this.front ? 0 : 1), {xAnchor: 0.5, yAnchor: 0.5}));
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
 
@@ -308,22 +400,6 @@ export class Rope extends PIXIComponent<PIXI.SimpleRope>
     }
 }
 
-class Destination extends Component
-{
-    constructor(readonly graph: TrackGraph, public node: Node, public  previous: Node)
-    {
-        super();
-    }
-
-    next(): Node
-    {
-        const nextNode = this.graph.next(this.previous, this.node);
-        this.previous = this.node;
-        this.node = nextNode;
-        return nextNode;
-    }
-}
-
 export class Track extends Entity
 {
     trackGraph = new TrackGraph();
@@ -337,8 +413,6 @@ export class Track extends Entity
 
         // Bottom circle half
         const blNodes = trackBuilder.addXBezier([0, 0], [100, 100], false);
-        const bottomJunction = Util.last(blNodes);
-
         const brNodes = trackBuilder.addYBezier([100, 100], [200, 0]);
         const middleJunction = Util.last(brNodes);
 
@@ -358,8 +432,9 @@ export class Track extends Entity
 
         trackBuilder.addJunction(tlNodes[0], Util.last(trNodes), cubic[0]);
 
-        const topJunctionEntrance = trackBuilder.addLine([300, -200], [500, -200]);
-        const farRightJunctionRight = trackBuilder.addYBezier([500, -200], [600, -100]);
+        const topJunctionEntrance = trackBuilder.addLine([300, -200], [400, -200]);
+        const trJunctionLeft = trackBuilder.addLine([400, -200], [500, -200]);
+        trackBuilder.addYBezier([500, -200], [600, -100]);
         const topRightJunctionEntrance = trackBuilder.addLine([600, -100], [600, 0]);
         const bottomFarRightJunctionEntrance = trackBuilder.addLine([600, 0], [600, 100]);
         trackBuilder.addXBezier([600, 100], [500, 200]);
@@ -379,16 +454,15 @@ export class Track extends Entity
         const outerLoopTopLeftStraight = trackBuilder.addLine([75, -200], [300, -200]);
         trackBuilder.addJunction(topJunctionEntrance[0], Util.last(outerLoopTopLeftStraight), Util.last(cubic));
 
-        // Right-hand loop
-        trackBuilder.addBezier(false, [400, -150], [400, -200], [600, -175]);
-        
-        // const farRightJunctionLeft = trackBuilder.addXBezier([600, -100], [500, -150], false);
-        // trackBuilder.addJunction(topRightJunctionEntrance[0], farRightJunctionLeft[0], Util.last(farRightJunctionRight));
 
-        // trackBuilder.addLine([450, -150], [400, -150]);
-        trackBuilder.addYBezier([400, -150], [300, -100]);
-        const bottomJunctionTop = trackBuilder.addLine([300, -100], [300, 100]);
-        const bottomJunctionRight = trackBuilder.addXBezier([300, 100], [400, 200]);
+        const bottomJunctionTop = trackBuilder.addXBezier([300, 100], [400, 0], false);
+        trackBuilder.addYBezier([400, 0], [500, -100]);
+        const trJunctionRight = trackBuilder.addXBezier([500, -100], [400, -200]);
+
+        trackBuilder.addJunction(Util.last(topJunctionEntrance), trJunctionLeft[0], Util.last(trJunctionRight));
+
+        // const bottomJunctionTop = trackBuilder.addLine([300, 0], [300, 100]);
+        const bottomJunctionRight = trackBuilder.addXBezier([300, 100], [400, 200], false);
 
         trackBuilder.addJunction(Util.last(bottomJunctionEntrance),
                                  bottomJunctionMid[0],
@@ -396,7 +470,7 @@ export class Track extends Entity
 
         const bottomJunctionLeft = trackBuilder.addXBezier([300, 100], [200, 200], false);
 
-        trackBuilder.addJunction(Util.last(bottomJunctionTop), bottomJunctionRight[0], bottomJunctionLeft[0]);
+        trackBuilder.addJunction(bottomJunctionTop[0], bottomJunctionRight[0], bottomJunctionLeft[0]);
         trackBuilder.addJunction(bottomJunctionStraightLeft[0], Util.last(bottomJunctionLeft), Util.last(bottomJunctionMid));
 
         // Middle right fork
@@ -404,7 +478,6 @@ export class Track extends Entity
         trackBuilder.addJunction(middleJunction, rightFork[0], trNodes[0]);
 
         trackBuilder.addLine([300, -50], [500, -50]);
-
 
         const bottomFarRightJunctionLeft = trackBuilder.addYBezier([500, -50], [600, 0]);
 
@@ -435,17 +508,7 @@ export class Track extends Entity
         this.trackGraph = trackBuilder.getTrackGraph();
         this.allPoints = trackBuilder.getAllPoints();
 
-        // this.allPoints.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
-
-        this.getScene().entities.filter(x => x.name === "train")
-            .forEach(x => x.addComponent(new Destination(this.trackGraph, blNodes[1], blNodes[0])));
-        this.spawnGoal(0);
-    }
-
-    spawnGoal(trainId: number): void
-    {
-        const point = this.allPoints[MathUtil.randomRange(0, this.allPoints.length)];
-        this.addChild(new Goal(point[0], point[1], trainId));
+        this.allPoints.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
     }
 }
 
@@ -543,8 +606,8 @@ class TrainsScene extends Scene
 
         this.addSystem(new JunctionSwitcher());
 
-        this.addEntity(new Train(150, 350, 0, 4, true));
-        this.addEntity(new Track("track", 250, 250, Layers.TRACK));
+        this.addEntity(new Train(150, 350, 0, 0, true));
+        this.addEntity(new Track("track", 220, 250, Layers.TRACK));
         this.addSystem(new TrainMover());
         this.addSystem(new ScoreUpdater());
         this.addSystem(new SpriteSwapper());
@@ -560,9 +623,9 @@ export class LD47 extends Game
     constructor()
     {
         super({
-                  width: 920,
-                  height: 500,
-                  resolution: 2,
+                  width: 853,
+                  height: 480,
+                  resolution: 1.5,
                   backgroundColor: 0x263238
               });
 
