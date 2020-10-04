@@ -296,18 +296,8 @@ export class JunctionButton extends Entity
         if (sys !== null)
         {
             const buttonColl = this.addComponent(new RectCollider(sys, {width: 50, height: 50, layer: Layers.BUTTON}));
-            const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: 0, yOff: 0, radius: 50, layer: Layers.JUNCTION}));
+            const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: 25, yOff: 25, radius: 5, layer: Layers.JUNCTION}));
 
-            let junctionOffsetX = 0;
-            let junctionOffsetY = 0;
-            if (this.parent !== null)
-            {
-                junctionOffsetX = this.junction.x - this.transform.x;
-                junctionOffsetY = this.junction.y - this.transform.y;
-            }
-
-            // const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: junctionOffsetX, yOff: junctionOffsetY, radius: 5, layer: Layers.JUNCTION}));
-            this.addComponent(new RenderCircle(junctionOffsetX, junctionOffsetY, 5));
             buttonColl.onTriggerEnter.register((caller, data) => {
                 if (data.other.layer === Layers.MOUSE_COLL &&
                     caller.getEntity().getComponent<DenySwitch>(DenySwitch) === null)
