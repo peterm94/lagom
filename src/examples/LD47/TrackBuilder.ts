@@ -1,28 +1,41 @@
 import Bezier from "bezier-js";
+import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
+import {Entity} from "../../ECS/Entity";
+import {Rope} from "./LD47";
 
 export class TrackBuilder
 {
-    // private track: [number, number][] = [];
+    private track: [number, number][] = [];
     // private nodes: Node[] = [];
     //
-    // public constructor(originX: number, originY: number)
-    // {
-    //     this.track.push([originX, originY]);
-    // }
+    private trackSprite: SpriteSheet;
+    private entity: Entity;
 
-    public static addXBezier = (start: [number, number],
-                                end: [number, number]) => {
-        return TrackBuilder.addBezier(start, end, [start[0], end[1]])
+    public constructor(trackSprite: SpriteSheet, entity: Entity)
+    {
+        this.trackSprite = trackSprite;
+        this.entity = entity;
     }
 
-    public static addYBezier = (start: [number, number],
-                                end: [number, number]) => {
-        return TrackBuilder.addBezier(start, end, [end[0], start[1]])
+    public addXBezier = (start: [number, number],
+                         end: [number, number]) => {
+        return this.addBezier(start, end, [start[0], end[1]])
     }
 
-    public static addBezier = (start: [number, number],
-                               end: [number, number],
-                               controlPoint: [number, number]) => {
+    public addYBezier = (start: [number, number],
+                         end: [number, number]) => {
+        return this.addBezier(start, end, [end[0], start[1]])
+    }
+
+    public addLine = (start: [number, number], end: [number, number]) => {
+        const points = [start, end];
+        this.entity.addComponent(new Rope(this.trackSprite.textureFromIndex(0), points));
+        return points;
+    }
+
+    public addBezier = (start: [number, number],
+                        end: [number, number],
+                        controlPoint: [number, number]) => {
 
         const points = [];
 
@@ -30,13 +43,14 @@ export class TrackBuilder
                                   controlPoint[0], controlPoint[1],
                                   end[0], end[1]);
 
-        const lut = bezier.getLUT(10);
+        const lut = bezier.getLUT(25);
 
         for (const point of lut)
         {
             points.push([point.x, point.y]);
         }
 
+        this.entity.addComponent(new Rope(this.trackSprite.textureFromIndex(0), points));
         return points;
     };
 

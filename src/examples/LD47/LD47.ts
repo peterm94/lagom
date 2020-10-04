@@ -283,7 +283,7 @@ class Train extends Entity
 
 
 // TODO move this to core
-class Rope extends PIXIComponent<PIXI.SimpleRope>
+export class Rope extends PIXIComponent<PIXI.SimpleRope>
 {
     constructor(texture: PIXI.Texture, points: number[][])
     {
@@ -302,7 +302,7 @@ class Rope extends PIXIComponent<PIXI.SimpleRope>
     }
 }
 
-class Track extends Entity
+export class Track extends Entity
 {
     allPoints: number[][] = [];
 
@@ -329,37 +329,34 @@ class Track extends Entity
     {
         super.onAdded();
 
-        // const trackBuilder = new TrackBuilder(0, 0);
-        // trackBuilder.addBezier(trackBuilder.getTrackEnd(), [0, 100], [100, 100])
-        // trackBuilder.getTrack();
+        const trackBuilder = new TrackBuilder(track, this);
 
         const points: number[][] = [];
 
         // points.push(...TrackBuilder.makeTurn(10, 100, 0, 90));
 
         // This is a circle.
-        points.push(...TrackBuilder.addXBezier([0, 0], [100, 100]));
-        points.push(...TrackBuilder.addYBezier([100, 100], [200, 0]));
+        points.push(...trackBuilder.addXBezier([0, 0], [100, 100]));
+        points.push(...trackBuilder.addYBezier([100, 100], [200, 0]));
 
         // FORK
         // branch 1
         const points1: number[][] = [];
-        points1.push(...TrackBuilder.addXBezier([200, 0], [300, -50]));
-        points1.push(...TrackBuilder.addYBezier([300, -50], [400, 0]));
-        points1.push([400, 50]);
+        points1.push(...trackBuilder.addXBezier([200, 0], [300, -50]));
+        points1.push(...trackBuilder.addYBezier([300, -50], [400, 0]));
+        points1.push(...trackBuilder.addLine([400, 0], [400, 50]));
 
         // Uncomment this to see the track disappear.
-        points1.push(...TrackBuilder.addXBezier([400, 50], [300, 100]));
-        points1.push([100, 100]);
+        points1.push(...trackBuilder.addXBezier([400, 50], [300, 100]));
+        points1.push(...trackBuilder.addLine([300, 100], [100, 100]));
 
         // branch 2
         const points2: number[][] = [];
 
-        points2.push(...TrackBuilder.addXBezier([200, 0], [100, -100]));
-        points2.push(...TrackBuilder.addYBezier([100, -100], [0, 0]));
+        points2.push(...trackBuilder.addXBezier([200, 0], [100, -100]));
+        points2.push(...trackBuilder.addYBezier([100, -100], [0, 0]));
 
         // points.push([220, 0]);
-
         const nodes = this.makeStraightTrack(points);
         const nodes1 = this.makeStraightTrack(points1);
         const nodes2 = this.makeStraightTrack(points2);
@@ -374,15 +371,15 @@ class Track extends Entity
         nodes[nodes.length - 1].edge = new Junction(nodes[nodes.length - 1], [nodes1[0], nodes2[0]], 0);
 
         this.addChild(new JunctionButton(nodes[nodes.length - 1].edge as Junction));
+        //
+        // points1.reverse().push(points[points.length - 1]);
+        // points1.reverse();
+        // points2.reverse().push(points[points.length - 1]);
+        // points2.reverse();
 
-        points1.reverse().push(points[points.length - 1]);
-        points1.reverse();
-        points2.reverse().push(points[points.length - 1]);
-        points2.reverse();
-
-        this.addComponent(new Rope(track.textureFromIndex(0), points));
-        this.addComponent(new Rope(track.textureFromIndex(0), points2));
-        this.addComponent(new Rope(track.textureFromIndex(0), points1));
+        // this.addComponent(new Rope(track.textureFromIndex(0), points));
+        // this.addComponent(new Rope(track.textureFromIndex(0), points2));
+        // this.addComponent(new Rope(track.textureFromIndex(0), points1));
 
         this.allPoints = this.allPoints.concat(points).concat(points1).concat(points2);
 
