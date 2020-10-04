@@ -42,6 +42,10 @@ enum Layers
 
 class AddScore extends Component
 {
+    constructor(readonly trainId: number)
+    {
+        super();
+    }
 }
 
 class Destination extends Component
@@ -90,7 +94,7 @@ class Goal extends Entity
 
             const manager = caller.getScene().getEntityWithName("manager") as GameManager;
             if (manager === null) return;
-            manager.addComponent(new AddScore());
+            manager.addComponent(new AddScore(trainId));
             manager.spawnGoal(trainId);
 
             train.addCarriage(1);
@@ -187,9 +191,17 @@ class JunctionSwitcher extends System
 
 class Score extends Component
 {
-    constructor(public score: number)
+    carriageCounts: number[] = [];
+    score = 0;
+
+    constructor(trainCount: number)
     {
         super();
+
+        for (let i = 0; i < trainCount; i++)
+        {
+            this.carriageCounts.push(0);
+        }
     }
 }
 
@@ -367,7 +379,7 @@ class Train extends Entity
             // GAME OVER BUDDY
             if (data.other.layer === Layers.TRAIN)
             {
-                caller.getEntity().addComponent(new ScreenShake(1, 1000));
+                caller.getEntity().addComponent(new ScreenShake(1, 4000));
 
                 // ragtrain time
                 const allTrains = caller.getScene().entities.filter(x => x.name === "train");
@@ -592,7 +604,15 @@ class Scorer extends GlobalSystem
             const masterScore = score[0];
             for (const addScore of addScores)
             {
-                masterScore.score++;
+                masterScore.carriageCounts[addScore.trainId]++;
+
+                // Calculate a multiplier based on the lowest carriage. The more you have, the bigger the number gets.
+                // You will have more points by having lots of long trains.
+                const lowest = Math.min(...masterScore.carriageCounts);
+                const multiplier = (lowest + 1) / 10;
+
+                masterScore.score += Math.floor(masterScore.carriageCounts[addScore.trainId] * 100 * multiplier);
+
                 addScore.destroy();
             }
         });
@@ -613,17 +633,19 @@ class GameManager extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new Score(0));
         this.addComponent(new TextDisp(0, 0, "", new PIXI.TextStyle({fontSize: 24, fill: "white"})));
 
         const track = this.getScene().getEntityWithName("track") as Track;
 
         if (track === null) return;
 
+        // Make sure this matches number of trains.
+        const trainCount = 4;
         this.spawnTrain(track.trackGraph, 0, track.trackGraph.edges[0]);
         this.spawnTrain(track.trackGraph, 1, track.trackGraph.edges[30]);
         this.spawnTrain(track.trackGraph, 2, track.trackGraph.edges[60]);
         this.spawnTrain(track.trackGraph, 3, track.trackGraph.edges[90]);
+        this.addComponent(new Score(trainCount));
 
         this.trackGraph = track.trackGraph;
         this.spawnGoal(0);
