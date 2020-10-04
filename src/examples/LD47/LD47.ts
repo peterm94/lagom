@@ -261,8 +261,8 @@ export class JunctionButton extends Entity
         super.onAdded();
         if (this.parent !== null)
         {
-            this.transform.x = this.junction.x - this.parent.transform.x - 25;
-            this.transform.y = this.junction.y - this.parent.transform.y - 25;
+            this.transform.x = this.junction.x - this.parent.transform.x - 25 + this.xOffset;
+            this.transform.y = this.junction.y - this.parent.transform.y - 25 + this.yOffset;
         }
         // this.addComponent(new JunctionHolder(this.junction));
         this.addComponent(new RenderRect(0, 0, 50, 50, null, 0x0));
@@ -273,13 +273,13 @@ export class JunctionButton extends Entity
         const onTexture = () => trains.textureFromPoints(4 * 16, 2 * 16, 16, 16);
         const offTexture = () => trains.textureFromPoints(4 * 16, 0, 16, 16);
         const p1 = this.addChild(new Entity("indicator0", this.j0pos.x, this.j0pos.y));
-        p1.transform.rotation = this.j0pos.rot;
+        p1.transform.angle = this.j0pos.rot;
         p1.addComponent(new AnimatedSpriteController(0, [{textures: [onTexture()], id: 0, config: {}},
             {textures: [offTexture()], id: 1, config: {}}]));
         const p2 = this.addChild(new Entity("indicator1", this.j1pos.x, this.j1pos.y));
         p2.addComponent(new AnimatedSpriteController(1, [{textures: [onTexture()], id: 0, config: {}},
             {textures: [offTexture()], id: 1, config: {}}]));
-        p2.transform.rotation = this.j1pos.rot;
+        p2.transform.angle = this.j1pos.rot;
 
 
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
@@ -444,7 +444,10 @@ export class Track extends Entity
                                              [175, -100],
                                              [150, -200]);
 
-        trackBuilder.addJunction(tlNodes[0], Util.last(trNodes), cubic[0]);
+        trackBuilder.addJunction(tlNodes[0], Util.last(trNodes), cubic[0],
+                                 20, 0,
+                                 {x: 33, y: -1, rot: 60},
+                                 {x: 40, y: 32, rot: 100});
 
         const topJunctionEntrance = trackBuilder.addLine([300, -200], [400, -200]);
         const trJunctionLeft = trackBuilder.addLine([400, -200], [500, -200]);
@@ -466,38 +469,60 @@ export class Track extends Entity
                                [-75, -200]);
 
         const outerLoopTopLeftStraight = trackBuilder.addLine([75, -200], [300, -200]);
-        trackBuilder.addJunction(topJunctionEntrance[0], Util.last(outerLoopTopLeftStraight), Util.last(cubic));
+
+        trackBuilder.addJunction(topJunctionEntrance[0], Util.last(outerLoopTopLeftStraight), Util.last(cubic),
+                                 -20, 0,
+                                 {x: 0, y: 20, rot: -90},
+                                 {x: 2, y: 48.5, rot: -100});
 
 
         const bottomJunctionTop = trackBuilder.addXBezier([300, 100], [400, 0], false);
         trackBuilder.addYBezier([400, 0], [500, -100]);
         const trJunctionRight = trackBuilder.addXBezier([500, -100], [400, -200]);
 
-        trackBuilder.addJunction(Util.last(topJunctionEntrance), trJunctionLeft[0], Util.last(trJunctionRight));
+        trackBuilder.addJunction(Util.last(topJunctionEntrance), trJunctionLeft[0], Util.last(trJunctionRight),
+                                 0, 0,
+                                 {x: 50, y: 4, rot: 90},
+                                 {x: 51, y: 32, rot: 100});
 
         // const bottomJunctionTop = trackBuilder.addLine([300, 0], [300, 100]);
         const bottomJunctionRight = trackBuilder.addXBezier([300, 100], [400, 200], false);
 
         trackBuilder.addJunction(Util.last(bottomJunctionEntrance),
                                  bottomJunctionMid[0],
-                                 Util.last(bottomJunctionRight));
+                                 Util.last(bottomJunctionRight),
+                                 0, 0,
+                                 {x: -1, y: 17, rot: -80},
+                                 {x: 0, y: 46, rot: -90});
 
         const bottomJunctionLeft = trackBuilder.addXBezier([300, 100], [200, 200], false);
 
-        trackBuilder.addJunction(bottomJunctionTop[0], bottomJunctionRight[0], bottomJunctionLeft[0]);
+        trackBuilder.addJunction(bottomJunctionTop[0], bottomJunctionRight[0], bottomJunctionLeft[0],
+                                 0, 0,
+                                 {x: 17, y: 50, rot: 190},
+                                 {x: 48, y: 47.5, rot: 170});
+
         trackBuilder.addJunction(bottomJunctionStraightLeft[0], Util.last(bottomJunctionLeft),
-                                 Util.last(bottomJunctionMid));
+                                 Util.last(bottomJunctionMid),
+                                 20, 0,
+                                 {x: 49, y: 0, rot: 80},
+                                 {x: 51, y: 30, rot: 90});
 
         // Middle right fork
         const rightFork = trackBuilder.addXBezier([200, 0], [300, -50], false);
-        trackBuilder.addJunction(middleJunction, rightFork[0], trNodes[0]);
+        trackBuilder.addJunction(middleJunction, rightFork[0], trNodes[0],
+                                 0, 0,
+                                 {x: 1, y: 6, rot: -10},
+                                 {x: 36, y: 2, rot: 25});
 
         trackBuilder.addLine([300, -50], [500, -50]);
 
         const bottomFarRightJunctionLeft = trackBuilder.addYBezier([500, -50], [600, 0]);
 
         trackBuilder.addJunction(bottomFarRightJunctionEntrance[0], Util.last(topRightJunctionEntrance),
-                                 Util.last(bottomFarRightJunctionLeft));
+                                 Util.last(bottomFarRightJunctionLeft), 0, 0,
+                                 {x: -1, y: 10, rot: -30},
+                                 {x: 31, y: 5, rot: 0});
 
 
         // trackBuilder.addBezier(true,
@@ -532,7 +557,7 @@ export class Track extends Entity
 
 class TrainMover extends System
 {
-    readonly speed = 3;
+    readonly speed = 2;
 
     types = () => [Destination];
 
