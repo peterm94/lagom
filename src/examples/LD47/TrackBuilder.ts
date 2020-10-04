@@ -3,6 +3,7 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import {Entity} from "../../ECS/Entity";
 import {JunctionButton, Rope} from "./LD47";
 import {Node, TrackGraph} from "./TrackGraph";
+import {Util} from "../../Common/Util";
 
 export class TrackBuilder
 {
@@ -22,19 +23,19 @@ export class TrackBuilder
 
     public addXBezier = (start: [number, number],
                          end: [number, number],
-                         connectToPrevious = false) => {
+                         connectToPrevious = true) => {
         return this.addBezier(connectToPrevious, start, end, [start[0], end[1]]);
     };
 
     public addYBezier = (start: [number, number],
                          end: [number, number],
-                         connectToPrevious = false) => {
+                         connectToPrevious = true) => {
         return this.addBezier(connectToPrevious, start, end, [end[0], start[1]]);
     };
 
     public addLine = (start: [number, number],
                       end: [number, number],
-                      connectToPrevious = false) => {
+                      connectToPrevious = true) => {
         return this.addBezier(connectToPrevious, start, end, [(start[0] + end[0]) / 2, (start[1] + end[1]) / 2]);
     };
 

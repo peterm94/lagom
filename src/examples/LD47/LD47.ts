@@ -10,7 +10,7 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {MathUtil, Util} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
-import {RenderCircle, RenderRect, TextDisp} from "../../Common/PIXIComponents";
+import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
@@ -299,15 +299,15 @@ export class Track extends Entity
         const trackBuilder = new TrackBuilder(track, this);
 
         // Bottom circle half
-        const blNodes = trackBuilder.addXBezier([0, 0], [100, 100]);
+        const blNodes = trackBuilder.addXBezier([0, 0], [100, 100], false);
         const bottomJunction = Util.last(blNodes);
 
-        const brNodes = trackBuilder.addYBezier([100, 100], [200, 0], true);
+        const brNodes = trackBuilder.addYBezier([100, 100], [200, 0]);
         const middleJunction = Util.last(brNodes);
 
         // Top circle half
-        const trNodes = trackBuilder.addXBezier([200, 0], [100, -100], true);
-        const tlNodes = trackBuilder.addYBezier([100, -100], [0, 0], true);
+        const trNodes = trackBuilder.addXBezier([200, 0], [100, -100]);
+        const tlNodes = trackBuilder.addYBezier([100, -100], [0, 0]);
 
         // Link the circle up
         trackBuilder.getTrackGraph().connect(blNodes[0], Util.last(tlNodes));
@@ -321,23 +321,47 @@ export class Track extends Entity
 
         trackBuilder.addJunction(tlNodes[0], Util.last(trNodes), cubic[0]);
 
-        trackBuilder.addLine([300, -200], [500, -200]);
-        trackBuilder.addYBezier([500, -200], [600, -100]);
-        trackBuilder.addLine([600, -100], [600, 100]);
+        const topJunctionEntrance = trackBuilder.addLine([300, -200], [500, -200]);
+        const farRightJunctionRight = trackBuilder.addYBezier([500, -200], [600, -100]);
+        const farRightJunctionEntrance = trackBuilder.addLine([600, -100], [600, 100]);
         trackBuilder.addXBezier([600, 100], [500, 200]);
-        trackBuilder.addLine([500, 200], [-150, 200]);
+        const bottomRightJunctionEntrance = trackBuilder.addLine([500, 200], [400, 200]);
+        const bottomRightJunctionLeft = trackBuilder.addLine([400, 200], [-150, 200]);
         trackBuilder.addYBezier([-150, 200], [-200, 150]);
+        trackBuilder.addLine([-200, 150], [-200, -50]);
+        trackBuilder.addXBezier([-200, -50], [-125, -100]);
 
+        trackBuilder.addBezier(true,
+                               [-125, -100],
+                               [75, -200],
+                               [-50, -100],
+                               [-75, -200]);
+
+        const outerLoopTopLeftStraight = trackBuilder.addLine([75, -200], [300, -200]);
+        trackBuilder.addJunction(topJunctionEntrance[0], Util.last(outerLoopTopLeftStraight), Util.last(cubic));
+
+        // Right-hand loop
+        const farRightJunctionLeft = trackBuilder.addXBezier([600, -100], [500, -150], false);
+        trackBuilder.addJunction(farRightJunctionEntrance[0], farRightJunctionLeft[0], Util.last(farRightJunctionRight));
+
+        trackBuilder.addLine([500, -150], [400, -150]);
+        trackBuilder.addYBezier([400, -150], [300, -100]);
+        trackBuilder.addLine([300, -100], [300, 100]);
+        const bottomRightJunctionRight = trackBuilder.addXBezier([300, 100], [400, 200]);
+
+        trackBuilder.addJunction(Util.last(bottomRightJunctionEntrance),
+                                 bottomRightJunctionLeft[0],
+                                 Util.last(bottomRightJunctionRight));
 
         // Middle right fork
         const rightFork = trackBuilder.addXBezier([200, 0], [300, -50], false);
 
         trackBuilder.addJunction(middleJunction, rightFork[0], trNodes[0]);
 
-        trackBuilder.addYBezier([300, -50], [400, 0], true);
-        trackBuilder.addLine([400, 0], [400, 50], true);
-        trackBuilder.addXBezier([400, 50], [300, 100], true);
-        const rightForkReentry = trackBuilder.addLine([300, 100], [100, 100], true);
+        trackBuilder.addYBezier([300, -50], [400, 0]);
+        trackBuilder.addLine([400, 0], [400, 50]);
+        trackBuilder.addXBezier([400, 50], [300, 100]);
+        const rightForkReentry = trackBuilder.addLine([300, 100], [100, 100]);
 
         // Re-connect the middle-right fork at the bottom with a junction.
         trackBuilder.addJunction(bottomJunction, brNodes[0], Util.last(rightForkReentry));
