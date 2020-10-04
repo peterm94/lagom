@@ -207,7 +207,7 @@ class PointDisp extends Entity
     {
         super.onAdded();
 
-        this.addComponent(new TextDisp(0, 0, "+" + this.score.toString(), new PIXI.TextStyle({fill:"white"})));
+        this.addComponent(new TextDisp(0, 0, "+" + this.score.toString(), new PIXI.TextStyle({fill: "white"})));
         this.addComponent(new MoveFade());
     }
 }
@@ -223,7 +223,7 @@ class PointMover extends System
 
             text.pixiObj.alpha = moveFade.alpha;
 
-            moveFade.alpha -= delta / 1000 * 1;
+            moveFade.alpha -= delta / 1000;
             if (moveFade.alpha < 0) entity.destroy();
         });
     }
@@ -338,6 +338,80 @@ class RagdollSystem extends System
     }
 }
 
+class ClickAction extends Component
+{
+    constructor(readonly action: number)
+    {
+        super();
+    }
+
+    onAction()
+    {
+        switch (this.action)
+        {
+            // start game
+            case 0:
+            {
+                this.getScene().addGUIEntity(new GameManager());
+                this.getEntity().destroy();
+                break;
+            }
+            // restart
+            case 1:
+            {
+                this.getScene().entities.forEach(x => x.destroy());
+                this.getScene().systems.forEach(x => x.destroy());
+                this.getScene().globalSystems.forEach(x => x.destroy());
+                this.getScene().getGame().setScene(new TrainsScene(this.getScene().getGame()));
+                break;
+            }
+        }
+    }
+}
+
+
+class ClickListener extends GlobalSystem
+{
+    types(): LagomType<Component>[]
+    {
+        return [ClickAction];
+    }
+
+    update(delta: number): void
+    {
+        this.runOnComponents((clickActions: ClickAction[]) => {
+
+            if (Mouse.isButtonPressed(0))
+            {
+                for (const action of clickActions)
+                {
+                    action.onAction();
+                    action.destroy();
+                }
+            }
+        });
+    }
+}
+
+class ScreenCard extends Entity
+{
+    constructor(readonly texture: PIXI.Texture, readonly clickAction: number)
+    {
+        super("card", 0, 0);
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addComponent(new Sprite(this.texture));
+
+        this.addComponent(new Timer(1000, null)).onTrigger.register(() => {
+            this.addComponent(new ClickAction(this.clickAction));
+        });
+    }
+}
+
 class Train extends Entity
 {
     nextTrain: Train | null = null;
@@ -429,11 +503,14 @@ class Train extends Entity
                     train.getComponent<Collider>(Collider)?.destroy();
                     train.addComponent(new Ragdoll());
                 }
+
+                caller.getEntity().addComponent(new Timer(5000, null)).onTrigger.register(() => {
+                    caller.getScene().addEntity(new ScreenCard(trains.textureFromIndex(0), 1));
+                });
             }
         });
     }
 }
-
 
 // TODO move this to core
 export class Rope extends PIXIComponent<PIXI.SimpleRope>
@@ -756,17 +833,21 @@ class TrainsScene extends Scene
         this.addGlobalSystem(new Scorer());
         this.addGlobalSystem(new FrameTriggerSystem());
         this.addGlobalSystem(new ScreenShaker());
+        this.addGlobalSystem(new ClickListener());
+
+        this.addSystem(new TrainMover());
 
         this.addSystem(new JunctionSwitcher());
-
-        this.addEntity(new Track("track", 220, 230, Layers.TRACK));
-        this.addSystem(new TrainMover());
         this.addSystem(new ScoreUpdater());
         this.addSystem(new SpriteSwapper());
         this.addSystem(new RagdollSystem());
         this.addSystem(new PointMover());
 
-        this.addGUIEntity(new GameManager());
+        this.addEntity(new Track("track", 220, 230, Layers.TRACK));
+
+        // TODO put the title texture here
+        this.addGUIEntity(new ScreenCard(trains.textureFromIndex(4), 0));
+
         this.addEntity(new Diagnostics("white"));
     }
 }
