@@ -8,7 +8,7 @@ import trainsheet from './Art/train1.png';
 import tracksheet from './Art/track3.png';
 import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
-import {MathUtil, Util} from "../../Common/Util";
+import {Log, LogLevel, MathUtil, Util} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
 import {RenderRect, TextDisp} from "../../Common/PIXIComponents";
 import {CollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
@@ -871,6 +871,8 @@ export class LD47 extends Game
                   resolution: 1.5,
                   backgroundColor: 0x263238
               });
+
+        Log.logLevel = LogLevel.NONE;
 
         collisionMatrix.addCollision(Layers.TRAIN, Layers.TRAIN);
         collisionMatrix.addCollision(Layers.MOUSE_COLL, Layers.BUTTON);
