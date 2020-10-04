@@ -18,38 +18,27 @@ import {LagomType} from "../../ECS/LifecycleObject";
 import {Timer, TimerSystem} from "../../Common/Timer";
 import {TrackBuilder} from "./TrackBuilder";
 import {Diagnostics} from "../../Common/Debug";
+import {Node, TrackGraph} from "./TrackGraph";
 
 const Mouse = require('pixi.js-mouse');
 
 const collisionMatrix = new CollisionMatrix();
 
 const trains = new SpriteSheet(trainsheet, 16, 32);
-let track = new SpriteSheet(tracksheet, 3, 8);
+const track = new SpriteSheet(tracksheet, 3, 8);
 
 enum Layers
 {
+    BUTTON,
     TRACK,
     TRAIN,
     GOAL,
-    MOUSE_COLL,
-    BUTTON
+    MOUSE_COLL
 }
 
 
-class Straight implements Edge
+class AddScore extends Component
 {
-    constructor(readonly n1: Node, readonly n2: Node)
-    {
-    }
-
-    next(previous: Node): Node
-    {
-        if (this.n1 === previous)
-        {
-            return this.n2;
-        }
-        return this.n1;
-    }
 }
 
 class Goal extends Entity
@@ -79,6 +68,7 @@ class Goal extends Entity
             if (trainId != this.trainId) return;
 
             // TODO add a point to something
+            caller.getScene().getEntityWithName("manager")?.addComponent(new AddScore());
 
             const track = caller.getScene().getEntityWithName<Track>("track");
 
@@ -90,53 +80,6 @@ class Goal extends Entity
             // destroy this goal
             caller.getEntity().destroy();
         });
-    }
-}
-
-class Junction implements Edge
-{
-    constructor(readonly controlEdge: Node, readonly switchEdge: Node[], public currActive = 0)
-    {
-    }
-
-    next(previous: Node): Node
-    {
-        if (previous === this.controlEdge)
-        {
-            return this.switchEdge[this.currActive];
-        }
-        else
-        {
-            return this.controlEdge;
-        }
-    }
-}
-
-interface Edge
-{
-    next(previous: Node): Node;
-}
-
-export class Node
-{
-    edge: Edge = new Straight(this, this);
-
-    constructor(readonly x: number, readonly y: number)
-    {
-    }
-}
-
-class Destination extends Component
-{
-    constructor(public node: Node, public edge: Edge)
-    {
-        super();
-    }
-
-    next(): void
-    {
-        this.node = this.edge.next(this.node);
-        this.edge = this.node.edge;
     }
 }
 
@@ -180,7 +123,7 @@ class SwitchJunction extends Component
 
 class JunctionHolder extends Component
 {
-    constructor(readonly junction: Junction)
+    constructor(readonly graph: TrackGraph, readonly junction: Node)
     {
         super();
     }
@@ -197,12 +140,37 @@ class JunctionSwitcher extends System
     {
         this.runOnEntities((entity: Entity, junctionHolder: JunctionHolder, switchJunc: SwitchJunction,
                             txt: TextDisp) => {
-            junctionHolder.junction.currActive = junctionHolder.junction.currActive === 1 ? 0 : 1;
-            txt.pixiObj.text = junctionHolder.junction.currActive.toString();
+            const curr = junctionHolder.graph.switchJunction(junctionHolder.junction);
+            txt.pixiObj.text = curr.toString();
             switchJunc.destroy();
         });
     }
 }
+
+class Score extends Component
+{
+    constructor(public score: number)
+    {
+        super();
+    }
+}
+
+class GameManager extends Entity
+{
+    constructor()
+    {
+        super("manager", 100, 100);
+    }
+
+    onAdded(): void
+    {
+        super.onAdded();
+
+        this.addComponent(new Score(0));
+        this.addComponent(new TextDisp(0, 0, "", new PIXI.TextStyle({fontSize: 24, fill: "white"})));
+    }
+}
+
 
 class DenySwitch extends Component
 {
@@ -210,9 +178,9 @@ class DenySwitch extends Component
 
 class JunctionButton extends Entity
 {
-    constructor(readonly junction: Junction)
+    constructor(readonly trackGraph: TrackGraph, readonly junction: Node)
     {
-        super("junction", -1000, -1000);
+        super("junction", -1000, -1000, Layers.BUTTON);
     }
 
     onAdded(): void
@@ -220,12 +188,13 @@ class JunctionButton extends Entity
         super.onAdded();
         if (this.parent !== null)
         {
-            this.transform.x = this.junction.controlEdge.x - this.parent.transform.x - 25;
-            this.transform.y = this.junction.controlEdge.y - this.parent.transform.y - 25;
+            this.transform.x = this.junction.x - this.parent.transform.x - 25;
+            this.transform.y = this.junction.y - this.parent.transform.y - 25;
         }
-        this.addComponent(new JunctionHolder(this.junction));
+        // this.addComponent(new JunctionHolder(this.junction));
         this.addComponent(new RenderRect(0, 0, 50, 50, 0x0));
         this.addComponent(new TextDisp(0, 0, "0", new PIXI.TextStyle({fill: 0xFFFFFF})));
+        this.addComponent(new JunctionHolder(this.trackGraph, this.junction));
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
         if (sys !== null)
         {
@@ -302,28 +271,26 @@ export class Rope extends PIXIComponent<PIXI.SimpleRope>
     }
 }
 
+class Destination extends Component
+{
+    constructor(readonly graph: TrackGraph, public node: Node, public  previous: Node)
+    {
+        super();
+    }
+
+    next(): Node
+    {
+        const nextNode = this.graph.next(this.previous, this.node);
+        this.previous = this.node;
+        this.node = nextNode;
+        return nextNode;
+    }
+}
+
 export class Track extends Entity
 {
+    readonly trackGraph = new TrackGraph();
     allPoints: number[][] = [];
-
-    private makeStraightTrack(points: number[][]): Node[]
-    {
-        const nodes: Node[] = [];
-        points.forEach(x => nodes.push(new Node(x[0] + this.transform.x, x[1] + this.transform.y)));
-
-        let prevNode = null;
-
-        for (const node of nodes)
-        {
-            if (prevNode !== null)
-            {
-                prevNode.edge = new Straight(prevNode, node);
-            }
-            prevNode = node;
-        }
-
-        return nodes;
-    }
 
     onAdded(): void
     {
@@ -331,13 +298,29 @@ export class Track extends Entity
 
         const trackBuilder = new TrackBuilder(track, this);
 
+        // circle half
         const points: number[][] = [];
-
-        // points.push(...TrackBuilder.makeTurn(10, 100, 0, 90));
-
-        // This is a circle.
         points.push(...trackBuilder.addXBezier([0, 0], [100, 100]));
         points.push(...trackBuilder.addYBezier([100, 100], [200, 0]));
+        // this.addComponent(new Rope(track.textureFromIndex(0), points));
+        points.pop();
+
+        // other circle half
+        const points2: number[][] = [];
+        points2.push(...trackBuilder.addXBezier([200, 0], [100, -100]));
+        points2.push(...trackBuilder.addYBezier([100, -100], [0, 0]));
+        // this.addComponent(new Rope(track.textureFromIndex(0), points2));
+        points2.pop();
+
+        const nodes = points.map(x => new Node(x[0] + this.transform.x, x[1] + this.transform.y));
+        const nodes2 = points2.map(x => new Node(x[0] + this.transform.x, x[1] + this.transform.y));
+        this.trackGraph.addSequence(nodes);
+        this.trackGraph.addSequence(nodes2);
+
+        // connect circle at both joins
+        this.trackGraph.connect(nodes[0], nodes2[nodes2.length - 1]);
+        this.trackGraph.connect(nodes2[0], nodes[nodes.length - 1]);
+
 
         // FORK
         // branch 1
@@ -345,46 +328,37 @@ export class Track extends Entity
         points1.push(...trackBuilder.addXBezier([200, 0], [300, -50]));
         points1.push(...trackBuilder.addYBezier([300, -50], [400, 0]));
         points1.push(...trackBuilder.addLine([400, 0], [400, 50]));
-
-        // Uncomment this to see the track disappear.
         points1.push(...trackBuilder.addXBezier([400, 50], [300, 100]));
         points1.push(...trackBuilder.addLine([300, 100], [100, 100]));
+        // points1.push([100, 100]);
 
-        // branch 2
-        const points2: number[][] = [];
-
-        points2.push(...trackBuilder.addXBezier([200, 0], [100, -100]));
-        points2.push(...trackBuilder.addYBezier([100, -100], [0, 0]));
-
-        // points.push([220, 0]);
-        const nodes = this.makeStraightTrack(points);
-        const nodes1 = this.makeStraightTrack(points1);
-        const nodes2 = this.makeStraightTrack(points2);
-
-        // Link the circle back up
-        nodes2[nodes2.length - 1].edge = new Straight(nodes2[nodes2.length - 1], nodes[0]);
-
-        // Link nodes1 to nodes0
-        // nodes[10].edge = new Straight(nodes1[nodes1.length - 1], nodes[10]);
-
-        // link it
-        nodes[nodes.length - 1].edge = new Junction(nodes[nodes.length - 1], [nodes1[0], nodes2[0]], 0);
-
-        this.addChild(new JunctionButton(nodes[nodes.length - 1].edge as Junction));
-        //
-        // points1.reverse().push(points[points.length - 1]);
-        // points1.reverse();
-        // points2.reverse().push(points[points.length - 1]);
-        // points2.reverse();
-
-        // this.addComponent(new Rope(track.textureFromIndex(0), points));
-        // this.addComponent(new Rope(track.textureFromIndex(0), points2));
         // this.addComponent(new Rope(track.textureFromIndex(0), points1));
 
-        this.allPoints = this.allPoints.concat(points).concat(points1).concat(points2);
+        points1.pop();
+        points1.reverse();
+        points1.pop();
+        points1.reverse();
 
+        const nodes1 = points1.map(x => new Node(x[0] + this.transform.x, x[1] + this.transform.y));
+
+        // points.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
+        // points1.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 4, null, 0xFF0000)));
+        // points2.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 3, null, 0x0000FF)));
+
+        this.trackGraph.addSequence(nodes1);
+
+        // junction connect to the circle
+        this.trackGraph.createJunction(nodes[nodes.length - 1], [nodes1[0], nodes2[0]]);
+
+        // junction in to the bottom of the circle
+        this.trackGraph.createJunction(nodes[10], [nodes[11], nodes1[nodes1.length - 1]]);
+
+        this.addChild(new JunctionButton(this.trackGraph, nodes[nodes.length - 1]));
+        this.addChild(new JunctionButton(this.trackGraph, nodes[10]));
+
+        this.allPoints = this.allPoints.concat(points).concat(points1).concat(points2);
         this.getScene().entities.filter(x => x.name === "train")
-            .forEach(x => x.addComponent(new Destination(nodes[0], nodes[0].edge)));
+            .forEach(x => x.addComponent(new Destination(this.trackGraph, nodes[1], nodes[0])));
         this.spawnGoal(0);
     }
 
@@ -428,6 +402,42 @@ class TrainMover extends System
     }
 }
 
+class ScoreUpdater extends System
+{
+    types(): LagomType<Component>[]
+    {
+        return [Score, TextDisp];
+    }
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, score: Score, text: TextDisp) => {
+            text.pixiObj.text = score.score.toString();
+        });
+    }
+
+}
+
+class Scorer extends GlobalSystem
+{
+    types(): LagomType<Component>[]
+    {
+        return [Score, AddScore];
+    }
+
+    update(delta: number): void
+    {
+        this.runOnComponents((score: Score[], addScores: AddScore[]) => {
+            const masterScore = score[0];
+            for (const addScore of addScores)
+            {
+                masterScore.score++;
+                addScore.destroy();
+            }
+        });
+    }
+}
+
 class TrainsScene extends Scene
 {
     onAdded(): void
@@ -437,16 +447,20 @@ class TrainsScene extends Scene
         this.addGlobalSystem(new DiscreteCollisionSystem(collisionMatrix));
         this.addGlobalSystem(new MouseEventSystem());
         this.addGlobalSystem(new TimerSystem());
+        this.addGlobalSystem(new Scorer());
 
         this.addSystem(new JunctionSwitcher());
 
         this.addEntity(new Train(150, 350, 0, 4, true));
         this.addEntity(new Track("track", 250, 250, Layers.TRACK));
         this.addSystem(new TrainMover());
+        this.addSystem(new ScoreUpdater());
 
+        this.addGUIEntity(new GameManager());
         this.addEntity(new Diagnostics("white"));
     }
 }
+
 
 export class LD47 extends Game
 {
