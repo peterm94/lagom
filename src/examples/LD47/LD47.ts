@@ -296,18 +296,8 @@ export class JunctionButton extends Entity
         if (sys !== null)
         {
             const buttonColl = this.addComponent(new RectCollider(sys, {width: 50, height: 50, layer: Layers.BUTTON}));
-            const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: 0, yOff: 0, radius: 50, layer: Layers.JUNCTION}));
+            const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: 25, yOff: 25, radius: 5, layer: Layers.JUNCTION}));
 
-            let junctionOffsetX = 0;
-            let junctionOffsetY = 0;
-            if (this.parent !== null)
-            {
-                junctionOffsetX = this.junction.x - this.transform.x;
-                junctionOffsetY = this.junction.y - this.transform.y;
-            }
-
-            // const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: junctionOffsetX, yOff: junctionOffsetY, radius: 5, layer: Layers.JUNCTION}));
-            this.addComponent(new RenderCircle(junctionOffsetX, junctionOffsetY, 5));
             buttonColl.onTriggerEnter.register((caller, data) => {
                 if (data.other.layer === Layers.MOUSE_COLL &&
                     caller.getEntity().getComponent<DenySwitch>(DenySwitch) === null)
@@ -515,7 +505,7 @@ class Train extends Entity
             // GAME OVER BUDDY
             if (data.other.layer === Layers.TRAIN)
             {
-                caller.getEntity().addComponent(new ScreenShake(1, 4000));
+                caller.getEntity().addComponent(new ScreenShake(1, 1500));
 
                 // ragtrain time
                 const allTrains = caller.getScene().entities.filter(x => x.name === "train");
@@ -527,7 +517,7 @@ class Train extends Entity
                     train.addComponent(new Ragdoll());
                 }
 
-                caller.getEntity().addComponent(new Timer(4500, null)).onTrigger.register(() => {
+                caller.getEntity().addComponent(new Timer(4000, null)).onTrigger.register(() => {
                     caller.getScene().addEntity(new ScreenCard(gameover.textureFromIndex(0), 1, Layers.END_SCREEN));
                 });
             }
