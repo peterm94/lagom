@@ -296,7 +296,7 @@ export class JunctionButton extends Entity
         if (sys !== null)
         {
             const buttonColl = this.addComponent(new RectCollider(sys, {width: 50, height: 50, layer: Layers.BUTTON}));
-            const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: 25, yOff: 25, radius: 5, layer: Layers.JUNCTION}));
+            const junctionColl = this.addComponent(new CircleCollider(sys, {xOff: 25, yOff: 25, radius: 10, layer: Layers.JUNCTION}));
 
             buttonColl.onTriggerEnter.register((caller, data) => {
                 if (data.other.layer === Layers.MOUSE_COLL &&
