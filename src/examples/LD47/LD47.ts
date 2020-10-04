@@ -71,8 +71,7 @@ class Goal extends Entity
     {
         super.onAdded();
 
-        // TODO real sprite, pick colour based on trainId
-        this.addComponent(new Sprite(trains.texture(0, 0, 16, 16), {xAnchor: 0.5, yAnchor: 0.5}));
+        this.addComponent(new Sprite(trains.texture(this.trainId, 1), {xAnchor: 0.5, yAnchor: 0.5}));
 
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
         if (sys === null) return;
@@ -223,10 +222,14 @@ class GameManager extends Entity
 
     spawnGoal(trainId: number): void
     {
-        // TODO random until we don't spawn on top of a train :D
         if (this.trackGraph === null) return;
         const point = this.trackGraph.nodes[MathUtil.randomRange(0, this.trackGraph.nodes.length)];
-        this.addChild(new Goal(point.x - this.transform.x, point.y - this.transform.y, trainId));
+        let nextPoint = this.trackGraph.edges.find(x => x.n1 === point)?.n2;
+        if (nextPoint === undefined) nextPoint = this.trackGraph.edges.find(x => x.n2 === point)?.n1;
+        if (nextPoint === undefined) nextPoint = point;
+        const dir = MathUtil.pointDirection(point.x, point.y, nextPoint.x, nextPoint.y);
+        const goal = this.addChild(new Goal(point.x - this.transform.x, point.y - this.transform.y, trainId));
+        goal.transform.rotation = dir + MathUtil.degToRad(90);
     }
 }
 
@@ -481,12 +484,6 @@ export class Track extends Entity
         this.allPoints = trackBuilder.getAllPoints();
 
         // this.allPoints.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
-    }
-
-    spawnGoal(trainId: number): void
-    {
-        const point = this.allPoints[MathUtil.randomRange(0, this.allPoints.length)];
-        this.addChild(new Goal(point[0], point[1], trainId));
     }
 }
 
