@@ -317,9 +317,17 @@ export class Track extends Entity
                                              [100, -100],
                                              [300, -200],
                                              [175, -100],
-                                             [225, -200]);
+                                             [150, -200]);
 
         trackBuilder.addJunction(tlNodes[0], Util.last(trNodes), cubic[0]);
+
+        trackBuilder.addLine([300, -200], [500, -200]);
+        trackBuilder.addYBezier([500, -200], [600, -100]);
+        trackBuilder.addLine([600, -100], [600, 100]);
+        trackBuilder.addXBezier([600, 100], [500, 200]);
+        trackBuilder.addLine([500, 200], [-150, 200]);
+        trackBuilder.addYBezier([-150, 200], [-200, 150]);
+
 
         // Middle right fork
         const rightFork = trackBuilder.addXBezier([200, 0], [300, -50], false);
@@ -337,7 +345,7 @@ export class Track extends Entity
         this.trackGraph = trackBuilder.getTrackGraph();
         this.allPoints = trackBuilder.getAllPoints();
 
-        this.allPoints.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
+        // this.allPoints.forEach(x => this.addComponent(new RenderCircle(x[0], x[1], 5, null, 0x00FF00)));
 
         this.getScene().entities.filter(x => x.name === "train")
             .forEach(x => x.addComponent(new Destination(this.trackGraph, blNodes[1], blNodes[0])));
