@@ -21,6 +21,7 @@ import {Diagnostics} from "../../Common/Debug";
 import {Node, TrackGraph} from "./TrackGraph";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
+import {ScreenShake, ScreenShaker} from "../../Common/Screenshake";
 
 const Mouse = require('pixi.js-mouse');
 
@@ -217,8 +218,8 @@ class GameManager extends Entity
         train1.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[0].n1,
                                             track.trackGraph.edges[0].n2));
 
-        const train2 = this.getScene().addEntity(new Train(track.trackGraph.edges[0].n1.x,
-                                                           track.trackGraph.edges[0].n1.y, 1, 0, true));
+        const train2 = this.getScene().addEntity(new Train(track.trackGraph.edges[30].n1.x,
+                                                           track.trackGraph.edges[30].n1.y, 1, 0, true));
         train2.addComponent(new Destination(track.trackGraph, track.trackGraph.edges[30].n1,
                                             track.trackGraph.edges[30].n2));
 
@@ -324,10 +325,9 @@ class Train extends Entity
     {
         const end = this.getNextTrain();
 
-        end.nextTrain = this.scene.addEntity(new Train(end.transform.x,
-                                                       end.transform.y, end.trainId, carriage - 1,
-                                                       false));
-        end.nextTrain.transform.rotation = end.transform.rotation;
+        let trainX = end.transform.x;
+        let trainY = end.transform.y;
+        let trainRot = 0;
 
         // Need to position it correctly and set up the movement. This is kinda hard. We can do what TrainMover
         // does.. but backwards. Will always be on the track, be always perfect.
@@ -343,10 +343,8 @@ class Train extends Entity
 
         while (actualMovement < moveAmt)
         {
-            const targetDir = MathUtil.pointDirection(end.nextTrain.transform.x, end.nextTrain.transform.y, dest.node.x,
-                                                      dest.node.y);
-            const targetDist = MathUtil.pointDistance(end.nextTrain.transform.x, end.nextTrain.transform.y, dest.node.x,
-                                                      dest.node.y);
+            const targetDir = MathUtil.pointDirection(trainX, trainY, dest.node.x, dest.node.y);
+            const targetDist = MathUtil.pointDistance(trainX, trainY, dest.node.x, dest.node.y);
             let toMove = moveAmt - actualMovement;
             if (toMove > targetDist)
             {
@@ -355,14 +353,16 @@ class Train extends Entity
             }
 
             const moveComp = MathUtil.lengthDirXY(toMove, -targetDir);
-            end.nextTrain.transform.x += moveComp.x;
-            end.nextTrain.transform.y += moveComp.y;
-            end.nextTrain.transform.rotation = -targetDir + MathUtil.degToRad(90);
+            trainX += moveComp.x;
+            trainY += moveComp.y;
+            trainRot = -targetDir + MathUtil.degToRad(90);
             actualMovement += toMove;
         }
 
         // Now that it is positioned, reverse the current dest and add it.
+        end.nextTrain = this.scene.addEntity(new Train(trainX, trainY, end.trainId, carriage - 1, false));
         end.nextTrain.addComponent(new Destination(myDest.graph, dest.previous, dest.node));
+        end.nextTrain.transform.rotation = trainRot;
     }
 
     onAdded(): void
@@ -377,13 +377,19 @@ class Train extends Entity
         this.addComponent(new Sprite(trains.texture(this.trainId, this.front ? 0 : 1), {xAnchor: 0.5, yAnchor: 0.5}));
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
 
-        if (sys !== null)
-        {
-            this.addComponent(new RectCollider(sys, {
-                layer: Layers.TRAIN, width: 16, height: 32,
-                xOff: -8, yOff: -16
-            }));
-        }
+        if (sys === null) return;
+
+        const coll = this.addComponent(new RectCollider(sys, {
+            layer: Layers.TRAIN, width: 10, height: 24, xOff: -5, yOff: -12
+        }));
+
+        coll.onTriggerEnter.register((caller, data) => {
+            // GAME OVER BUDDY
+            if (data.other.layer === Layers.TRAIN)
+            {
+                caller.getEntity().addComponent(new ScreenShake(1, 1000));
+            }
+        });
     }
 }
 
@@ -614,6 +620,7 @@ class TrainsScene extends Scene
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new Scorer());
         this.addGlobalSystem(new FrameTriggerSystem());
+        this.addGlobalSystem(new ScreenShaker());
 
         this.addSystem(new JunctionSwitcher());
 
