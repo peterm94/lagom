@@ -37,6 +37,7 @@ enum Layers
     TRAIN,
     GOAL,
     MOUSE_COLL,
+    END_SCREEN,
     SCORE_DISP
 }
 
@@ -395,9 +396,9 @@ class ClickListener extends GlobalSystem
 
 class ScreenCard extends Entity
 {
-    constructor(readonly texture: PIXI.Texture, readonly clickAction: number)
+    constructor(readonly texture: PIXI.Texture, readonly clickAction: number, layer: number = 0)
     {
-        super("card", 0, 0);
+        super("card", 0, 0, layer);
     }
 
     onAdded(): void
@@ -505,7 +506,7 @@ class Train extends Entity
                 }
 
                 caller.getEntity().addComponent(new Timer(5000, null)).onTrigger.register(() => {
-                    caller.getScene().addEntity(new ScreenCard(trains.textureFromIndex(0), 1));
+                    caller.getScene().addGUIEntity(new ScreenCard(trains.textureFromIndex(0), 1, Layers.END_SCREEN));
                 });
             }
         });
