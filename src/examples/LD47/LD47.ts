@@ -434,7 +434,7 @@ export class Track extends Entity
                                              [175, -100],
                                              [150, -200]);
 
-        trackBuilder.addJunction(tlNodes[0], Util.last(trNodes), cubic[0],
+        trackBuilder.addJunction(tlNodes[0], cubic[0], Util.last(trNodes),
                                  20, 0,
                                  {x: 33, y: -1, rot: 60},
                                  {x: 40, y: 32, rot: 100});
@@ -479,15 +479,15 @@ export class Track extends Entity
         const bottomJunctionRight = trackBuilder.addXBezier([300, 100], [400, 200], false);
 
         trackBuilder.addJunction(Util.last(bottomJunctionEntrance),
-                                 bottomJunctionMid[0],
                                  Util.last(bottomJunctionRight),
+                                 bottomJunctionMid[0],
                                  0, 0,
                                  {x: -1, y: 17, rot: -80},
                                  {x: 0, y: 46, rot: -90});
 
         const bottomJunctionLeft = trackBuilder.addXBezier([300, 100], [200, 200], false);
 
-        trackBuilder.addJunction(bottomJunctionTop[0], bottomJunctionRight[0], bottomJunctionLeft[0],
+        trackBuilder.addJunction(bottomJunctionTop[0], bottomJunctionLeft[0],  bottomJunctionRight[0],
                                  0, 0,
                                  {x: 17, y: 50, rot: 190},
                                  {x: 48, y: 47.5, rot: 170});
@@ -500,7 +500,7 @@ export class Track extends Entity
 
         // Middle right fork
         const rightFork = trackBuilder.addXBezier([200, 0], [300, -50], false);
-        trackBuilder.addJunction(middleJunction, rightFork[0], trNodes[0],
+        trackBuilder.addJunction(middleJunction, trNodes[0], rightFork[0],
                                  0, 0,
                                  {x: 1, y: 6, rot: -10},
                                  {x: 36, y: 2, rot: 25});
@@ -509,8 +509,10 @@ export class Track extends Entity
 
         const bottomFarRightJunctionLeft = trackBuilder.addYBezier([500, -50], [600, 0]);
 
-        trackBuilder.addJunction(bottomFarRightJunctionEntrance[0], Util.last(topRightJunctionEntrance),
-                                 Util.last(bottomFarRightJunctionLeft), 0, 0,
+        trackBuilder.addJunction(bottomFarRightJunctionEntrance[0],
+                                 Util.last(bottomFarRightJunctionLeft),
+                                 Util.last(topRightJunctionEntrance),
+                                 0, 0,
                                  {x: -1, y: 10, rot: -30},
                                  {x: 31, y: 5, rot: 0});
 
@@ -646,9 +648,9 @@ class GameManager extends Entity
         if (track === null) return;
 
         this.spawnTrain(track.trackGraph, 0, track.trackGraph.edges[0]);
-        this.spawnTrain(track.trackGraph, 1, track.trackGraph.edges[30]);
-        this.spawnTrain(track.trackGraph, 2, track.trackGraph.edges[60]);
-        this.spawnTrain(track.trackGraph, 3, track.trackGraph.edges[90]);
+        this.spawnTrain(track.trackGraph, 1, track.trackGraph.edges[500]);
+        // this.spawnTrain(track.trackGraph, 2, track.trackGraph.edges[60]);
+        // this.spawnTrain(track.trackGraph, 3, track.trackGraph.edges[90]);
 
         this.trackGraph = track.trackGraph;
         this.spawnGoal(0);
