@@ -19,6 +19,8 @@ import {Timer, TimerSystem} from "../../Common/Timer";
 import {TrackBuilder} from "./TrackBuilder";
 import {Diagnostics} from "../../Common/Debug";
 import {Node, TrackGraph} from "./TrackGraph";
+import {FrameTriggerSystem} from "../../Common/FrameTrigger";
+import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
 
 const Mouse = require('pixi.js-mouse');
 
@@ -65,9 +67,8 @@ class Goal extends Entity
 
             // check that the train is the right one
             const trainId = (data.other.parent as Train).trainId;
-            if (trainId != this.trainId) return;
+            if (trainId !== this.trainId) return;
 
-            // TODO add a point to something
             caller.getScene().getEntityWithName("manager")?.addComponent(new AddScore());
 
             const track = caller.getScene().getEntityWithName<Track>("track");
@@ -129,19 +130,39 @@ class JunctionHolder extends Component
     }
 }
 
-class JunctionSwitcher extends System
+class SwapSprite extends Component
+{
+}
+
+class SpriteSwapper extends System
 {
     types(): LagomType<Component>[]
     {
-        return [JunctionHolder, SwitchJunction, TextDisp];
+        return [AnimatedSpriteController, SwapSprite];
     }
 
     update(delta: number): void
     {
-        this.runOnEntities((entity: Entity, junctionHolder: JunctionHolder, switchJunc: SwitchJunction,
-                            txt: TextDisp) => {
-            const curr = junctionHolder.graph.switchJunction(junctionHolder.junction);
-            txt.pixiObj.text = curr.toString();
+        this.runOnEntities((entity: Entity, sprite: AnimatedSpriteController, swapTrigger: SwapSprite) => {
+            swapTrigger.destroy();
+            sprite.setAnimation((sprite.currentState + 1) % 2);
+        });
+    }
+}
+
+class JunctionSwitcher extends System
+{
+    types(): LagomType<Component>[]
+    {
+        return [JunctionHolder, SwitchJunction];
+    }
+
+    update(delta: number): void
+    {
+        this.runOnEntities((entity: Entity, junctionHolder: JunctionHolder, switchJunc: SwitchJunction) => {
+            junctionHolder.graph.switchJunction(junctionHolder.junction);
+            entity.findChildWithName("indicator0")?.addComponent(new SwapSprite());
+            entity.findChildWithName("indicator1")?.addComponent(new SwapSprite());
             switchJunc.destroy();
         });
     }
@@ -171,14 +192,16 @@ class GameManager extends Entity
     }
 }
 
-
 class DenySwitch extends Component
 {
 }
 
 export class JunctionButton extends Entity
 {
-    constructor(readonly trackGraph: TrackGraph, readonly junction: Node)
+    constructor(readonly trackGraph: TrackGraph, readonly junction: Node,
+                readonly xOffset = 0, readonly yOffset = 0,
+                readonly j0pos: { x: number; y: number; rot: number },
+                readonly j1pos: { x: number; y: number; rot: number })
     {
         super("junction", -1000, -1000, Layers.BUTTON);
     }
@@ -192,9 +215,23 @@ export class JunctionButton extends Entity
             this.transform.y = this.junction.y - this.parent.transform.y - 25;
         }
         // this.addComponent(new JunctionHolder(this.junction));
-        this.addComponent(new RenderRect(0, 0, 50, 50, 0x0));
-        this.addComponent(new TextDisp(0, 0, "0", new PIXI.TextStyle({fill: 0xFFFFFF})));
+        this.addComponent(new RenderRect(0, 0, 50, 50, null, 0x0));
+        // this.addComponent(new TextDisp(0, 0, "0", new PIXI.TextStyle({fill: 0xFFFFFF})));
         this.addComponent(new JunctionHolder(this.trackGraph, this.junction));
+
+        // TODO pass position + rotation info through
+        const onTexture = () => trains.textureFromPoints(4 * 16, 2 * 16, 16, 16);
+        const offTexture = () => trains.textureFromPoints(4 * 16, 0, 16, 16);
+        const p1 = this.addChild(new Entity("indicator0", this.j0pos.x, this.j0pos.y));
+        p1.transform.rotation = this.j0pos.rot;
+        p1.addComponent(new AnimatedSpriteController(0, [{textures: [onTexture()], id: 0, config: {}},
+            {textures: [offTexture()], id: 1, config: {}}]));
+        const p2 = this.addChild(new Entity("indicator1", this.j1pos.x, this.j1pos.y));
+        p2.addComponent(new AnimatedSpriteController(1, [{textures: [onTexture()], id: 0, config: {}},
+            {textures: [offTexture()], id: 1, config: {}}]));
+        p2.transform.rotation = this.j1pos.rot;
+
+
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
         if (sys !== null)
         {
@@ -473,6 +510,7 @@ class TrainsScene extends Scene
         this.addGlobalSystem(new MouseEventSystem());
         this.addGlobalSystem(new TimerSystem());
         this.addGlobalSystem(new Scorer());
+        this.addGlobalSystem(new FrameTriggerSystem());
 
         this.addSystem(new JunctionSwitcher());
 
@@ -480,6 +518,7 @@ class TrainsScene extends Scene
         this.addEntity(new Track("track", 250, 250, Layers.TRACK));
         this.addSystem(new TrainMover());
         this.addSystem(new ScoreUpdater());
+        this.addSystem(new SpriteSwapper());
 
         this.addGUIEntity(new GameManager());
         this.addEntity(new Diagnostics("white"));

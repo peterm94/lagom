@@ -91,7 +91,8 @@ export class TrackBuilder
 
     public addJunction = (controlNode: Node, switch1: Node, switch2: Node) => {
         this.graph.createJunction(controlNode, [switch1, switch2]);
-        this.entity.addChild(new JunctionButton(this.graph, controlNode));
+        this.entity.addChild(new JunctionButton(this.graph, controlNode, 0, 0, {x: 0, y: 0, rot: 0},
+                                                {x: 30, y: 0, rot: 20}));
     };
 
     // public createJunctionHere = (bezier1: () => ) => {
