@@ -429,7 +429,7 @@ class ScreenCard extends Entity
 
         this.addComponent(new Sprite(this.texture));
 
-        this.addComponent(new Timer(1000, null)).onTrigger.register(() => {
+        this.addComponent(new Timer(500, null)).onTrigger.register(() => {
             this.addComponent(new ClickAction(this.clickAction));
         });
     }
@@ -527,8 +527,8 @@ class Train extends Entity
                     train.addComponent(new Ragdoll());
                 }
 
-                caller.getEntity().addComponent(new Timer(5000, null)).onTrigger.register(() => {
-                    caller.getScene().addGUIEntity(new ScreenCard(gameover.textureFromIndex(0), 1, Layers.END_SCREEN));
+                caller.getEntity().addComponent(new Timer(4500, null)).onTrigger.register(() => {
+                    caller.getScene().addEntity(new ScreenCard(gameover.textureFromIndex(0), 1, Layers.END_SCREEN));
                 });
             }
         });
@@ -751,7 +751,7 @@ class ScoreUpdater extends System
     update(delta: number): void
     {
         this.runOnEntities((entity: Entity, score: Score, text: TextDisp) => {
-            text.pixiObj.text = score.score.toString();
+            text.pixiObj.text = "Score: " + score.score.toString();
         });
     }
 
@@ -795,14 +795,14 @@ class GameManager extends Entity
 
     constructor()
     {
-        super("manager", 100, 100);
+        super("manager", 100, 350);
     }
 
     onAdded(): void
     {
         super.onAdded();
 
-        this.addComponent(new TextDisp(0, 0, "", new PIXI.TextStyle({fontSize: 24, fill: "white"})));
+        this.addComponent(new TextDisp(0, 0, "", new PIXI.TextStyle({fontSize: 40, fill: "white"})));
 
         const track = this.getScene().getEntityWithName("track") as Track;
 
