@@ -370,24 +370,35 @@ class TrainMover extends System
     {
         this.runOnEntities((entity: Entity, destination: Destination) => {
 
-            const targetDir = MathUtil.pointDirection(entity.transform.x, entity.transform.y,
-                                                      destination.node.x, destination.node.y);
-            const targetDistance = MathUtil.pointDistance(entity.transform.x, entity.transform.y,
-                                                          destination.node.x, destination.node.y);
+            let actualMovement = 0;
 
+            // Target movement distance for this frame.
             const moveAmt = this.speed * 100 * (delta / 1000);
 
-            // close enough
-            if (moveAmt > targetDistance)
+            // We want to accurately follow the path
+            while (actualMovement < moveAmt)
             {
-                destination.next();
+                const targetDir = MathUtil.pointDirection(entity.transform.x, entity.transform.y,
+                                                          destination.node.x, destination.node.y);
+                const targetDistance = MathUtil.pointDistance(entity.transform.x, entity.transform.y,
+                                                              destination.node.x, destination.node.y);
+
+                let toMove = moveAmt - actualMovement;
+
+                // We will move too far, cap it so we can move accurately in another loop
+                if (toMove > targetDistance)
+                {
+                    toMove = targetDistance;
+                    destination.next();
+                }
+
+                const movecomp = MathUtil.lengthDirXY(toMove, -targetDir);
+
+                entity.transform.x += movecomp.x;
+                entity.transform.y += movecomp.y;
+                entity.transform.rotation = -targetDir + MathUtil.degToRad(90);
+                actualMovement += toMove;
             }
-
-            const movecomp = MathUtil.lengthDirXY(moveAmt, -targetDir);
-
-            entity.transform.x += movecomp.x;
-            entity.transform.y += movecomp.y;
-            entity.transform.rotation = -targetDir + MathUtil.degToRad(90);
         });
     }
 }
