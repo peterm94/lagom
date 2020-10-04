@@ -877,6 +877,10 @@ export class LD47 extends Game
         collisionMatrix.addCollision(Layers.TRAIN, Layers.BUTTON);
         collisionMatrix.addCollision(Layers.TRAIN, Layers.GOAL);
 
+        const music = LD47.audioAtlas.load("music", require("./Sound/music.mp3"));
+        music.loop(true);
+        music.volume(0.4);
+
         // TODO load sounds
 
         this.setScene(new TrainsScene(this));

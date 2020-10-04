@@ -92,16 +92,25 @@ export class SoundManager extends Entity
         }
     }
 
-    stopAllSounds()
+    stopAllSounds(music = true)
     {
-        LD47.audioAtlas.sounds.forEach((k, v) => k.stop());
-        LD47.musicPlaying = false;
+        if (music)
+        {
+            LD47.audioAtlas.sounds.forEach((v, k) => v.stop());
+            LD47.musicPlaying = false;
+        }
+        else
+        {
+            LD47.audioAtlas.sounds.forEach((v, k) => {
+                if (k !== "music") v.stop();
+            });
+        }
     }
 
     onRemoved(): void
     {
         super.onRemoved();
-        this.stopAllSounds();
+        this.stopAllSounds(false);
     }
 
     playSound(name: string)
