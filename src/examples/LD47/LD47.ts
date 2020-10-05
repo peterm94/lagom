@@ -517,6 +517,9 @@ class Train extends Entity
         end.nextTrain = this.scene.addEntity(new Train(trainX, trainY, end.trainId, carriage - 1, false));
         end.nextTrain.addComponent(new Destination(myDest.graph, dest.previous, dest.node));
         end.nextTrain.transform.rotation = trainRot;
+
+        (this.scene.getEntityWithName("audio") as SoundManager)?.playSound("clickclack");
+
     }
 
     onAdded(): void
