@@ -12,7 +12,7 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {Log, LogLevel, MathUtil, Util} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
-import {PIXIGraphicsComponent, TextDisp} from "../../Common/PIXIComponents";
+import {PIXIGraphicsComponent, RenderCircle, TextDisp} from "../../Common/PIXIComponents";
 import {CollisionSystem, DebugCollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, Collider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
@@ -299,7 +299,8 @@ export class JunctionButton extends Entity
             this.transform.x = this.junction.x - this.parent.transform.x - 25 + this.xOffset;
             this.transform.y = this.junction.y - this.parent.transform.y - 25 + this.yOffset;
         }
-        this.addComponent(new NicerRenderRect(0, 0, 50, 50, null, {color: 0x0, width: 2, alpha: 0.3}));
+        this.addComponent(new NicerRenderRect(-25, -25, 100, 100, null, {color: 0x0, width: 2, alpha: 0.3}));
+        // this.addComponent(new RenderCircle(25, 25, 10));
         this.addComponent(new JunctionHolder(this.trackGraph, this.junction));
 
         const onTexture = () => trains.textureFromPoints(4 * 16, 2 * 16, 16, 16);
@@ -317,7 +318,7 @@ export class JunctionButton extends Entity
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
         if (sys !== null)
         {
-            const buttonColl = this.addComponent(new RectCollider(sys, {width: 50, height: 50, layer: Layers.BUTTON}));
+            const buttonColl = this.addComponent(new RectCollider(sys, {xOff: -25, yOff: -25, width: 100, height: 100, layer: Layers.BUTTON}));
             const junctionColl = this.addComponent(
                 new CircleCollider(sys, {xOff: 25, yOff: 25, radius: 10, layer: Layers.JUNCTION}));
 
