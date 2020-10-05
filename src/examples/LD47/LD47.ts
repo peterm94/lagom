@@ -12,14 +12,13 @@ import {SpriteSheet} from "../../Common/Sprite/SpriteSheet";
 import * as PIXI from "pixi.js";
 import {Log, LogLevel, MathUtil, Util} from "../../Common/Util";
 import {Sprite} from "../../Common/Sprite/Sprite";
-import {PIXIGraphicsComponent, RenderCircle, TextDisp} from "../../Common/PIXIComponents";
+import {PIXIGraphicsComponent, TextDisp} from "../../Common/PIXIComponents";
 import {CollisionSystem, DebugCollisionSystem, DiscreteCollisionSystem} from "../../Collisions/CollisionSystems";
 import {CircleCollider, Collider, RectCollider} from "../../Collisions/Colliders";
 import {GlobalSystem} from "../../ECS/GlobalSystem";
 import {LagomType} from "../../ECS/LifecycleObject";
 import {Timer, TimerSystem} from "../../Common/Timer";
 import {TrackBuilder} from "./TrackBuilder";
-import {Diagnostics} from "../../Common/Debug";
 import {Node, Straight, TrackGraph} from "./TrackGraph";
 import {FrameTriggerSystem} from "../../Common/FrameTrigger";
 import {AnimatedSpriteController} from "../../Common/Sprite/AnimatedSpriteController";
@@ -299,7 +298,7 @@ export class JunctionButton extends Entity
             this.transform.x = this.junction.x - this.parent.transform.x - 25 + this.xOffset;
             this.transform.y = this.junction.y - this.parent.transform.y - 25 + this.yOffset;
         }
-        this.addComponent(new NicerRenderRect(-25, -25, 100, 100, null, {color: 0x0, width: 2, alpha: 0.3}));
+        // this.addComponent(new NicerRenderRect(-25, -25, 100, 100, null, {color: 0x0, width: 2, alpha: 0.1}));
         // this.addComponent(new RenderCircle(25, 25, 10));
         this.addComponent(new JunctionHolder(this.trackGraph, this.junction));
 
@@ -318,7 +317,8 @@ export class JunctionButton extends Entity
         const sys = this.getScene().getGlobalSystem<CollisionSystem>(CollisionSystem);
         if (sys !== null)
         {
-            const buttonColl = this.addComponent(new RectCollider(sys, {xOff: -25, yOff: -25, width: 100, height: 100, layer: Layers.BUTTON}));
+            const buttonColl = this.addComponent(
+                new RectCollider(sys, {xOff: -25, yOff: -25, width: 100, height: 100, layer: Layers.BUTTON}));
             const junctionColl = this.addComponent(
                 new CircleCollider(sys, {xOff: 25, yOff: 25, radius: 10, layer: Layers.JUNCTION}));
 
@@ -327,6 +327,7 @@ export class JunctionButton extends Entity
                     caller.getEntity().getComponent<DenySwitch>(DenySwitch) === null)
                 {
                     caller.getEntity().addComponent(new SwitchJunction());
+                    (this.scene.getEntityWithName("audio") as SoundManager)?.playSound("switch");
                 }
             });
 
@@ -899,8 +900,6 @@ class TrainsScene extends Scene
         this.addEntity(new Track("track", 220, 230, Layers.TRACK));
 
         this.addGUIEntity(new ScreenCard(PIXI.Texture.from(titleScreen), 0));
-
-        this.addEntity(new Diagnostics("white"));
     }
 }
 
@@ -929,6 +928,8 @@ export class LD47 extends Game
 
 
         const music = LD47.audioAtlas.load("music", require("./Sound/music.mp3"));
+        LD47.audioAtlas.load("clickclack", require("./Sound/clickclack.wav"));
+        LD47.audioAtlas.load("switch", require("./Sound/switch.wav")).volume(0.1);
         music.loop(true);
         music.volume(0.4);
 
