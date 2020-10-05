@@ -556,6 +556,8 @@ class Train extends Entity
                     train.addComponent(new Ragdoll());
                 }
 
+                (this.scene.getEntityWithName("audio") as SoundManager)?.playSound("crash");
+
                 caller.getEntity().addComponent(new Timer(4000, null)).onTrigger.register(() => {
                     caller.getScene()
                           .addEntity(new ScreenCard(PIXI.Texture.from(gameoverScreen), 1, Layers.END_SCREEN));
@@ -933,6 +935,7 @@ export class LD47 extends Game
         const music = LD47.audioAtlas.load("music", require("./Sound/music.mp3"));
         LD47.audioAtlas.load("clickclack", require("./Sound/clickclack.wav"));
         LD47.audioAtlas.load("switch", require("./Sound/switch.wav")).volume(0.1);
+        LD47.audioAtlas.load("crash", require("./Sound/crash.wav")).volume(0.1);
         music.loop(true);
         music.volume(0.4);
 
