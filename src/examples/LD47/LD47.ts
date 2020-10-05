@@ -391,6 +391,7 @@ class ClickAction extends Component
             case 0:
             {
                 this.getScene().addGUIEntity(new GameManager());
+                (this.getScene().getEntityWithName("audio") as SoundManager)?.playSound("horn");
                 this.getEntity().destroy();
                 break;
             }
@@ -936,6 +937,7 @@ export class LD47 extends Game
         LD47.audioAtlas.load("clickclack", require("./Sound/clickclack.wav"));
         LD47.audioAtlas.load("switch", require("./Sound/switch.wav")).volume(0.1);
         LD47.audioAtlas.load("crash", require("./Sound/crash.wav")).volume(0.1);
+        LD47.audioAtlas.load("horn", require("./Sound/horn.wav")).volume(0.2);
         music.loop(true);
         music.volume(0.4);
 
