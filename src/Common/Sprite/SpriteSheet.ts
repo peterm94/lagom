@@ -41,6 +41,18 @@ export class SpriteSheet
     }
 
     /**
+     * Get a texture from the spritesheet using pixel offsets.
+     * @param x X Pixel offset.
+     * @param y Y Pixel offset.
+     * @param width Width in pixels.
+     * @param height Height in pixels.
+     */
+    textureFromPoints(x: number, y: number, width: number, height: number): PIXI.Texture
+    {
+        return new PIXI.Texture(this.sheetTexture, new PIXI.Rectangle(x, y, width, height));
+    }
+
+    /**
      * Create a texture by index.
      * @param index Tile index of the texture to load.
      * @returns The loaded texture.
@@ -87,7 +99,7 @@ export class SpriteSheet
 
         for (let i = start; i <= end; i++)
         {
-            textures.push(this.texture(i, row, width, height))
+            textures.push(this.texture(i, row, width, height));
         }
 
         return textures;

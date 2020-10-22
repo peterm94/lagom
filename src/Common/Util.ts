@@ -1,4 +1,3 @@
-import {Entity} from "../ECS/Entity";
 import * as PIXI from "pixi.js";
 import {Vector} from "./Vector";
 
@@ -217,12 +216,22 @@ export class Util
     {
         return options[MathUtil.randomRange(0, options.length)];
     }
+
+    /**
+     * Returns the last element from a given array without removing it.
+     * @param arr The array.
+     * @returns The last element of the array.
+     */
+    static last<T>(arr: T[]): T
+    {
+        return arr[arr.length -1];
+    }
 }
 
 /**
  * Logging level of the system.
  */
-enum LogLevel
+export enum LogLevel
 {
     NONE,
     ERROR,
@@ -382,5 +391,10 @@ export class MultiMap<K, V>
     public put(key: K, value: V): void
     {
         this.entries.push(new MapEntry<K, V>(key, value));
+    }
+
+    public get(key: K): V[]
+    {
+        return this.entries.filter(x => x.key === key).flatMap(x => x.value);
     }
 }
